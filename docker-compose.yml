@@ -1,0 +1,144 @@
+version: "3.8"
+
+services:
+
+  mongodb:
+    image: mongo:6
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./docker/data/mongo:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+
+  gateway:
+    build:
+      context: ./src/Gateway
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - mongodb
+      - rabbitmq
+    ports:
+      - "8080:8080"
+
+  usersservice:
+    build:
+      context: ./src/Services/Users
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5001
+      - ConnectionStrings__MongoDB=mongodb://root:example@mongodb:27017
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=admin
+      - RabbitMQ__Password=admin
+    depends_on:
+      - mongodb
+      - rabbitmq
+    ports:
+      - "5001:5001"
+
+  modsservice:
+    build:
+      context: ./src/Services/Mods
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5002
+      - ConnectionStrings__MongoDB=mongodb://root:example@mongodb:27017
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=admin
+      - RabbitMQ__Password=admin
+    depends_on:
+      - mongodb
+      - rabbitmq
+    ports:
+      - "5002:5002"
+
+  paymentsservice:
+    build:
+      context: ./src/Services/Payments
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5003
+      - ConnectionStrings__MongoDB=mongodb://root:example@mongodb:27017
+      - Stripe__ApiKey=sk_test_xxx 
+    depends_on:
+      - mongodb
+    ports:
+      - "5003:5003"
+
+  communityservice:
+    build:
+      context: ./src/Services/Community
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5004
+      - ConnectionStrings__MongoDB=mongodb://root:example@mongodb:27017
+    depends_on:
+      - mongodb
+    ports:
+      - "5004:5004"
+
+  frontend:
+    build:
+      context: ./src/Frontend
+      dockerfile: Dockerfile 
+    restart: always
+    depends_on:
+      - gateway
+    ports:
+      - "80"
+    networks:
+      - default
+
+  nginx:
+    image: nginx:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/certs:/etc/nginx/certs:ro
+    depends_on:
+      - frontend
+      - gateway
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: always
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+networks:
+  default:
+    driver: bridge
