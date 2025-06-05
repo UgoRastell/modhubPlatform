@@ -1,0 +1,149 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io/${{ github.repository_owner }}
+  DOTNET_VERSION: '8.0'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          
+      - name: Restore dependencies
+        run: dotnet restore ModsGamingPlatform.sln
+        
+      - name: Build solution
+        run: dotnet build --configuration Release --no-restore ModsGamingPlatform.sln
+        
+      - name: Run tests
+        run: dotnet test --no-build --configuration Release --verbosity normal ModsGamingPlatform.sln
+  
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Run security scan
+        uses: snyk/actions/dotnet@master
+        with:
+          args: --all-projects
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Push Gateway
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/Gateway
+          push: true
+          tags: ${{ env.REGISTRY }}/gateway:latest,${{ env.REGISTRY }}/gateway:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/gateway:cache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/gateway:cache,mode=max
+
+      - name: Build & Push UsersService
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/Services/Users
+          push: true
+          tags: ${{ env.REGISTRY }}/usersservice:latest,${{ env.REGISTRY }}/usersservice:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/usersservice:cache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/usersservice:cache,mode=max
+
+      - name: Build & Push ModsService
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/Services/Mods
+          push: true
+          tags: ${{ env.REGISTRY }}/modsservice:latest,${{ env.REGISTRY }}/modsservice:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/modsservice:cache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/modsservice:cache,mode=max
+          
+      - name: Build & Push PaymentsService
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/Services/Payments
+          push: true
+          tags: ${{ env.REGISTRY }}/paymentsservice:latest,${{ env.REGISTRY }}/paymentsservice:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/paymentsservice:cache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/paymentsservice:cache,mode=max
+          
+      - name: Build & Push CommunityService
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/Services/Community
+          push: true
+          tags: ${{ env.REGISTRY }}/communityservice:latest,${{ env.REGISTRY }}/communityservice:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/communityservice:cache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/communityservice:cache,mode=max
+
+      - name: Build & Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/Frontend
+          push: true
+          tags: ${{ env.REGISTRY }}/frontend:latest,${{ env.REGISTRY }}/frontend:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/frontend:cache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/frontend:cache,mode=max
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout repository for deployment files
+        uses: actions/checkout@v4
+        
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /opt/modhub/
+            git pull
+            docker-compose pull
+            docker-compose up -d
+            
+      - name: Notify deployment status
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: deployments
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: Deployment Status
+          SLACK_MESSAGE: 'ModHub deployment ${{ job.status }} :rocket:'

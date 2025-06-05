@@ -1,0 +1,35 @@
+cluster.name: "modhub-cluster"
+network.host: 0.0.0.0
+discovery.type: single-node
+
+# Configurations de sécurité et performance
+bootstrap.memory_lock: true
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+
+# Configuration des indices
+action.auto_create_index: .monitoring-*,.watches,.triggered_watches,.watcher-history-*,.ml-*,logstash-*
+
+# Configuration de la journalisation
+path.logs: /var/log/elasticsearch
+
+# Configuration du stockage
+path.data: /var/lib/elasticsearch
+path.repo: /var/lib/elasticsearch/backup
+
+# Limites de ressources
+indices.memory.index_buffer_size: 10%
+indices.queries.cache.size: 5%
+thread_pool.search.size: 5
+thread_pool.search.queue_size: 100
+
+# Paramètres pour environnement de production
+indices.fielddata.cache.size: 20%
+indices.breaker.fielddata.limit: 40%
+indices.breaker.request.limit: 40%
+indices.breaker.total.limit: 70%
+
+# Configuration de la récupération des pannes
+gateway.recover_after_nodes: 1
+gateway.expected_nodes: 1
+gateway.recover_after_time: 5m

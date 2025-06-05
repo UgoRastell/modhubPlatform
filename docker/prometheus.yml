@@ -2,17 +2,83 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+  # Etiquettes ajoutées à toutes les séries temporelles ou alertes
+  external_labels:
+    monitor: 'modhub-monitor'
+
+# Règles d'alerte et alertmanager
+rule_files:
+  - 'alert.rules'
+
+# Configuration d'AlertManager
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - 'alertmanager:9093'
+
+# Configuration des cibles de scrape
 scrape_configs:
+  # Prometheus lui-même
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: 'dotnet-services'
+  # Cible de scrape pour le gateway
+  - job_name: 'gateway'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
     static_configs:
-      - targets: 
-          - 'gateway:8080'
-          - 'usersservice:5001'
-          - 'modsservice:5002'
-          - 'paymentsservice:5003'
-          - 'communityservice:5004'
-          - 'frontend:5000'
+      - targets: ['gateway:8080']
+    
+  # Cible de scrape pour les services
+  - job_name: 'usersservice'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['usersservice:80']
+  
+  - job_name: 'modsservice'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['modsservice:80']
+  
+  - job_name: 'paymentsservice'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['paymentsservice:80']
+  
+  - job_name: 'communityservice'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['communityservice:80']
+  
+  # Cible de scrape pour le frontend
+  - job_name: 'frontend'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['frontend:80']
+      
+  # Métriques Nginx
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+  
+  # Métriques MongoDB
+  - job_name: 'mongodb'
+    static_configs:
+      - targets: ['mongodb-exporter:9216']
+      
+  # Métriques Redis
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+      
+  # Métriques du nœud (serveur)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']

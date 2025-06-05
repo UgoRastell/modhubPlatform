@@ -1,0 +1,39 @@
+# IDE files
+.vs/
+.idea/
+.vscode/
+*.suo
+*.user
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+build/
+[Bb]in/
+[Oo]bj/
+
+# NuGet packages
+*.nupkg
+packages/
+*.nuget.props
+*.nuget.targets
+
+# Docker data directories
+docker/data/
+!docker/data/.gitkeep
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Generated files
+.DS_Store
+Thumbs.db

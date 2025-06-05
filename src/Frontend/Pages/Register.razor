@@ -1,0 +1,180 @@
+@page "/register"
+@using Frontend.Models
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Inscription - ModsGamingPlatform</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8 py-8">
+    <MudCard Elevation="25" Class="rounded-lg">
+        <MudCardHeader>
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="w-100">Créer un compte</MudText>
+        </MudCardHeader>
+        <MudCardContent>
+            <EditForm Model="registerModel" OnValidSubmit="HandleRegister">
+                <DataAnnotationsValidator />
+
+                <MudTextField @bind-Value="registerModel.Username" 
+                             Label="Nom d'utilisateur" 
+                             Class="mt-3"
+                             Variant="Variant.Outlined"
+                             Adornment="Adornment.Start" 
+                             AdornmentIcon="@Icons.Material.Filled.Person" />
+                <ValidationMessage For="@(() => registerModel.Username)" />
+
+                <MudTextField @bind-Value="registerModel.Email" 
+                             Label="Adresse email" 
+                             Class="mt-3"
+                             Variant="Variant.Outlined" 
+                             InputType="InputType.Email"
+                             Adornment="Adornment.Start" 
+                             AdornmentIcon="@Icons.Material.Filled.Email" />
+                <ValidationMessage For="@(() => registerModel.Email)" />
+
+                <MudTextField @bind-Value="registerModel.Password" 
+                             Label="Mot de passe" 
+                             Class="mt-3"
+                             Variant="Variant.Outlined" 
+                             InputType="@passwordInputType"
+                             Adornment="Adornment.Start"
+                             AdornmentIcon="@passwordIcon">
+                    <InputContent>
+                        <MudIconButton Icon="@passwordIcon" Color="Color.Primary" 
+                                     OnClick="TogglePasswordVisibility" Class="pa-0">
+                        </MudIconButton>
+                    </InputContent>
+                </MudTextField>
+                <ValidationMessage For="@(() => registerModel.Password)" />
+
+                <MudTextField @bind-Value="registerModel.ConfirmPassword" 
+                             Label="Confirmer le mot de passe" 
+                             Class="mt-3"
+                             Variant="Variant.Outlined" 
+                             InputType="@confirmPasswordInputType"
+                             Adornment="Adornment.Start"
+                             AdornmentIcon="@confirmPasswordIcon">
+                    <InputContent>
+                        <MudIconButton Icon="@confirmPasswordIcon" Color="Color.Primary" 
+                                     OnClick="ToggleConfirmPasswordVisibility" Class="pa-0">
+                        </MudIconButton>
+                    </InputContent>
+                </MudTextField>
+                <ValidationMessage For="@(() => registerModel.ConfirmPassword)" />
+
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="my-4">
+                    Le mot de passe doit contenir au moins 8 caractères, incluant une lettre majuscule, 
+                    un chiffre et un caractère spécial.
+                </MudAlert>
+
+                <MudCheckBox T="bool" @bind-Checked="registerModel.AcceptTerms" 
+                            Label="J'accepte les conditions d'utilisation et la politique de confidentialité" 
+                            Color="Color.Primary" 
+                            Class="mt-3" />
+                <ValidationMessage For="@(() => registerModel.AcceptTerms)" />
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Class="my-4">@errorMessage</MudAlert>
+                }
+
+                <MudButton Variant="Variant.Filled" 
+                          Color="Color.Primary" 
+                          ButtonType="ButtonType.Submit" 
+                          Size="Size.Large" 
+                          FullWidth="true" 
+                          Class="mt-4"
+                          Disabled="isLoading">
+                    @if (isLoading)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                        <MudText Class="ms-2">Inscription en cours...</MudText>
+                    }
+                    else
+                    {
+                        <MudText>S'inscrire</MudText>
+                    }
+                </MudButton>
+                
+                <div class="d-flex justify-center mt-4">
+                    <MudText>Vous avez déjà un compte ? <MudLink Href="/login">Se connecter</MudLink></MudText>
+                </div>
+            </EditForm>
+        </MudCardContent>
+    </MudCard>
+</MudContainer>
+
+@code {
+    private RegisterRequest registerModel = new();
+    private bool isLoading;
+    private string errorMessage = string.Empty;
+    
+    private bool passwordVisible;
+    private InputType passwordInputType = InputType.Password;
+    private string passwordIcon = Icons.Material.Filled.VisibilityOff;
+    
+    private bool confirmPasswordVisible;
+    private InputType confirmPasswordInputType = InputType.Password;
+    private string confirmPasswordIcon = Icons.Material.Filled.VisibilityOff;
+    
+    private void TogglePasswordVisibility()
+    {
+        if (passwordVisible)
+        {
+            passwordVisible = false;
+            passwordInputType = InputType.Password;
+            passwordIcon = Icons.Material.Filled.VisibilityOff;
+        }
+        else
+        {
+            passwordVisible = true;
+            passwordInputType = InputType.Text;
+            passwordIcon = Icons.Material.Filled.Visibility;
+        }
+    }
+    
+    private void ToggleConfirmPasswordVisibility()
+    {
+        if (confirmPasswordVisible)
+        {
+            confirmPasswordVisible = false;
+            confirmPasswordInputType = InputType.Password;
+            confirmPasswordIcon = Icons.Material.Filled.VisibilityOff;
+        }
+        else
+        {
+            confirmPasswordVisible = true;
+            confirmPasswordInputType = InputType.Text;
+            confirmPasswordIcon = Icons.Material.Filled.Visibility;
+        }
+    }
+    
+    private async Task HandleRegister()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+        
+        try
+        {
+            var result = await AuthService.Register(registerModel);
+            
+            if (result.Success)
+            {
+                Snackbar.Add("Inscription réussie ! Vous pouvez maintenant vous connecter.", Severity.Success);
+                NavigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                errorMessage = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erreur: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

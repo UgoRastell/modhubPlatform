@@ -1,0 +1,38 @@
+@inject IJSRuntime JSRuntime
+
+<img src="@ImageUrl" class="@CssClass" alt="@Alt" loading="@Loading" />
+
+@code {
+    [Parameter] public string ResourceType { get; set; } = "images";
+    [Parameter] public string FileName { get; set; }
+    [Parameter] public string CssClass { get; set; } = "";
+    [Parameter] public string Alt { get; set; } = "";
+    [Parameter] public string Loading { get; set; } = "lazy";
+
+    private string ImageUrl { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Utiliser la configuration CDN pour obtenir l'URL
+            ImageUrl = await JSRuntime.InvokeAsync<string>(
+                "eval", 
+                $"window.CDN_CONFIG.getUrl('{ResourceType}', '{FileName}')"
+            );
+        }
+        catch (Exception)
+        {
+            // En cas d'erreur, utiliser le chemin relatif local comme fallback
+            string basePath = ResourceType switch
+            {
+                "images" => "/images",
+                "modImages" => "/images/mods",
+                "gameImages" => "/images/games",
+                _ => "/images"
+            };
+            
+            ImageUrl = $"{basePath}/{FileName}";
+        }
+    }
+}
