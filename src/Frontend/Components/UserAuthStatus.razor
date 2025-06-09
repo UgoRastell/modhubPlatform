@@ -1,0 +1,16 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
+
+<AuthorizeView>
+    <Authorized>
+        <MudText Typo="Typo.body2">
+            Bienvenue, @context.User?.Identity?.Name!
+        </MudText>
+    </Authorized>
+    <NotAuthorized>
+        <MudText Typo="Typo.body2">
+            Non connecté
+        </MudText>
+    </NotAuthorized>
+</AuthorizeView>

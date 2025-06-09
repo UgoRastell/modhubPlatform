@@ -1,5 +1,10 @@
 @page "/register"
 @using Frontend.Models
+@using System.Web
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Web
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -67,7 +72,7 @@
                     un chiffre et un caractère spécial.
                 </MudAlert>
 
-                <MudCheckBox T="bool" @bind-Checked="registerModel.AcceptTerms" 
+                <MudCheckBox @bind-Value="registerModel.AcceptTerms" 
                             Label="J'accepte les conditions d'utilisation et la politique de confidentialité" 
                             Color="Color.Primary" 
                             Class="mt-3" />

@@ -1,5 +1,11 @@
 @page "/login"
+@page "/login/{returnUrl}"
 @using Frontend.Models
+@using System.Web
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Web
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -76,6 +82,10 @@
 </MudContainer>
 
 @code {
+    [Parameter]
+    public string? ReturnUrl { get; set; }
+    
+    private string returnUrl = string.Empty;
     private LoginRequest loginModel = new();
     private bool isLoading;
     private string errorMessage = string.Empty;
@@ -83,6 +93,19 @@
     private bool passwordVisible;
     private InputType passwordInputType = InputType.Password;
     private string passwordIcon = Icons.Material.Filled.VisibilityOff;
+    
+    protected override void OnInitialized()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("returnUrl", out var param))
+        {
+            returnUrl = param.First();
+        }
+        else if (!string.IsNullOrEmpty(ReturnUrl))
+        {
+            returnUrl = ReturnUrl;
+        }
+    }
     
     private void TogglePasswordVisibility()
     {
@@ -111,7 +134,14 @@
             
             if (result.Success)
             {
-                NavigationManager.NavigateTo("/");
+                if (!string.IsNullOrEmpty(returnUrl) && Uri.IsWellFormedUriString(returnUrl, UriKind.Relative))
+                {
+                    NavigationManager.NavigateTo(returnUrl);
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("/");
+                }
             }
             else
             {

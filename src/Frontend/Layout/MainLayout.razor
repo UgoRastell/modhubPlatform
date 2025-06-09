@@ -1,5 +1,8 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
+@inject IAuthService AuthService
+@inject ISnackbar Snackbar
+@using Frontend.Shared
 
 <MudThemeProvider Theme="@Theme" />
 <MudDialogProvider />
@@ -84,10 +87,21 @@
         DrawerOpen = !DrawerOpen;
     }
 
-    private void Logout()
+    private async Task Logout()
     {
-        // TODO: Implement logout logic
-        NavigationManager.NavigateTo("/");
+        try
+        {
+            await AuthService.Logout();
+            Snackbar.Add("Vous avez été déconnecté avec succès", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            NavigationManager.NavigateTo("/");
+        }
     }
 
     private void PerformSearch()

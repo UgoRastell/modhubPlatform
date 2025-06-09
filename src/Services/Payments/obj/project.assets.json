@@ -76,19 +76,19 @@
   },
   "packageFolders": {
     "C:\\Users\\ugora\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "D:\\Visual Studio\\SDK\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\ugora\\Desktop\\modhub\\src\\Services\\Payments\\PaymentsService.csproj",
+      "projectUniqueName": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Services\\Payments\\PaymentsService.csproj",
       "projectName": "PaymentsService",
-      "projectPath": "C:\\Users\\ugora\\Desktop\\modhub\\src\\Services\\Payments\\PaymentsService.csproj",
+      "projectPath": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Services\\Payments\\PaymentsService.csproj",
       "packagesPath": "C:\\Users\\ugora\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\ugora\\Desktop\\modhub\\src\\Services\\Payments\\obj\\",
+      "outputPath": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Services\\Payments\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "D:\\Visual Studio\\SDK\\NuGetPackages"
       ],
       "configFilePaths": [
         "C:\\Users\\ugora\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -100,7 +100,6 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {

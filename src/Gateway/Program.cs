@@ -34,11 +34,23 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins(
-                builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ??
-                new[] { "http://localhost:5000", "https://modhub.com" })
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        // For development, allow any origin
+        if (builder.Environment.IsDevelopment())
+        {
+            policy.SetIsOriginAllowed(_ => true)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        }
+        else
+        {
+            policy.WithOrigins(
+                    builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ??
+                    new[] { "http://localhost:5000", "https://localhost:5000", "http://localhost:5001", "https://localhost:5001", "https://modhub.com" })
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        }
     });
 });
 
@@ -103,11 +115,15 @@ void ConfigureJwt(WebApplicationBuilder builder)
     var key = Encoding.ASCII.GetBytes(jwtSettings["Key"] ?? 
                                      "DefaultSecureKeyWithAtLeast32Characters!");
 
+    // Enregistrement du handler d'authentification JWT personnalisé
+    builder.Services.AddTransient<JwtAuthenticationHandler>();
+
     builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     })
+    // Configuration standard de JWT Bearer
     .AddJwtBearer("Bearer", options =>
     {
         options.RequireHttpsMetadata = false;  // Mettre à true en production
@@ -123,7 +139,9 @@ void ConfigureJwt(WebApplicationBuilder builder)
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
-    });
+    })
+    // Ajout de notre schéma d'authentification personnalisé
+    .AddScheme<JwtAuthenticationOptions, JwtAuthenticationHandler>("JwtAuthenticationScheme", options => { });
 }
 
 #endregion

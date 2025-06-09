@@ -1,7 +1,9 @@
 using Frontend.Models;
 using Microsoft.AspNetCore.Components.Authorization;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Collections.Generic;
 
 namespace Frontend.Services;
@@ -24,11 +26,16 @@ public static class ClaimsPrincipalExtensions
 public class AuthService : IAuthService
 {
     private readonly HttpClient _httpClient;
+    private readonly ILocalStorageService _localStorage;
     private readonly AuthenticationStateProvider _authStateProvider;
 
-    public AuthService(HttpClient httpClient, AuthenticationStateProvider authStateProvider)
+    public AuthService(
+        HttpClient httpClient, 
+        ILocalStorageService localStorage,
+        AuthenticationStateProvider authStateProvider)
     {
         _httpClient = httpClient;
+        _localStorage = localStorage;
         _authStateProvider = authStateProvider;
     }
 
@@ -43,11 +50,44 @@ public class AuthService : IAuthService
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<ApiResponse<string>>();
-                return result ?? new ApiResponse<string> { Success = true, Message = "Authentification réussie" };
+                var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
+                
+                if (tokenResponse != null && !string.IsNullOrEmpty(tokenResponse.Token))
+                {
+                    await _localStorage.SetItemAsync("authToken", tokenResponse.Token);
+                    
+                    // Mettre à jour le header d'authentification pour les futures requêtes
+                    _httpClient.DefaultRequestHeaders.Authorization = 
+                        new AuthenticationHeaderValue("Bearer", tokenResponse.Token);
+                    
+                    // Notifier le changement d'état d'authentification
+                    ((JwtAuthenticationStateProvider)_authStateProvider)
+                        .MarkUserAsAuthenticated(tokenResponse.Token);
+                    
+                    if (loginModel.RememberMe)
+                    {
+                        await _localStorage.SetItemAsync("refreshToken", tokenResponse.RefreshToken);
+                    }
+                    
+                    return new ApiResponse<string> { 
+                        Success = true, 
+                        Data = tokenResponse.Token,
+                        Message = "Authentification réussie" 
+                    };
+                }
             }
             
-            return new ApiResponse<string> { Success = false, Message = "Échec de l'authentification" };
+            string errorMessage = "Échec de l'authentification";
+            if (response.Content != null)
+            {
+                var errorContent = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+                if (errorContent != null && errorContent.ContainsKey("message"))
+                {
+                    errorMessage = errorContent["message"];
+                }
+            }
+            
+            return new ApiResponse<string> { Success = false, Message = errorMessage };
         }
         catch (Exception ex)
         {
@@ -66,11 +106,44 @@ public class AuthService : IAuthService
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<ApiResponse<string>>();
-                return result ?? new ApiResponse<string> { Success = true, Message = "Inscription réussie" };
+                var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
+                
+                if (tokenResponse != null && !string.IsNullOrEmpty(tokenResponse.Token))
+                {
+                    // Dans le cas d'une inscription qui connecte immédiatement l'utilisateur
+                    await _localStorage.SetItemAsync("authToken", tokenResponse.Token);
+                    
+                    _httpClient.DefaultRequestHeaders.Authorization = 
+                        new AuthenticationHeaderValue("Bearer", tokenResponse.Token);
+                    
+                    ((JwtAuthenticationStateProvider)_authStateProvider)
+                        .MarkUserAsAuthenticated(tokenResponse.Token);
+                        
+                    return new ApiResponse<string> { 
+                        Success = true, 
+                        Data = tokenResponse.Token,
+                        Message = "Inscription réussie" 
+                    };
+                }
+                
+                // Si l'inscription ne connecte pas automatiquement
+                return new ApiResponse<string> { 
+                    Success = true, 
+                    Message = "Inscription réussie. Vous pouvez maintenant vous connecter."
+                };
             }
             
-            return new ApiResponse<string> { Success = false, Message = "Échec de l'inscription" };
+            string errorMessage = "Échec de l'inscription";
+            if (response.Content != null)
+            {
+                var errorContent = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+                if (errorContent != null && errorContent.ContainsKey("message"))
+                {
+                    errorMessage = errorContent["message"];
+                }
+            }
+            
+            return new ApiResponse<string> { Success = false, Message = errorMessage };
         }
         catch (Exception ex)
         {
@@ -83,9 +156,34 @@ public class AuthService : IAuthService
     /// </summary>
     public async Task Logout()
     {
-        // Dans une implémentation réelle, vous appelleriez l'API pour invalider le token
-        // et mettriez à jour l'état d'authentification
-        await Task.CompletedTask;
+        try
+        {
+            // Si vous avez un endpoint de déconnexion côté serveur
+            var authToken = await _localStorage.GetItemAsync<string>("authToken");
+            if (!string.IsNullOrEmpty(authToken))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = 
+                    new AuthenticationHeaderValue("Bearer", authToken);
+                
+                await _httpClient.PostAsync("api/auth/logout", null);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de la déconnexion: {ex.Message}");
+        }
+        finally
+        {
+            // Supprimer les tokens stockés localement
+            await _localStorage.RemoveItemAsync("authToken");
+            await _localStorage.RemoveItemAsync("refreshToken");
+            
+            // Réinitialiser l'en-tête d'autorisation
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+            
+            // Notifier le changement d'état d'authentification
+            ((JwtAuthenticationStateProvider)_authStateProvider).MarkUserAsLoggedOut();
+        }
     }
 
     /// <summary>
@@ -95,7 +193,7 @@ public class AuthService : IAuthService
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/auth/reset-password-request", new { Email = email });
+            var response = await _httpClient.PostAsJsonAsync("api/auth/forgot-password", new { Email = email });
 
             if (response.IsSuccessStatusCode)
             {
@@ -103,7 +201,17 @@ public class AuthService : IAuthService
                 return result ?? new ApiResponse<bool> { Success = true, Data = true, Message = "Demande de réinitialisation envoyée" };
             }
             
-            return new ApiResponse<bool> { Success = false, Data = false, Message = "Échec de la demande de réinitialisation" };
+            string errorMessage = "Échec de la demande de réinitialisation";
+            if (response.Content != null)
+            {
+                var errorContent = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+                if (errorContent != null && errorContent.ContainsKey("message"))
+                {
+                    errorMessage = errorContent["message"];
+                }
+            }
+            
+            return new ApiResponse<bool> { Success = false, Data = false, Message = errorMessage };
         }
         catch (Exception ex)
         {
@@ -126,7 +234,17 @@ public class AuthService : IAuthService
                 return result ?? new ApiResponse<bool> { Success = true, Data = true, Message = "Réinitialisation du mot de passe réussie" };
             }
             
-            return new ApiResponse<bool> { Success = false, Data = false, Message = "Échec de la réinitialisation du mot de passe" };
+            string errorMessage = "Échec de la réinitialisation du mot de passe";
+            if (response.Content != null)
+            {
+                var errorContent = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+                if (errorContent != null && errorContent.ContainsKey("message"))
+                {
+                    errorMessage = errorContent["message"];
+                }
+            }
+            
+            return new ApiResponse<bool> { Success = false, Data = false, Message = errorMessage };
         }
         catch (Exception ex)
         {

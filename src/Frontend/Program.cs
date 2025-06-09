@@ -11,8 +11,19 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+// Load configuration from appsettings.json
+var configFilePath = "appsettings.json";
+var appSettingsJson = Path.Combine(builder.HostEnvironment.BaseAddress, configFilePath);
+
+using var httpClient = new HttpClient();
+httpClient.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+
+var configJson = await httpClient.GetStringAsync(configFilePath);
+using var configStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(configJson));
+builder.Configuration.AddJsonStream(configStream);
+
 // Configuration de l'URL de base de l'API Gateway
-var apiGatewayUrl = builder.Configuration["ApiSettings:GatewayUrl"] ?? "https://localhost:5001";
+var apiGatewayUrl = builder.Configuration["ApiSettings:GatewayUrl"] ?? "https://localhost:8080";
 
 // Configuration des services HTTP
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiGatewayUrl) });
@@ -24,7 +35,8 @@ builder.Services.AddHttpClient("CommunityService", client => client.BaseAddress 
 // Services d'authentification
 builder.Services.AddOptions();
 builder.Services.AddAuthorizationCore();
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
+builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
 
 // Services d'API
 builder.Services.AddScoped<IAuthService, AuthService>();
