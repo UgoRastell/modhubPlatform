@@ -1,0 +1,446 @@
+@page "/admin/quotas"
+@using Microsoft.AspNetCore.Authorization
+@using Frontend.Models
+@using Frontend.Services
+@using System.Globalization
+@attribute [Authorize(Roles = "Admin,Moderator")]
+@inject IDownloadQuotaService QuotaService
+@inject IDialogService DialogService
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudPaper Elevation="3" Class="pa-4">
+        <MudText Typo="Typo.h4" Class="mb-4 text-uppercase fw-bold">GESTION DES QUOTAS DE TÉLÉCHARGEMENT</MudText>
+        
+        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-3" Color="@Color.Primary">
+            <MudTabPanel Text="Quotas & Limites" Icon="@Icons.Material.Filled.SettingsApplications">
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudPaper Elevation="2" Class="pa-4">
+                            <MudText Typo="Typo.h6" Class="mb-3 fw-bold">LIMITES GÉNÉRALES</MudText>
+                            
+                            <MudForm @ref="quotaSettingsForm" Model="QuotaSettings">
+                                <MudNumericField T="int" Label="Quota journalier anonyme" Required="true"
+                                                @bind-Value="QuotaSettings.AnonymousQuotaPerDay"
+                                                Min="1" Max="100" Class="mb-3" />
+                                                
+                                <MudNumericField T="int" Label="Quota journalier utilisateur enregistré" Required="true"
+                                                @bind-Value="QuotaSettings.RegisteredQuotaPerDay"
+                                                Min="5" Max="200" Class="mb-3" />
+                                                
+                                <MudNumericField T="int" Label="Quota journalier utilisateur premium" Required="true"
+                                                @bind-Value="QuotaSettings.PremiumQuotaPerDay"
+                                                Min="20" Max="1000" Class="mb-3" />
+                                                
+                                <MudNumericField T="int" Label="Limite par IP par heure" Required="true"
+                                                @bind-Value="QuotaSettings.IpRateLimitPerHour"
+                                                Min="5" Max="100" Class="mb-3" />
+                                                
+                                <MudButton Variant="Variant.Filled" 
+                                          Color="Color.Primary" 
+                                          StartIcon="@Icons.Material.Filled.Save" 
+                                          OnClick="SaveQuotaSettings"
+                                          Class="mt-3">
+                                    Enregistrer
+                                </MudButton>
+                            </MudForm>
+                        </MudPaper>
+                    </MudItem>
+                    
+                    <MudItem xs="12" md="6">
+                        <MudPaper Elevation="2" Class="pa-4">
+                            <MudText Typo="Typo.h6" Class="mb-3 fw-bold">STATISTIQUES GÉNÉRALES</MudText>
+                            
+                            <div class="d-flex justify-space-between flex-wrap mb-4">
+                                <MudPaper Elevation="0" Class="pa-3 ma-1 flex-grow-1 bg-secondary">
+                                    <MudText Typo="Typo.subtitle2" Class="mud-text-secondary mb-n1">TÉLÉCHARGEMENTS AUJOURD'HUI</MudText>
+                                    <MudText Typo="Typo.h5" Class="mt-1 font-tabular">@Stats.DownloadsToday.ToString("N0", CultureInfo.CurrentCulture)</MudText>
+                                </MudPaper>
+                                
+                                <MudPaper Elevation="0" Class="pa-3 ma-1 flex-grow-1 bg-secondary">
+                                    <MudText Typo="Typo.subtitle2" Class="mud-text-secondary mb-n1">TÉLÉCHARGEMENTS CETTE SEMAINE</MudText>
+                                    <MudText Typo="Typo.h5" Class="mt-1 font-tabular">@Stats.DownloadsThisWeek.ToString("N0", CultureInfo.CurrentCulture)</MudText>
+                                </MudPaper>
+                            </div>
+                            
+                            <div class="d-flex justify-space-between flex-wrap">
+                                <MudPaper Elevation="0" Class="pa-3 ma-1 flex-grow-1 bg-secondary">
+                                    <MudText Typo="Typo.subtitle2" Class="mud-text-secondary mb-n1">UTILISATEURS À QUOTA ATTEINT</MudText>
+                                    <MudText Typo="Typo.h5" Class="mt-1 font-tabular">@Stats.UsersAtQuotaLimit.ToString("N0", CultureInfo.CurrentCulture)</MudText>
+                                </MudPaper>
+                                
+                                <MudPaper Elevation="0" Class="pa-3 ma-1 flex-grow-1 bg-secondary">
+                                    <MudText Typo="Typo.subtitle2" Class="mud-text-secondary mb-n1">IPs BLOQUÉES (RATE LIMIT)</MudText>
+                                    <MudText Typo="Typo.h5" Class="mt-1 font-tabular">@Stats.BlockedIPs.ToString("N0", CultureInfo.CurrentCulture)</MudText>
+                                </MudPaper>
+                            </div>
+                        </MudPaper>
+                        
+                        <MudPaper Elevation="2" Class="pa-4 mt-4">
+                            <MudText Typo="Typo.h6" Class="mb-3 fw-bold">NETTOYAGE DES DONNÉES</MudText>
+                            
+                            <MudForm @ref="cleanupSettingsForm" Model="CleanupSettings">
+                                <MudNumericField T="int" Label="Conservation données détaillées (jours)" Required="true"
+                                               @bind-Value="CleanupSettings.DetailedHistoryRetentionDays"
+                                               Min="30" Max="365" Class="mb-3" />
+                                               
+                                <MudNumericField T="int" Label="Agrégation après (jours)" Required="true"
+                                               @bind-Value="CleanupSettings.AggregationThresholdDays"
+                                               Min="7" Max="90" Class="mb-3" />
+                                               
+                                <MudCheckBox T="bool" @bind-Checked="CleanupSettings.AggregateBeforeDelete" 
+                                           Label="Agréger les données avant suppression"
+                                           Color="Color.Primary" Class="mb-3" />
+                                           
+                                <div class="d-flex">
+                                    <MudButton Variant="Variant.Filled" 
+                                             Color="Color.Primary"
+                                             StartIcon="@Icons.Material.Filled.Save" 
+                                             OnClick="SaveCleanupSettings"
+                                             Class="me-2">
+                                        Enregistrer
+                                    </MudButton>
+                                    
+                                    <MudButton Variant="Variant.Outlined" 
+                                             Color="Color.Error"
+                                              StartIcon="@Icons.Material.Filled.Delete" 
+                                             OnClick="RunManualCleanup"
+                                             Class="ms-2">
+                                        Exécuter nettoyage
+                                    </MudButton>
+                                </div>
+                            </MudForm>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </MudTabPanel>
+            
+            <MudTabPanel Text="Gestion individuelle" Icon="@Icons.Material.Filled.ManageAccounts">
+                <MudPaper Elevation="0" Class="mb-3 pa-3 d-flex align-center flex-wrap gap-3">
+                    <MudTextField @bind-Value="SearchTerm" 
+                                Label="Rechercher par utilisateur / IP" 
+                                Variant="Variant.Outlined"
+                                Adornment="Adornment.End" 
+                                AdornmentIcon="@Icons.Material.Filled.Search"
+                                Class="flex-grow-1" />
+                                
+                    <MudSelect T="string" Label="Type" @bind-Value="SearchType" Variant="Variant.Outlined" Class="flex-grow-0">
+                        <MudSelectItem Value="all">Tous</MudSelectItem>
+                        <MudSelectItem Value="user">Utilisateurs</MudSelectItem>
+                        <MudSelectItem Value="ip">Adresses IP</MudSelectItem>
+                    </MudSelect>
+                    
+                    <MudButton Variant="Variant.Filled" 
+                              Color="Color.Primary" 
+                              OnClick="SearchQuotas"
+                              StartIcon="@Icons.Material.Filled.Search">
+                        Rechercher
+                    </MudButton>
+                </MudPaper>
+                
+                <MudTable T="QuotaEntryDto" ServerData="@(new Func<TableState, CancellationToken, Task<TableData<QuotaEntryDto>>>(ServerReload))"
+                          Dense="true"
+                          Hover="true"
+                          @ref="quotaTable"
+                          Elevation="2"
+                          Breakpoint="Breakpoint.Sm">
+                    <HeaderContent>
+                        <MudTh>Identifiant</MudTh>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Quota journalier</MudTh>
+                        <MudTh>Actuellement utilisé</MudTh>
+                        <MudTh>Dernière réinitialisation</MudTh>
+                        <MudTh>Status</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Identifiant">@context.Identifier</MudTd>
+                        <MudTd DataLabel="Type">
+                            @if (context.Type == "UserId")
+                            {
+                                <MudChip T="string" Color="Color.Info" Size="Size.Small">Utilisateur</MudChip>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Color="Color.Default" Size="Size.Small">IP</MudChip>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="Quota journalier">@context.DailyQuota</MudTd>
+                        <MudTd DataLabel="Actuellement utilisé">@context.CurrentCount / @context.DailyQuota</MudTd>
+                        <MudTd DataLabel="Dernière réinitialisation">@context.LastReset.ToString("dd/MM/yyyy HH:mm")</MudTd>
+                        <MudTd DataLabel="Status">
+                            @if (context.CurrentCount >= context.DailyQuota)
+                            {
+                                <MudChip T="string" Color="Color.Error" Size="Size.Small">QUOTA ATTEINT</MudChip>
+                            }
+                            else if (context.CurrentCount >= context.DailyQuota * 0.8)
+                            {
+                                <MudChip T="string" Color="Color.Warning" Size="Size.Small">PROCHE LIMITE</MudChip>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Color="Color.Success" Size="Size.Small">OK</MudChip>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudButtonGroup Size="Size.Small" Variant="Variant.Text">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                              OnClick="@(() => EditQuota(context))" 
+                                              Color="Color.Primary" />
+                                <MudIconButton Icon="@Icons.Material.Filled.RestartAlt" 
+                                              OnClick="@(() => ResetQuota(context))" 
+                                              Color="Color.Warning" />
+                            </MudButtonGroup>
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText>Aucun quota trouvé</MudText>
+                    </NoRecordsContent>
+                    <LoadingContent>
+                        <MudText>Chargement des quotas...</MudText>
+                    </LoadingContent>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] {10, 25, 50, 100}" />
+                    </PagerContent>
+                </MudTable>
+            </MudTabPanel>
+        </MudTabs>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private MudForm quotaSettingsForm;
+    private MudForm cleanupSettingsForm;
+    private MudTable<QuotaEntryDto> quotaTable;
+    
+    // Modèles de données
+    private QuotaSettingsDto QuotaSettings { get; set; } = new();
+    private DataRetentionSettingsDto CleanupSettings { get; set; } = new();
+    private DownloadStatsDto Stats { get; set; } = new();
+    
+    // Recherche
+    private string SearchTerm { get; set; } = "";
+    private string SearchType { get; set; } = "all";
+    
+    // Constantes pour les types de recherche
+    private const string all = "all";
+    private const string user = "user";
+    private const string ip = "ip";
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSettings();
+        await LoadStats();
+    }
+    
+    private async Task LoadSettings()
+    {
+        try
+        {
+            // Charger les paramètres de quota
+            var quotaResponse = await QuotaService.GetQuotaSettingsAsync();
+            if (quotaResponse.Success)
+            {
+                QuotaSettings = quotaResponse.Data;
+            }
+            
+            // Charger les paramètres de nettoyage
+            var cleanupResponse = await QuotaService.GetCleanupSettingsAsync();
+            if (cleanupResponse.Success)
+            {
+                CleanupSettings = cleanupResponse.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            await DialogService.ShowMessageBox("Erreur", $"Impossible de charger les paramètres: {ex.Message}");
+        }
+    }
+    
+    private async Task LoadStats()
+    {
+        try
+        {
+            var response = await QuotaService.GetDownloadStatsAsync();
+            if (response.Success && response.Data != null)
+            {
+                Stats = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            await DialogService.ShowMessageBox("Erreur", $"Impossible de charger les statistiques: {ex.Message}");
+        }
+    }
+    
+    private async Task SaveQuotaSettings()
+    {
+        await quotaSettingsForm.Validate();
+        
+        if (quotaSettingsForm.IsValid)
+        {
+            try
+            {
+                var response = await QuotaService.UpdateQuotaSettingsAsync(QuotaSettings);
+                
+                if (response.Success)
+                {
+                    await DialogService.ShowMessageBox("Succès", "Les paramètres de quota ont été mis à jour", yesText: "OK");
+                }
+                else
+                {
+                    await DialogService.ShowMessageBox("Erreur", $"Impossible de mettre à jour les paramètres: {response.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                await DialogService.ShowMessageBox("Erreur", $"Une erreur est survenue: {ex.Message}");
+            }
+        }
+    }
+    
+    private async Task SaveCleanupSettings()
+    {
+        await cleanupSettingsForm.Validate();
+        
+        if (cleanupSettingsForm.IsValid)
+        {
+            try
+            {
+                var response = await QuotaService.UpdateCleanupSettingsAsync(CleanupSettings);
+                
+                if (response.Success)
+                {
+                    await DialogService.ShowMessageBox("Succès", "Les paramètres de nettoyage ont été mis à jour", yesText: "OK");
+                }
+                else
+                {
+                    await DialogService.ShowMessageBox("Erreur", $"Impossible de mettre à jour les paramètres: {response.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                await DialogService.ShowMessageBox("Erreur", $"Une erreur est survenue: {ex.Message}");
+            }
+        }
+    }
+    
+    private async Task RunManualCleanup()
+    {
+        var confirm = await DialogService.ShowMessageBox(
+            "Confirmation",
+            "Êtes-vous sûr de vouloir exécuter un nettoyage manuel des données ? Cette opération est irréversible.",
+            yesText: "Exécuter", noText: "Annuler");
+        
+        if (confirm == true)
+        {
+            try
+            {
+                var response = await QuotaService.RunManualCleanupAsync();
+                
+                if (response.Success)
+                {
+                    await DialogService.ShowMessageBox("Succès", $"Le nettoyage a été effectué avec succès. {response.Data} enregistrements nettoyés.", yesText: "OK");
+                }
+                else
+                {
+                    await DialogService.ShowMessageBox("Erreur", $"Impossible d'exécuter le nettoyage: {response.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                await DialogService.ShowMessageBox("Erreur", $"Une erreur est survenue: {ex.Message}");
+            }
+        }
+    }
+    
+    private async Task SearchQuotas()
+    {
+        await quotaTable.ReloadServerData();
+    }
+    
+    private async Task<TableData<QuotaEntryDto>> ServerReload(TableState state, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await QuotaService.GetQuotasAsync(
+                searchTerm: SearchTerm,
+                searchType: SearchType,
+                page: state.Page,
+                pageSize: state.PageSize,
+                sortField: state.SortLabel ?? "Id",
+                sortDirection: state.SortDirection == SortDirection.Descending ? "desc" : "asc"
+            );
+            
+            if (cancellationToken.IsCancellationRequested)
+                return new TableData<QuotaEntryDto> { TotalItems = 0 };
+                
+            if (response.Success)
+            {
+                return new TableData<QuotaEntryDto>
+                {
+                    Items = response.Data.Items,
+                    TotalItems = response.Data.TotalCount
+                };
+            }
+            
+            return new TableData<QuotaEntryDto> { TotalItems = 0 };
+        }
+        catch
+        {
+            return new TableData<QuotaEntryDto> { TotalItems = 0 };
+        }
+    }
+    
+    private async Task EditQuota(QuotaEntryDto quota)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Quota", quota },
+            { "OnClose", EventCallback.Factory.Create<bool>(this, async (saved) => {
+                if (saved)
+                {
+                    await quotaTable.ReloadServerData();
+                }
+                // Dialogue fermé, pas besoin d'action supplémentaire ici
+            })}
+        };
+        
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            CloseButton = true,
+            MaxWidth = MaxWidth.Medium
+        };
+        
+        DialogService.Show<Frontend.Components.Dialogs.QuotaEditDialog>("Modifier un quota", parameters, options);
+    }
+    
+    private async Task ResetQuota(QuotaEntryDto quota)
+    {
+        var confirm = await DialogService.ShowMessageBox(
+            "Confirmation",
+            $"Êtes-vous sûr de vouloir réinitialiser le quota de {quota.Identifier} ?",
+            yesText: "Réinitialiser", noText: "Annuler");
+        
+        if (confirm == true)
+        {
+            try
+            {
+                var response = await QuotaService.ResetQuotaAsync(quota.Id);
+                
+                if (response.Success)
+                {
+                    await quotaTable.ReloadServerData();
+                }
+                else
+                {
+                    await DialogService.ShowMessageBox("Erreur", $"Impossible de réinitialiser le quota: {response.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                await DialogService.ShowMessageBox("Erreur", $"Une erreur est survenue: {ex.Message}");
+            }
+        }
+    }
+}

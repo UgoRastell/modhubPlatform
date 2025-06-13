@@ -1,0 +1,9 @@
+@namespace MudBlazor.Extensions
+@using Microsoft.AspNetCore.Components
+
+@ChildContent
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

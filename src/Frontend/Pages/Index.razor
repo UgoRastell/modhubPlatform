@@ -1,0 +1,215 @@
+@page "/"
+@inject NavigationManager NavigationManager
+
+<PageTitle>ModsGamingPlatform - Votre plateforme de mods de jeux</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <!-- Hero Section -->
+    <MudPaper Elevation="0" Class="hero-section rounded-lg pa-8 mb-8">
+        <MudGrid>
+            <MudItem xs="12" md="7" Class="d-flex flex-column justify-center">
+                <MudText Typo="Typo.h2" Class="mud-text-primary mb-4">Découvrez, téléchargez et créez<br />des mods exceptionnels</MudText>
+                <MudText Typo="Typo.body1" Class="mb-8">
+                    ModsGamingPlatform est la plateforme ultime pour les joueurs et créateurs de mods.
+                    Trouvez des milliers de mods pour vos jeux préférés, partagez vos créations
+                    avec une communauté passionnée et faites évoluer votre expérience de jeu.
+                </MudText>
+                <div class="d-flex gap-4 flex-wrap">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" 
+                              OnClick="@(() => NavigationManager.NavigateTo("/mods"))">
+                        <MudIcon Icon="@Icons.Material.Filled.Extension" Class="mr-2" />
+                        Explorer les mods
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Large" 
+                              OnClick="@(() => NavigationManager.NavigateTo("/register"))">
+                        <MudIcon Icon="@Icons.Material.Filled.CreateNewFolder" Class="mr-2" />
+                        Devenir créateur
+                    </MudButton>
+                </div>
+            </MudItem>
+            <MudItem xs="12" md="5" Class="d-flex align-center justify-center">
+                <MudImage Src="images/hero-image.svg" Alt="Illustration de mod" Class="hero-image" ObjectFit="ObjectFit.Cover" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Featured Mods Section -->
+    <MudText Typo="Typo.h4" Class="mb-4">Mods en vedette</MudText>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <MudChip T="string" Color="Color.Primary" Text="Derniers mods" Variant="Variant.Filled" />
+        <MudChip T="string" Color="Color.Secondary" Text="Populaires" Variant="Variant.Filled" />
+        <MudChip T="string" Color="Color.Default" Text="Nouveautés" Variant="Variant.Filled" />
+        <MudChip T="string" Color="Color.Default" Text="Recommandés" Variant="Variant.Filled" />
+    </div>
+    <MudGrid>
+        @foreach (var _ in Enumerable.Range(0, 3))
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="4" Class="mod-card h-100">
+                    <MudCardMedia Image="images/placeholder-mod.jpg" Height="200" />
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <MudText Typo="Typo.h6" Class="mud-text-secondary">Jeu</MudText>
+                            <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled">Populaire</MudChip>
+                        </div>
+                        <MudText Typo="Typo.h5" Class="mt-2">Nom du mod</MudText>
+                        <MudText Typo="Typo.body2">par <MudLink>Nom du créateur</MudLink></MudText>
+                        <MudText Typo="Typo.body2" Class="mt-3 mod-description">
+                            Description courte du mod présentant ses caractéristiques principales et
+                            donnant envie aux utilisateurs d'en savoir plus...
+                        </MudText>
+                        <div class="d-flex align-center mt-3">
+                            <MudRating ReadOnly="true" SelectedValue="4" />
+                            <MudText Typo="Typo.body2" Class="ml-2">(420)</MudText>
+                            <MudSpacer />
+                            <MudIcon Icon="@Icons.Material.Filled.Download" Size="Size.Small" />
+                            <MudText Typo="Typo.body2" Class="ml-1">12.5K</MudText>
+                        </div>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" 
+                                  OnClick="@(() => NavigationManager.NavigateTo("/mods/details/1"))">
+                            Voir les détails
+                        </MudButton>
+                        <MudSpacer />
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                                  StartIcon="@Icons.Material.Filled.Download">
+                            Télécharger
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+    
+    <div class="d-flex justify-center mt-4 mb-8">
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" 
+                  OnClick="@(() => NavigationManager.NavigateTo("/mods"))">
+            Voir tous les mods
+        </MudButton>
+    </div>
+
+    <!-- Features Section -->
+    <MudPaper Elevation="0" Class="py-8 px-4 features-section mb-8 rounded-xl">
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-8">Pourquoi choisir ModsGamingPlatform</MudText>
+        <MudGrid Justify="Justify.Center" Spacing="6">
+            <MudItem xs="12" sm="6" md="4">
+                <div class="feature-item text-center pa-4">
+                    <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Primary" Size="Size.Large" Class="mb-4" />
+                    <MudText Typo="Typo.h5" Class="mb-2">Sécurité et conformité</MudText>
+                    <MudText Typo="Typo.body2">
+                        Tous les mods sont analysés contre les virus et malwares.
+                        Plateforme 100% conforme au RGPD et respectueuse de votre vie privée.
+                    </MudText>
+                </div>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <div class="feature-item text-center pa-4">
+                    <MudIcon Icon="@Icons.Material.Filled.Payments" Color="Color.Primary" Size="Size.Large" Class="mb-4" />
+                    <MudText Typo="Typo.h5" Class="mb-2">Soutien aux créateurs</MudText>
+                    <MudText Typo="Typo.body2">
+                        Système de pourboires et d'abonnements pour soutenir vos créateurs préférés.
+                        Paiements sécurisés et transparents.
+                    </MudText>
+                </div>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <div class="feature-item text-center pa-4">
+                    <MudIcon Icon="@Icons.Material.Filled.Group" Color="Color.Primary" Size="Size.Large" Class="mb-4" />
+                    <MudText Typo="Typo.h5" Class="mb-2">Communauté active</MudText>
+                    <MudText Typo="Typo.body2">
+                        Forums, tutoriels et événements communautaires.
+                        Obtenez de l'aide et partagez vos connaissances avec d'autres joueurs.
+                    </MudText>
+                </div>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+    
+    <!-- Statistics Section -->
+    <MudGrid Class="stats-section mb-8 pa-4 rounded-lg">
+        <MudItem xs="12" sm="4">
+            <div class="text-center">
+                <MudText Typo="Typo.h3" Class="mud-text-secondary">15K+</MudText>
+                <MudText Typo="Typo.subtitle1">Mods disponibles</MudText>
+            </div>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <div class="text-center">
+                <MudText Typo="Typo.h3" Class="mud-text-secondary">250+</MudText>
+                <MudText Typo="Typo.subtitle1">Jeux supportés</MudText>
+            </div>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <div class="text-center">
+                <MudText Typo="Typo.h3" Class="mud-text-secondary">500K+</MudText>
+                <MudText Typo="Typo.subtitle1">Utilisateurs actifs</MudText>
+            </div>
+        </MudItem>
+    </MudGrid>
+    
+    <!-- Call-to-Action Section -->
+    <MudPaper Elevation="3" Class="cta-section pa-8 rounded-xl mb-8">
+        <MudGrid>
+            <MudItem xs="12" md="8">
+                <MudText Typo="Typo.h4" Class="mb-2">Prêt à transformer votre expérience de jeu ?</MudText>
+                <MudText Typo="Typo.body1" Class="mb-4">
+                    Rejoignez notre communauté de joueurs passionnés et commencez
+                    à explorer des milliers de mods dès aujourd'hui.
+                </MudText>
+            </MudItem>
+            <MudItem xs="12" md="4" Class="d-flex align-center justify-center">
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Large" 
+                           FullWidth="true"
+                           OnClick="@(() => NavigationManager.NavigateTo("/register"))">
+                    S'inscrire gratuitement
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</MudContainer>
+
+<style>
+    .hero-section {
+        background: linear-gradient(45deg, rgba(35, 38, 52, 0.8), rgba(27, 31, 39, 0.8)), url('images/hero-bg.jpg');
+        background-size: cover;
+        background-position: center;
+        color: var(--primary-text);
+    }
+    
+    .hero-image {
+        max-width: 100%;
+        height: auto;
+        filter: drop-shadow(0px 10px 20px rgba(0, 170, 255, 0.3));
+    }
+    
+    .features-section {
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-item {
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+    
+    .feature-item:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stats-section {
+        background-color: rgba(0, 170, 255, 0.05);
+    }
+    
+    .cta-section {
+        background: linear-gradient(45deg, var(--primary-accent), var(--secondary-accent));
+        color: white;
+    }
+    
+    .mod-description {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>

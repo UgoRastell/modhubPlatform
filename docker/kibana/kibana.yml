@@ -1,0 +1,33 @@
+server.name: "modhub-kibana"
+server.host: "0.0.0.0"
+server.port: 5601
+
+# Elasticsearch connection
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+elasticsearch.requestTimeout: 30000
+
+# Monitoring
+monitoring.ui.container.elasticsearch.enabled: true
+
+# Logging
+logging.verbose: false
+logging.dest: stdout
+
+# Index patterns
+kibana.index_pattern.id: "logstash-*"
+kibana.defaultAppId: "discover"
+
+# Security
+server.ssl.enabled: false
+xpack.security.enabled: false
+xpack.reporting.enabled: false
+xpack.graph.enabled: false
+xpack.ml.enabled: false
+xpack.monitoring.enabled: true
+
+# Performance
+optimize.useBundleCache: true
+optimize.watch: false
+
+# Locale
+i18n.locale: "fr"

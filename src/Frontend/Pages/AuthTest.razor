@@ -1,0 +1,108 @@
+@page "/auth-test"
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Test d'Authentification</PageTitle>
+
+<MudContainer Class="mt-6 px-8" MaxWidth="MaxWidth.Medium">
+    <MudCard Elevation="3">
+        <MudCardHeader>
+            <MudText Typo="Typo.h5">Test d'Authentification JWT</MudText>
+        </MudCardHeader>
+        <MudCardContent>
+            <AuthorizeView>
+                <Authorized>
+                    <MudAlert Severity="Severity.Success" Class="mb-4">
+                        <MudText>Vous êtes authentifié!</MudText>
+                    </MudAlert>
+                    
+                    <MudText Typo="Typo.body1" Class="mb-2">
+                        <strong>Nom d'utilisateur:</strong> @context.User.Identity?.Name
+                    </MudText>
+                    
+                    <MudText Typo="Typo.body1" Class="mb-2">
+                        <strong>Claims:</strong>
+                    </MudText>
+                    
+                    <MudList Dense="true" DisablePadding="true" Class="mb-4" T="string">
+                        @foreach (var claim in context.User.Claims)
+                        {
+                            <MudListItem T="string">
+                                <strong>@claim.Type:</strong> @claim.Value
+                            </MudListItem>
+                        }
+                    </MudList>
+                    
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="GetUserProfile" Class="mr-2">
+                        Récupérer le profil
+                    </MudButton>
+                    
+                    <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="HandleLogout">
+                        Déconnexion
+                    </MudButton>
+                </Authorized>
+                <NotAuthorized>
+                    <MudAlert Severity="Severity.Warning" Class="mb-4">
+                        <MudText>Vous n'êtes pas authentifié!</MudText>
+                    </MudAlert>
+                    
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled" Href="/login" Class="mr-2">
+                        Se connecter
+                    </MudButton>
+                    
+                    <MudButton Color="Color.Secondary" Variant="Variant.Filled" Href="/register">
+                        S'inscrire
+                    </MudButton>
+                </NotAuthorized>
+            </AuthorizeView>
+
+            @if (userProfile != null)
+            {
+                <MudDivider Class="my-4" />
+                <MudText Typo="Typo.h6" Class="mb-2">Profil utilisateur</MudText>
+                <MudPaper Class="pa-4" Elevation="0">
+                    <MudText><strong>ID:</strong> @userProfile.Id</MudText>
+                    <MudText><strong>Nom d'utilisateur:</strong> @userProfile.Username</MudText>
+                    <MudText><strong>Email:</strong> @userProfile.Email</MudText>
+                    <MudText><strong>Rôles:</strong> @string.Join(", ", userProfile.Roles)</MudText>
+                </MudPaper>
+            }
+        </MudCardContent>
+    </MudCard>
+</MudContainer>
+
+@code {
+    private UserProfile? userProfile;
+
+    private async Task HandleLogout()
+    {
+        try
+        {
+            await AuthService.Logout();
+            Snackbar.Add("Vous avez été déconnecté avec succès", Severity.Success);
+            NavigationManager.NavigateTo("/", true);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors de la déconnexion: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GetUserProfile()
+    {
+        try
+        {
+            userProfile = await AuthService.GetCurrentUser();
+            if (userProfile == null)
+            {
+                Snackbar.Add("Impossible de récupérer le profil utilisateur", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+    }
+}

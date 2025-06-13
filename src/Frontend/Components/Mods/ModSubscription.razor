@@ -1,0 +1,170 @@
+@using Frontend.Services
+@using Frontend.Models
+@inject INotificationService NotificationService
+@inject IAuthService AuthService
+
+<div class="mod-subscription @CssClass">
+    @if (IsLoggedIn)
+    {
+        @if (IsLoading)
+        {
+            <button class="btn @ButtonClass" disabled>
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span class="visually-hidden">Chargement...</span>
+            </button>
+        }
+        else
+        {
+            <button class="btn @ButtonClass" @onclick="ToggleSubscription" title="@ButtonTitle">
+                <i class="@IconClass"></i>
+                @if (ShowText)
+                {
+                    <span class="ms-2">@ButtonText</span>
+                }
+            </button>
+        }
+    }
+    else
+    {
+        <button class="btn @ButtonClass" @onclick="PromptLogin" title="Connectez-vous pour vous abonner">
+            <i class="fas fa-bell"></i>
+            @if (ShowText)
+            {
+                <span class="ms-2">S'abonner</span>
+            }
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string ModId { get; set; }
+    
+    [Parameter]
+    public bool Compact { get; set; } = false;
+    
+    [Parameter]
+    public string CssClass { get; set; } = "";
+    
+    [Parameter]
+    public EventCallback<bool> OnSubscriptionChanged { get; set; }
+    
+    private bool IsSubscribed { get; set; }
+    private bool IsLoading { get; set; } = true;
+    private bool IsLoggedIn { get; set; }
+    
+    private bool ShowText => !Compact;
+    
+    private string ButtonText => IsSubscribed ? "Désabonner" : "S'abonner";
+    private string ButtonTitle => IsSubscribed 
+        ? "Ne plus recevoir de notifications pour ce mod" 
+        : "Recevoir des notifications pour les nouvelles versions";
+        
+    private string ButtonClass => IsSubscribed 
+        ? "btn-outline-secondary" 
+        : "btn-outline-primary";
+        
+    private string IconClass => IsSubscribed 
+        ? "fas fa-bell-slash" 
+        : "fas fa-bell";
+    
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoggedIn = await AuthService.IsUserLoggedInAsync();
+        
+        if (IsLoggedIn)
+        {
+            await CheckSubscriptionStatus();
+        }
+        else
+        {
+            IsLoading = false;
+        }
+    }
+    
+    private async Task CheckSubscriptionStatus()
+    {
+        try
+        {
+            IsLoading = true;
+            var response = await NotificationService.IsSubscribedToModAsync(ModId);
+            
+            if (response.Success)
+            {
+                IsSubscribed = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Erreur lors de la vérification de l'abonnement: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+    
+    private async Task ToggleSubscription()
+    {
+        if (!IsLoggedIn)
+        {
+            PromptLogin();
+            return;
+        }
+        
+        try
+        {
+            IsLoading = true;
+            
+            ApiResponse<bool> response;
+            
+            if (IsSubscribed)
+            {
+                response = await NotificationService.UnsubscribeFromModAsync(ModId);
+                
+                if (response.Success)
+                {
+                    IsSubscribed = false;
+                    NotificationService.ShowSuccess("Abonnement annulé avec succès");
+                    await OnSubscriptionChanged.InvokeAsync(false);
+                }
+                else
+                {
+                    NotificationService.ShowError($"Erreur lors du désabonnement: {response.Message}");
+                }
+            }
+            else
+            {
+                response = await NotificationService.SubscribeToModAsync(ModId);
+                
+                if (response.Success)
+                {
+                    IsSubscribed = true;
+                    NotificationService.ShowSuccess("Abonnement réussi ! Vous recevrez des notifications lorsque ce mod sera mis à jour");
+                    await OnSubscriptionChanged.InvokeAsync(true);
+                }
+                else
+                {
+                    NotificationService.ShowError($"Erreur lors de l'abonnement: {response.Message}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Erreur: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+    
+    private void PromptLogin()
+    {
+        NotificationService.ShowInfo("Vous devez être connecté pour vous abonner à ce mod");
+        // Rediriger vers la page de connexion avec retour vers cette page
+        // Pourrait être implémenté via un service de dialogue/modal ou la navigation
+    }
+}

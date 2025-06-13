@@ -1,12 +1,155 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+@using MudBlazor.Services
+@using Frontend.Components
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Frontend.Layout.MainLayout)">
+                <NotAuthorized Context="authContext">
+                    @if (authContext.User.Identity?.IsAuthenticated != true)
+                    {
+                        <Frontend.Components.RedirectToLogin />
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.h4" Class="mt-4" Align="Align.Center">
+                            Accès refusé
+                        </MudText>
+                        <MudText Align="Align.Center">
+                            Vous n'avez pas les autorisations nécessaires pour accéder à cette ressource.
+                        </MudText>
+                    }
+                </NotAuthorized>
+                <Authorizing>
+                    <div class="loading-container">
+                        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                        <MudText Class="mt-4">Vérification des autorisations...</MudText>
+                    </div>
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(Frontend.Layout.MainLayout)">
+                <MudContainer Class="d-flex justify-center align-center" Style="height: 80vh;">
+                    <MudCard Style="width: 500px;" Elevation="25" Class="rounded-lg pa-4">
+                        <MudCardHeader>
+                            <MudAvatar Size="Size.Large" Class="mx-auto">
+                                <MudIcon Icon="@Icons.Material.Filled.SentimentDissatisfied" Size="Size.Large" />
+                            </MudAvatar>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Class="mt-4">Page non trouvée</MudText>
+                            <MudText Typo="Typo.body1" Align="Align.Center" Class="mt-4">
+                                La page que vous recherchez n'existe pas ou a été déplacée.
+                            </MudText>
+                            <div class="d-flex justify-center mt-8">
+                                <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Home">
+                                    Retour à l'accueil
+                                </MudButton>
+                            </div>
+                        </MudCardContent>
+                    </MudCard>
+                </MudContainer>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+
+<MudThemeProvider Theme="MyCustomTheme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+@code {
+    private MudTheme MyCustomTheme = new MudTheme
+    {
+        PaletteDark = new PaletteDark
+        {
+            AppbarBackground = "#1b1f27",
+            AppbarText = "#f5f7fa",
+            Background = "#1b1f27",
+            BackgroundGray = "#232634",
+            Surface = "#232634",
+            DrawerBackground = "#232634",
+            DrawerText = "#f5f7fa",
+            DrawerIcon = "#a7b2c2",
+            Primary = "#00aaff",
+            PrimaryDarken = "#0088cc",
+            PrimaryLighten = "#33bbff",
+            Secondary = "#25e398",
+            SecondaryDarken = "#1fc587",
+            SecondaryLighten = "#4de8ac",
+            Tertiary = "#7d6eff",
+            TertiaryDarken = "#6857e0",
+            TertiaryLighten = "#9285ff",
+            Info = "#00aaff",
+            Success = "#25e398",
+            Warning = "#ffc857",
+            Error = "#ff3b3b",
+            TextPrimary = "#f5f7fa",
+            TextSecondary = "#a7b2c2",
+            TextDisabled = "#666666",
+            ActionDefault = "#f5f7fa",
+            ActionDisabled = "#666666",
+            ActionDisabledBackground = "#2f3441",
+            Dark = "#1b1f27"
+        },
+        Typography  = new Typography
+        {
+            Default = new DefaultTypography
+            {
+                FontFamily = new[] { "Inter", "Segoe UI", "Arial", "sans-serif" },
+                FontSize = ".875rem",
+                FontWeight = "400",
+                LineHeight = "1.43",
+                LetterSpacing = ".01071em"
+            },
+            H1 = new H1Typography
+            {
+                FontSize = "2.5rem",
+                FontWeight = "700",
+                LineHeight = "1.2"
+            },
+            H2 = new H2Typography
+            {
+                FontSize = "2rem",
+                FontWeight = "700",
+                LineHeight = "1.3"
+            },
+            H3 = new H3Typography
+            {
+                FontSize = "1.75rem",
+                FontWeight = "600",
+                LineHeight = "1.4"
+            },
+            H4 = new H4Typography
+            {
+                FontSize = "1.5rem",
+                FontWeight = "600",
+                LineHeight = "1.4"
+            },
+            H5 = new H5Typography
+            {
+                FontSize = "1.25rem",
+                FontWeight = "600",
+                LineHeight = "1.4"
+            },
+            H6 = new H6Typography
+            {
+                FontSize = "1rem",
+                FontWeight = "600",
+                LineHeight = "1.5"
+            },
+            Button = new ButtonTypography
+            {
+                FontSize = ".875rem",
+                FontWeight = "600",
+                LineHeight = "1.75"
+            }
+        }
+    };
+}
