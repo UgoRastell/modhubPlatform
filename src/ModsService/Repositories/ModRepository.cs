@@ -6,6 +6,7 @@ using MongoDB.Bson;
 using ModsService.Models;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 
 namespace ModsService.Repositories
 {
@@ -39,6 +40,12 @@ namespace ModsService.Repositories
                     .Text(m => m.Name)
                     .Text(m => m.Description);
                     
+                // Index texte complet avec poids différents selon les champs
+                var textSearchIndex = Builders<Mod>.IndexKeys
+                    .Text(m => m.Name, new TextIndexOptions { Weight = 10 })
+                    .Text(m => m.Description, new TextIndexOptions { Weight = 5 })
+                    .Text("Tags", new TextIndexOptions { Weight = 8 });
+                    
                 // Index pour les tris fréquents
                 var downloadCountIndex = Builders<Mod>.IndexKeys.Descending(m => m.DownloadCount);
                 var ratingIndex = Builders<Mod>.IndexKeys.Descending(m => m.Rating);
@@ -48,16 +55,36 @@ namespace ModsService.Repositories
                 // Index sur les tags pour la recherche par tag
                 var tagsIndex = Builders<Mod>.IndexKeys.Ascending("Tags");
                 
+                // Index pour la recherche par compatibilité de version
+                var versionCompIndex = Builders<Mod>.IndexKeys
+                    .Ascending(m => m.GameId)
+                    .Ascending("Versions.GameVersion");
+                    
+                // Index pour les mods récemment mis à jour
+                var recentUpdateIndex = Builders<Mod>.IndexKeys
+                    .Ascending(m => m.GameId)
+                    .Descending(m => m.LastStableReleaseAt);
+                
+                // Index pour les mods en maintenance active
+                var activeMaintainedIndex = Builders<Mod>.IndexKeys
+                    .Ascending(m => m.GameId)
+                    .Ascending(m => m.IsHidden)
+                    .Descending(m => m.UpdatedAt);
+                
                 // Créer les index s'ils n'existent pas déjà
                 _mods.Indexes.CreateOne(new CreateIndexModel<Mod>(gameIdIndex, new CreateIndexOptions { Name = "ix_gameId" }));
                 _mods.Indexes.CreateOne(new CreateIndexModel<Mod>(categoryIdIndex, new CreateIndexOptions { Name = "ix_categoryId" }));
                 _mods.Indexes.CreateOne(new CreateIndexModel<Mod>(creatorIdIndex, new CreateIndexOptions { Name = "ix_creatorId" }));
                 _mods.Indexes.CreateOne(new CreateIndexModel<Mod>(searchIndex, new CreateIndexOptions { Name = "ix_search" }));
+                _mods.Indexes.CreateOne(new CreateIndexModel<Mod>(textSearchIndex, new CreateIndexOptions { Name = "ix_text_search" }));
                 _mods.Indexes.CreateOne(new CreateIndexModel<Mod>(downloadCountIndex, new CreateIndexOptions { Name = "ix_downloadCount" }));
                 _mods.Indexes.CreateOne(new CreateIndexModel<Mod>(ratingIndex, new CreateIndexOptions { Name = "ix_rating" }));
                 _mods.Indexes.CreateOne(new CreateIndexModel<Mod>(createdAtIndex, new CreateIndexOptions { Name = "ix_createdAt" }));
                 _mods.Indexes.CreateOne(new CreateIndexModel<Mod>(updatedAtIndex, new CreateIndexOptions { Name = "ix_updatedAt" }));
                 _mods.Indexes.CreateOne(new CreateIndexModel<Mod>(tagsIndex, new CreateIndexOptions { Name = "ix_tags" }));
+                _mods.Indexes.CreateOne(new CreateIndexModel<Mod>(versionCompIndex, new CreateIndexOptions { Name = "ix_version_compatibility" }));
+                _mods.Indexes.CreateOne(new CreateIndexModel<Mod>(recentUpdateIndex, new CreateIndexOptions { Name = "ix_recent_update" }));
+                _mods.Indexes.CreateOne(new CreateIndexModel<Mod>(activeMaintainedIndex, new CreateIndexOptions { Name = "ix_active_maintained" }));
                 
                 _logger.LogInformation("MongoDB indexes created successfully for Mods collection");
             }

@@ -93,20 +93,20 @@ public class AuthController : ControllerBase
     [HttpPost("reset-password")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> ResetPassword([FromBody] ConfirmResetPasswordRequest request)
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var success = await _authService.ResetPasswordAsync(request.Token, request.Password);
+        var success = await _authService.ResetPasswordAsync(request.Email, request.Token, request.NewPassword);
         if (!success)
         {
             return BadRequest(new { message = "Le token de réinitialisation est invalide ou a expiré." });
         }
 
-        _logger.LogInformation("Mot de passe réinitialisé avec succès");
+        _logger.LogInformation("Mot de passe réinitialisé avec succès pour l'utilisateur {Email}", request.Email);
         return Ok(new { message = "Votre mot de passe a été réinitialisé avec succès." });
     }
 

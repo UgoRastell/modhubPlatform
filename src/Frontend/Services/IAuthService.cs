@@ -37,4 +37,10 @@ public interface IAuthService
     /// Obtention des informations de l'utilisateur courant
     /// </summary>
     Task<UserProfile?> GetCurrentUser();
+    
+    /// <summary>
+    /// Vérifie si un utilisateur est connecté
+    /// </summary>
+    /// <returns>True si un utilisateur est connecté, sinon false</returns>
+    Task<bool> IsUserLoggedInAsync();
 }

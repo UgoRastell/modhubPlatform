@@ -282,4 +282,23 @@ public class AuthService : IAuthService
             return null;
         }
     }
+    
+    /// <summary>
+    /// Vérifie si un utilisateur est connecté
+    /// </summary>
+    /// <returns>True si un utilisateur est connecté, sinon false</returns>
+    public async Task<bool> IsUserLoggedInAsync()
+    {
+        try
+        {
+            var authState = await _authStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            
+            return user.Identity?.IsAuthenticated == true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

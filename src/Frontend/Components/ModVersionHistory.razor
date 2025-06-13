@@ -1,0 +1,323 @@
+@using Frontend.Models
+@using Frontend.Services
+@using System.Text.Json
+@inject IModService ModService
+@inject INotificationService NotificationService
+
+<div class="version-history-container @(IsExpanded ? "expanded" : "")">
+    <div class="history-header" @onclick="ToggleExpand">
+        <h3>Historique des versions</h3>
+        <span class="toggle-icon">@(IsExpanded ? "▼" : "►")</span>
+    </div>
+
+    @if (IsExpanded)
+    {
+        <div class="history-content">
+            @if (IsLoading)
+            {
+                <div class="loading-spinner">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>
+            }
+            else if (Versions != null && Versions.Any())
+            {
+                <div class="version-selector">
+                    <div class="version-compare">
+                        <div class="form-group">
+                            <label for="fromVersion">De:</label>
+                            <select id="fromVersion" class="form-control" @bind="FromVersion">
+                                @foreach (var version in Versions.OrderByDescending(v => v.CreatedAt))
+                                {
+                                    <option value="@version.VersionNumber">@version.VersionNumber - @version.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="toVersion">À:</label>
+                            <select id="toVersion" class="form-control" @bind="ToVersion">
+                                @foreach (var version in Versions.OrderByDescending(v => v.CreatedAt))
+                                {
+                                    <option value="@version.VersionNumber">@version.VersionNumber - @version.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" @onclick="GenerateComparedChangelog">Comparer</button>
+                    </div>
+                </div>
+
+                <div class="versions-timeline">
+                    @foreach (var version in Versions.OrderByDescending(v => v.CreatedAt))
+                    {
+                        <div class="version-item @(version.VersionNumber == SelectedVersion ? "selected" : "")" @onclick="() => SelectVersion(version.VersionNumber)">
+                            <div class="version-header">
+                                <div class="version-info">
+                                    <h4>@version.Name</h4>
+                                    <div class="version-meta">
+                                        <span class="version-number">v@(version.VersionNumber)</span>
+                                        <span class="version-date">@version.CreatedAt.ToString("dd MMM yyyy")</span>
+                                    </div>
+                                </div>
+                                <div class="version-badges">
+                                    <span class="badge @GetVersionStatusBadgeClass(version.Status)">@version.Status</span>
+                                    @if (version.IsLatest)
+                                    {
+                                        <span class="badge bg-success">Latest</span>
+                                    }
+                                </div>
+                            </div>
+
+                            @if (version.VersionNumber == SelectedVersion)
+                            {
+                                <div class="version-details">
+                                    <div class="changelog-content">
+                                        @if (!string.IsNullOrEmpty(version.Changelog))
+                                        {
+                                            <h5>Changelog</h5>
+                                            <div class="formatted-changelog">
+                                                @((MarkupString)FormatChangelog(version.Changelog))
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <p class="no-changelog">Pas de changelog disponible pour cette version</p>
+                                        }
+                                    </div>
+
+                                    @if (version.MainFile != null)
+                                    {
+                                        <div class="file-details">
+                                            <h5>Fichier</h5>
+                                            <div class="file-info">
+                                                <p>
+                                                    <strong>Nom:</strong> @version.MainFile.FileName
+                                                    <br />
+                                                    <strong>Taille:</strong> @FormatFileSize(version.MainFile.SizeInBytes)
+                                                    <br />
+                                                    <strong>Date d'upload:</strong> @version.MainFile.UploadedAt.ToString("dd MMM yyyy HH:mm")
+                                                </p>
+                                                <button class="btn btn-primary" @onclick="() => DownloadModVersion(ModId, version.VersionNumber)">
+                                                    <i class="fas fa-download"></i> Télécharger
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    @if (version.Compatibility != null && version.Compatibility.Any())
+                                    {
+                                        <div class="compatibility">
+                                            <h5>Compatibilité</h5>
+                                            <ul class="compatibility-list">
+                                                @foreach (var compatibility in version.Compatibility)
+                                                {
+                                                    <li>@compatibility</li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p>Aucune version disponible</p>
+            }
+
+            @if (!string.IsNullOrEmpty(ComparedChangelog))
+            {
+                <div class="compared-changelog">
+                    <h4>Comparaison des changelogs</h4>
+                    <div class="changelog-content formatted-changelog">
+                        @((MarkupString)FormatChangelog(ComparedChangelog))
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string ModId { get; set; }
+
+    [Parameter]
+    public bool IsExpanded { get; set; } = false;
+
+    private List<ModVersionDto> Versions { get; set; } = new List<ModVersionDto>();
+    private string SelectedVersion { get; set; }
+    private bool IsLoading { get; set; } = true;
+    private string FromVersion { get; set; }
+    private string ToVersion { get; set; }
+    private string ComparedChangelog { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVersions();
+    }
+
+    private async Task LoadVersions()
+    {
+        try
+        {
+            IsLoading = true;
+            var response = await ModService.GetModByIdAsync(ModId);
+            
+            if (response.Success)
+            {
+                Versions = response.Data.Versions;
+                
+                if (Versions.Any())
+                {
+                    // Sélectionner la dernière version par défaut
+                    var latestVersion = Versions.OrderByDescending(v => v.CreatedAt).FirstOrDefault();
+                    SelectedVersion = latestVersion?.VersionNumber;
+                    
+                    // Initialiser les versions pour la comparaison
+                    FromVersion = Versions.OrderByDescending(v => v.CreatedAt).Skip(1).FirstOrDefault()?.VersionNumber;
+                    ToVersion = Versions.OrderByDescending(v => v.CreatedAt).FirstOrDefault()?.VersionNumber;
+                }
+            }
+            else
+            {
+                NotificationService.ShowError($"Erreur lors du chargement des versions: {response.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Erreur: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void ToggleExpand()
+    {
+        IsExpanded = !IsExpanded;
+    }
+
+    private void SelectVersion(string versionNumber)
+    {
+        if (SelectedVersion == versionNumber)
+        {
+            SelectedVersion = null; // Fermer si déjà ouvert
+        }
+        else
+        {
+            SelectedVersion = versionNumber;
+        }
+    }
+
+    private string GetVersionStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Released" => "bg-success",
+            "Beta" => "bg-warning",
+            "Alpha" => "bg-danger",
+            "Draft" => "bg-secondary",
+            _ => "bg-info"
+        };
+    }
+
+    private string FormatChangelog(string changelog)
+    {
+        if (string.IsNullOrEmpty(changelog))
+            return string.Empty;
+
+        // Convertir les retours à la ligne en tags HTML
+        changelog = changelog.Replace("\n", "<br />");
+
+        // Formatage basique Markdown (simpliste)
+        // Titres
+        changelog = System.Text.RegularExpressions.Regex.Replace(changelog, @"^## (.+)$", "<h2>$1</h2>", System.Text.RegularExpressions.RegexOptions.Multiline);
+        changelog = System.Text.RegularExpressions.Regex.Replace(changelog, @"^# (.+)$", "<h1>$1</h1>", System.Text.RegularExpressions.RegexOptions.Multiline);
+
+        // Listes
+        changelog = System.Text.RegularExpressions.Regex.Replace(changelog, @"^- (.+)$", "<li>$1</li>", System.Text.RegularExpressions.RegexOptions.Multiline);
+        changelog = System.Text.RegularExpressions.Regex.Replace(changelog, @"(<li>.+</li>(\r\n|\r|\n)?)+", "<ul>$0</ul>", System.Text.RegularExpressions.RegexOptions.Singleline);
+
+        // Formatage de texte
+        changelog = System.Text.RegularExpressions.Regex.Replace(changelog, @"\*\*(.+?)\*\*", "<strong>$1</strong>");
+        changelog = System.Text.RegularExpressions.Regex.Replace(changelog, @"\*(.+?)\*", "<em>$1</em>");
+
+        return changelog;
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+        int order = 0;
+        double len = bytes;
+        
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    private async Task GenerateComparedChangelog()
+    {
+        if (string.IsNullOrEmpty(FromVersion) || string.IsNullOrEmpty(ToVersion))
+        {
+            NotificationService.ShowWarning("Veuillez sélectionner deux versions pour la comparaison");
+            return;
+        }
+
+        if (FromVersion == ToVersion)
+        {
+            NotificationService.ShowWarning("Veuillez sélectionner deux versions différentes");
+            return;
+        }
+
+        try
+        {
+            IsLoading = true;
+            // Note: Notre service n'a pas de surcharge pour comparer deux versions
+            var response = await ModService.GetChangelogAsync(ModId, FromVersion);
+            // Dans une implémentation complète, nous aurions une surcharge pour comparer deux versions
+            
+            if (response.Success)
+            {
+                ComparedChangelog = response.Data;
+            }
+            else
+            {
+                NotificationService.ShowError($"Erreur lors de la génération du changelog: {response.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Erreur: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task DownloadModVersion(string modId, string versionNumber)
+    {
+        try
+        {
+            var response = await ModService.DownloadModAsync(modId, versionNumber);
+            
+            if (!response.Success)
+            {
+                NotificationService.ShowError($"Erreur lors du téléchargement: {response.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Erreur: {ex.Message}");
+        }
+    }
+}

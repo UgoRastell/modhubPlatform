@@ -27,5 +27,6 @@ namespace Frontend.Models
         public List<string> Categories { get; set; } = new List<string>();
         public bool IsFeatured { get; set; }
         public bool IsApproved { get; set; }
+        public List<ModVersionDto> Versions { get; set; } = new List<ModVersionDto>();
     }
 }

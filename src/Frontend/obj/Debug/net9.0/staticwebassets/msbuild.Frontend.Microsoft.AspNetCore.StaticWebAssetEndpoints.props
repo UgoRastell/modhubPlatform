@@ -1,16 +1,16 @@
 ﻿<Project>
   <ItemGroup>
+    <StaticWebAssetEndpoint Include="appsettings.g1u85j4pfs.json">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\appsettings.json'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"g1u85j4pfs"},{"Name":"integrity","Value":"sha256-7ORfE1SnFm/rZXMt/jn4xrKZhfAiBU8Z335NYmiv8\u002BM="},{"Name":"label","Value":"appsettings.json"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"244"},{"Name":"Content-Type","Value":"application/json"},{"Name":"ETag","Value":"\u00227ORfE1SnFm/rZXMt/jn4xrKZhfAiBU8Z335NYmiv8\u002BM=\u0022"},{"Name":"Last-Modified","Value":"Mon, 09 Jun 2025 16:16:27 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="appsettings.json">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\appsettings.json'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
-      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-kg87SvJjyuKDvP1\u002BgNGGVfpoBq7NbFFnZoJR0PxT2B0="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"245"},{"Name":"Content-Type","Value":"application/json"},{"Name":"ETag","Value":"\u0022kg87SvJjyuKDvP1\u002BgNGGVfpoBq7NbFFnZoJR0PxT2B0=\u0022"},{"Name":"Last-Modified","Value":"Mon, 09 Jun 2025 13:27:51 GMT"}]]]></ResponseHeaders>
-    </StaticWebAssetEndpoint>
-    <StaticWebAssetEndpoint Include="appsettings.ybohj6psuz.json">
-      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\appsettings.json'))</AssetFile>
-      <Selectors><![CDATA[[]]]></Selectors>
-      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"ybohj6psuz"},{"Name":"integrity","Value":"sha256-kg87SvJjyuKDvP1\u002BgNGGVfpoBq7NbFFnZoJR0PxT2B0="},{"Name":"label","Value":"appsettings.json"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"245"},{"Name":"Content-Type","Value":"application/json"},{"Name":"ETag","Value":"\u0022kg87SvJjyuKDvP1\u002BgNGGVfpoBq7NbFFnZoJR0PxT2B0=\u0022"},{"Name":"Last-Modified","Value":"Mon, 09 Jun 2025 13:27:51 GMT"}]]]></ResponseHeaders>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-7ORfE1SnFm/rZXMt/jn4xrKZhfAiBU8Z335NYmiv8\u002BM="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"244"},{"Name":"Content-Type","Value":"application/json"},{"Name":"ETag","Value":"\u00227ORfE1SnFm/rZXMt/jn4xrKZhfAiBU8Z335NYmiv8\u002BM=\u0022"},{"Name":"Last-Modified","Value":"Mon, 09 Jun 2025 16:16:27 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="css/app.8rbvw3on5j.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\app.css'))</AssetFile>

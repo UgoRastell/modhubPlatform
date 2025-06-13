@@ -1,0 +1,166 @@
+@using Frontend.Models
+@using Frontend.Services
+@inject INotificationService NotificationService
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+<div class="notification-center">
+    <div class="notification-icon" @onclick="ToggleNotifications">
+        <i class="fas fa-bell"></i>
+        @if (UnreadCount > 0)
+        {
+            <span class="notification-badge">@UnreadCount</span>
+        }
+    </div>
+
+    @if (IsOpen)
+    {
+        <div class="notification-panel">
+            <div class="notification-header">
+                <h5>Notifications</h5>
+                @if (Notifications.Any(n => !n.IsRead))
+                {
+                    <button class="btn btn-sm btn-link" @onclick="MarkAllAsRead">Tout marquer comme lu</button>
+                }
+            </div>
+            
+            <div class="notification-list">
+                @if (IsLoading)
+                {
+                    <div class="loading">
+                        <div class="spinner-border spinner-border-sm" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <span>Chargement des notifications...</span>
+                    </div>
+                }
+                else if (Notifications.Any())
+                {
+                    @foreach (var notification in Notifications.OrderByDescending(n => n.CreatedAt).Take(10))
+                    {
+                        <div class="notification-item @(!notification.IsRead ? "unread" : "")" @onclick="() => HandleNotificationClick(notification)">
+                            <div class="notification-icon">
+                                <i class="fas @notification.IconClass @notification.TypeClass"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">@notification.Title</div>
+                                <div class="notification-message">@notification.Content</div>
+                                <div class="notification-time">@notification.TimeSince</div>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (Notifications.Count > 10)
+                    {
+                        <div class="see-all">
+                            <button class="btn btn-link w-100" @onclick="NavigateToAllNotifications">Voir toutes les notifications (@Notifications.Count)</button>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-notifications">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Aucune notification</span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<NotificationDto> Notifications { get; set; } = new List<NotificationDto>();
+    private bool IsOpen { get; set; }
+    private bool IsLoading { get; set; } = true;
+    private System.Threading.Timer _refreshTimer;
+    
+    private int UnreadCount => Notifications.Count(n => !n.IsRead);
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadNotifications();
+        
+        // Rafraîchir les notifications toutes les 2 minutes
+        _refreshTimer = new System.Threading.Timer(
+            async _ => await InvokeAsync(async () => await LoadNotifications()),
+            null, 
+            TimeSpan.FromMinutes(2), 
+            TimeSpan.FromMinutes(2)
+        );
+    }
+    
+    private async Task LoadNotifications()
+    {
+        try
+        {
+            IsLoading = true;
+            var response = await NotificationService.GetAllNotificationsAsync();
+            
+            if (response.Success)
+            {
+                Notifications = response.Data.ToList();
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Erreur lors du chargement des notifications: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+    
+    private void ToggleNotifications()
+    {
+        IsOpen = !IsOpen;
+    }
+    
+    private async Task HandleNotificationClick(NotificationDto notification)
+    {
+        // Marquer comme lu
+        if (!notification.IsRead)
+        {
+            await NotificationService.MarkNotificationAsReadAsync(notification.Id);
+            notification.IsRead = true;
+        }
+        
+        // Fermer le panneau
+        IsOpen = false;
+        
+        // Rediriger vers l'URL si elle existe
+        if (!string.IsNullOrEmpty(notification.Url))
+        {
+            NavigationManager.NavigateTo(notification.Url);
+        }
+    }
+    
+    private async Task MarkAllAsRead()
+    {
+        var response = await NotificationService.MarkAllNotificationsAsReadAsync();
+        
+        if (response.Success)
+        {
+            foreach (var notification in Notifications)
+            {
+                notification.IsRead = true;
+            }
+            
+            StateHasChanged();
+        }
+    }
+    
+    private void NavigateToAllNotifications()
+    {
+        IsOpen = false;
+        NavigationManager.NavigateTo("/notifications");
+    }
+    
+    public void Dispose()
+    {
+        _refreshTimer?.Dispose();
+    }
+}

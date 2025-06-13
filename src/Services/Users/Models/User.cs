@@ -18,7 +18,7 @@ public class User
 
     [BsonElement("passwordHash")]
     [JsonIgnore] // Ne jamais envoyer le hash de mot de passe au client
-    public string PasswordHash { get; set; } = null!;
+    public string? PasswordHash { get; set; } // Nullable pour les auth externes (OAuth)
 
     [BsonElement("firstName")]
     public string? FirstName { get; set; }
@@ -44,6 +44,32 @@ public class User
     [BsonElement("isActive")]
     public bool IsActive { get; set; } = true;
 
+    // Champs pour OAuth
+    [BsonElement("externalLogins")]
+    public List<ExternalLogin> ExternalLogins { get; set; } = new List<ExternalLogin>();
+
+    // Validation d'email
+    [BsonElement("emailVerified")]
+    public bool EmailVerified { get; set; } = false;
+    
+    [BsonElement("verificationToken")]
+    [JsonIgnore]
+    public string? EmailVerificationToken { get; set; }
+    
+    [BsonElement("verificationTokenExpires")]
+    [JsonIgnore]
+    public DateTime? EmailVerificationTokenExpires { get; set; }
+    
+    // Nombre de tentatives de connexion échouées pour protection anti-brute-force
+    [BsonElement("failedLoginAttempts")]
+    public int FailedLoginAttempts { get; set; } = 0;
+    
+    [BsonElement("lastFailedLoginAttempt")]
+    public DateTime? LastFailedLoginAttempt { get; set; }
+    
+    [BsonElement("lockedUntil")]
+    public DateTime? LockedUntil { get; set; }
+
     // Préférences utilisateur pour les notifications, etc.
     [BsonElement("preferences")]
     public UserPreferences Preferences { get; set; } = new UserPreferences();
@@ -64,6 +90,9 @@ public class User
     [BsonElement("resetTokenExpires")]
     [JsonIgnore]
     public DateTime? ResetTokenExpires { get; set; }
+    
+    // Méthode pour vérifier si le compte est verrouillé
+    public bool IsLocked() => LockedUntil.HasValue && LockedUntil.Value > DateTime.UtcNow;
 }
 
 public class UserPreferences
@@ -91,4 +120,28 @@ public class DataConsent
 
     [BsonElement("ipAddress")]
     public string? IpAddress { get; set; }
+}
+
+public class ExternalLogin
+{
+    [BsonElement("provider")]
+    public string Provider { get; set; } = null!; // google, facebook, etc.
+    
+    [BsonElement("providerKey")]
+    public string ProviderKey { get; set; } = null!; // ID unique fourni par le provider
+    
+    [BsonElement("email")]
+    public string Email { get; set; } = null!;
+    
+    [BsonElement("displayName")]
+    public string? DisplayName { get; set; }
+    
+    [BsonElement("pictureUrl")]
+    public string? PictureUrl { get; set; }
+    
+    [BsonElement("createdAt")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    
+    [BsonElement("lastUsed")]
+    public DateTime LastUsed { get; set; } = DateTime.UtcNow;
 }

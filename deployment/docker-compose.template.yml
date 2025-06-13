@@ -1,0 +1,161 @@
+version: '3.8'
+
+services:
+  # Base de données MongoDB
+  mongo:
+    image: mongo:latest
+    container_name: modhub-mongo
+    restart: always
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    networks:
+      - modhub-network
+
+  # API Gateway
+  gateway:
+    image: ${REGISTRY}/gateway:${IMAGE_TAG}
+    container_name: modhub-gateway
+    restart: always
+    depends_on:
+      - users-service
+      - mods-service
+      - community-service
+      - payments-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+    networks:
+      - modhub-network
+
+  # Service d'authentification et gestion des utilisateurs
+  users-service:
+    image: ${REGISTRY}/usersservice:${IMAGE_TAG}
+    container_name: modhub-users-service
+    restart: always
+    depends_on:
+      - mongo
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - MongoDbSettings__ConnectionString=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:27017
+      - MongoDbSettings__DatabaseName=UsersDb
+      - EmailSettings__SmtpServer=${EMAIL_SMTP_SERVER}
+      - EmailSettings__SmtpPort=${EMAIL_SMTP_PORT}
+      - EmailSettings__SmtpUsername=${EMAIL_USERNAME}
+      - EmailSettings__SmtpPassword=${EMAIL_PASSWORD}
+      - EmailSettings__SenderEmail=noreply@modhub.fr
+      - EmailSettings__SenderName=ModHub
+      - GoogleOAuthSettings__ClientId=${GOOGLE_CLIENT_ID}
+      - GoogleOAuthSettings__ClientSecret=${GOOGLE_CLIENT_SECRET}
+      - JwtSettings__Secret=${JWT_SECRET}
+      - JwtSettings__Issuer=ModHub
+      - JwtSettings__Audience=ModHub
+      - JwtSettings__AccessTokenExpiryMinutes=60
+      - JwtSettings__RefreshTokenExpiryDays=7
+    networks:
+      - modhub-network
+
+  # Service de gestion des mods
+  mods-service:
+    image: ${REGISTRY}/modsservice:${IMAGE_TAG}
+    container_name: modhub-mods-service
+    restart: always
+    depends_on:
+      - mongo
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - MongoDbSettings__ConnectionString=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:27017
+      - MongoDbSettings__DatabaseName=ModsDb
+      - StorageSettings__Type=FileSystem
+      - StorageSettings__BasePath=/app/Storage
+    volumes:
+      - mods_storage:/app/Storage
+    networks:
+      - modhub-network
+
+  # Service de gestion de la communauté
+  community-service:
+    image: ${REGISTRY}/communityservice:${IMAGE_TAG}
+    container_name: modhub-community-service
+    restart: always
+    depends_on:
+      - mongo
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - MongoDbSettings__ConnectionString=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:27017
+      - MongoDbSettings__DatabaseName=CommunityDb
+    networks:
+      - modhub-network
+
+  # Service de gestion des paiements
+  payments-service:
+    image: ${REGISTRY}/paymentsservice:${IMAGE_TAG}
+    container_name: modhub-payments-service
+    restart: always
+    depends_on:
+      - mongo
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - MongoDbSettings__ConnectionString=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:27017
+      - MongoDbSettings__DatabaseName=PaymentsDb
+      - StripeSettings__SecretKey=${STRIPE_SECRET_KEY}
+      - StripeSettings__WebhookSecret=${STRIPE_WEBHOOK_SECRET}
+    networks:
+      - modhub-network
+
+  # Frontend Blazor WebAssembly
+  frontend:
+    image: ${REGISTRY}/frontend:${IMAGE_TAG}
+    container_name: modhub-frontend
+    restart: always
+    depends_on:
+      - gateway
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - ApiBaseUrl=https://${DOMAIN}/api
+    networks:
+      - modhub-network
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: modhub-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/letsencrypt/:ro
+    depends_on:
+      - gateway
+      - frontend
+    networks:
+      - modhub-network
+
+  # Certbot pour les certificats Let's Encrypt
+  certbot:
+    image: certbot/certbot:latest
+    container_name: modhub-certbot
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email admin@modhub.fr -d modhub.fr -d www.modhub.fr --agree-tos
+
+networks:
+  modhub-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  mods_storage:

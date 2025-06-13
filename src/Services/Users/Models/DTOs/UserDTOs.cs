@@ -8,13 +8,19 @@ public class UpdateProfileRequest
     [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "Le nom d'utilisateur ne peut contenir que des lettres, des chiffres et des underscores")]
     public string? Username { get; set; }
 
+    [StringLength(50, ErrorMessage = "Le prénom ne doit pas dépasser 50 caractères")]
     public string? FirstName { get; set; }
     
+    [StringLength(50, ErrorMessage = "Le nom ne doit pas dépasser 50 caractères")]
     public string? LastName { get; set; }
     
+    [StringLength(200, ErrorMessage = "La bio ne doit pas dépasser 200 caractères")]
     public string? Bio { get; set; }
     
     public string? ProfilePictureUrl { get; set; }
+    
+    // Les préférences utilisateur
+    public UserPreferencesDTO? Preferences { get; set; }
 }
 
 public class UpdatePasswordRequest

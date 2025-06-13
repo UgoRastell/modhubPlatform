@@ -60,6 +60,7 @@ public class UserBasicInfo
     public string Id { get; set; } = null!;
     public string Username { get; set; } = null!;
     public string Email { get; set; } = null!;
+    public bool EmailVerified { get; set; }
     public List<string> Roles { get; set; } = null!;
     public string? ProfilePictureUrl { get; set; }
 }
@@ -70,25 +71,4 @@ public class RefreshTokenRequest
     public string RefreshToken { get; set; } = null!;
 }
 
-public class ResetPasswordRequest
-{
-    [Required(ErrorMessage = "L'email est requis")]
-    [EmailAddress(ErrorMessage = "Format d'email invalide")]
-    public string Email { get; set; } = null!;
-}
-
-public class ConfirmResetPasswordRequest
-{
-    [Required(ErrorMessage = "Le jeton est requis")]
-    public string Token { get; set; } = null!;
-
-    [Required(ErrorMessage = "Le mot de passe est requis")]
-    [MinLength(8, ErrorMessage = "Le mot de passe doit comporter au moins 8 caractères")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$", 
-        ErrorMessage = "Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial")]
-    public string Password { get; set; } = null!;
-
-    [Required(ErrorMessage = "La confirmation du mot de passe est requise")]
-    [Compare("Password", ErrorMessage = "Les mots de passe ne correspondent pas")]
-    public string ConfirmPassword { get; set; } = null!;
-}
+// Les DTOs liés à la réinitialisation de mot de passe ont été déplacés vers ResetPasswordDTOs.cs
