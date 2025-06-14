@@ -40,12 +40,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         
-      - name: Run security scan
+      - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/dotnet@master
         with:
           args: --all-projects
         env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   build-and-push:
     runs-on: ubuntu-latest
