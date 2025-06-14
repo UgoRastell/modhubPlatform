@@ -43,9 +43,10 @@ jobs:
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/dotnet@master
         with:
+          command: test
           args: --all-projects
         env:
-            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   build-and-push:
     runs-on: ubuntu-latest
