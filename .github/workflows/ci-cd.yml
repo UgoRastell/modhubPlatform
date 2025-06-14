@@ -11,7 +11,7 @@ on:
       - dev
 
 env:
-  REGISTRY: ghcr.io/${{ github.repository_owner }}
+  REGISTRY: ghcr.io/ugorastell
   DOTNET_VERSION: '9.0'
 
 jobs:
