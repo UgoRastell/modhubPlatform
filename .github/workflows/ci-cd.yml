@@ -107,7 +107,8 @@ jobs:
       - name: Build & Push Frontend
         uses: docker/build-push-action@v5
         with:
-          context: ./src/Frontend
+          context: ./src
+          file: ./src/Frontend/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/frontend:latest,${{ env.REGISTRY }}/frontend:${{ github.sha }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/frontend:cache
