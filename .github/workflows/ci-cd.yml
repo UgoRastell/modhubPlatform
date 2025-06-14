@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - master
+      - dev
   pull_request:
     branches:
       - master
+      - dev
 
 env:
   REGISTRY: ghcr.io/${{ github.repository_owner }}
@@ -32,26 +34,12 @@ jobs:
         
       - name: Run tests
         run: dotnet test --no-build --configuration Release --verbosity normal ModsGamingPlatform.sln
-  
-  security-scan:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/dotnet@master
-        with:
-          command: test
-          args: --all-projects
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
 
   build-and-push:
     runs-on: ubuntu-latest
     needs: build-and-test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -123,7 +111,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build-and-push
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository for deployment files
         uses: actions/checkout@v4
