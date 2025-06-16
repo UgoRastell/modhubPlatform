@@ -1,0 +1,373 @@
+@page "/profile"
+@using Frontend.Models
+@using System.ComponentModel.DataAnnotations
+@inject IAuthService AuthService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<PageTitle>Profil - ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 py-6">
+    <MudGrid>
+        <MudItem xs="12" sm="4" md="3">
+            <MudCard Elevation="3" Class="rounded-xl sticky-top" Style="background-color: #232634; top: 80px;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h5">Mon Profil</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <div class="d-flex flex-column align-center mb-4">
+                        <MudAvatar Size="Size.Large" Style="width: 100px; height: 100px; background-color: #1b1f27; color: #00aaff;">
+                            @(string.IsNullOrEmpty(userProfile.Username) ? "U" : userProfile.Username[0].ToString().ToUpper())
+                        </MudAvatar>
+                        <MudText Typo="Typo.h6" Class="mt-2">@userProfile.Username</MudText>
+                        <MudChip T="string" Color="Color.Secondary" Size="Size.Small">Membre</MudChip>
+                    </div>
+                    
+                    <MudNavMenu>
+                        <MudNavLink Href="#info" Icon="@Icons.Material.Filled.Person" IconColor="Color.Primary">
+                            Informations personnelles
+                        </MudNavLink>
+                        <MudNavLink Href="#security" Icon="@Icons.Material.Filled.Security" IconColor="Color.Primary">
+                            Sécurité
+                        </MudNavLink>
+                        <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings" IconColor="Color.Primary">
+                            Paramètres
+                        </MudNavLink>
+                        <MudNavLink Href="/profile/mods" Icon="@Icons.Material.Filled.Games" IconColor="Color.Secondary">
+                            Mes mods
+                        </MudNavLink>
+                        <MudNavLink Href="/profile/favorites" Icon="@Icons.Material.Filled.Favorite" IconColor="Color.Error">
+                            Favoris
+                        </MudNavLink>
+                        <MudNavLink Href="/profile/downloads" Icon="@Icons.Material.Filled.Download" IconColor="Color.Primary">
+                            Téléchargements
+                        </MudNavLink>
+                    </MudNavMenu>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton FullWidth="true" 
+                               StartIcon="@Icons.Material.Filled.Logout"
+                               Color="Color.Error"
+                               Variant="Variant.Text"
+                               OnClick="LogoutUser">Déconnexion</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        
+        <MudItem xs="12" sm="8" md="9">
+            <MudPaper Class="pa-4 rounded-xl" Elevation="3" Style="background-color: #232634;">
+                <MudText Typo="Typo.h5" Class="mb-4" id="info">Informations personnelles</MudText>
+                
+                <EditForm Model="@userProfile" OnValidSubmit="UpdateProfile">
+                    <DataAnnotationsValidator />
+                    
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="userProfile.Username" 
+                                          Label="Nom d'utilisateur" 
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          HelperText="Ce nom sera visible par les autres utilisateurs" />
+                            <ValidationMessage For="@(() => userProfile.Username)" />
+                        </MudItem>
+                        
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="userProfile.Email" 
+                                          Label="Email" 
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          Disabled="true"
+                                          HelperText="L'email ne peut pas être modifié" />
+                        </MudItem>
+                        
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="userProfile.FirstName" 
+                                          Label="Prénom" 
+                                          Variant="Variant.Outlined"
+                                          HelperText="Optionnel" />
+                        </MudItem>
+                        
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="userProfile.LastName" 
+                                          Label="Nom" 
+                                          Variant="Variant.Outlined"
+                                          HelperText="Optionnel" />
+                        </MudItem>
+                        
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="userProfile.Website" 
+                                          Label="Site web" 
+                                          Variant="Variant.Outlined"
+                                          HelperText="Optionnel - Votre site personnel" />
+                        </MudItem>
+                        
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="userProfile.Location" 
+                                          Label="Localisation" 
+                                          Variant="Variant.Outlined"
+                                          HelperText="Optionnel - Ville, Pays, etc." />
+                        </MudItem>
+                        
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="userProfile.Bio" 
+                                          Label="Bio" 
+                                          Variant="Variant.Outlined"
+                                          Lines="3"
+                                          MaxLength="300"
+                                          Counter="300"
+                                          HelperText="Présentez-vous en quelques mots" />
+                        </MudItem>
+                        
+                        <MudItem xs="12" Class="d-flex justify-end">
+                            <MudButton ButtonType="ButtonType.Submit"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       Class="profile-button"
+                                       Style="border-radius: 8px; transition: all 0.2s ease-in-out;"
+                                       Disabled="@isLoading">
+                                @if (isLoading)
+                                {
+                                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                    <MudText Class="ms-2">Mise à jour...</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>Enregistrer</MudText>
+                                }
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                    
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mt-4">@errorMessage</MudAlert>
+                    }
+                    
+                    @if (updateSuccess)
+                    {
+                        <MudAlert Severity="Severity.Success" Class="mt-4">Profil mis à jour avec succès</MudAlert>
+                    }
+                </EditForm>
+            </MudPaper>
+            
+            <MudPaper Class="pa-4 rounded-xl mt-6" Elevation="3" Style="background-color: #232634;">
+                <MudText Typo="Typo.h5" Class="mb-4" id="security">Sécurité du compte</MudText>
+                
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudCard Elevation="0" Style="background-color: #1b1f27;" Class="rounded-xl pa-3">
+                            <MudCardHeader>
+                                <CardHeaderAvatar>
+                                    <MudIcon Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
+                                </CardHeaderAvatar>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">Changer le mot de passe</MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudText Typo="Typo.body2">Mettez à jour votre mot de passe pour sécuriser votre compte</MudText>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Variant="Variant.Text" 
+                                           Color="Color.Primary"
+                                           OnClick="@(() => NavigationManager.NavigateTo("/change-password"))">
+                                    Modifier
+                                </MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                    
+                    <MudItem xs="12" md="6">
+                        <MudCard Elevation="0" Style="background-color: #1b1f27;" Class="rounded-xl pa-3">
+                            <MudCardHeader>
+                                <CardHeaderAvatar>
+                                    <MudIcon Icon="@Icons.Material.Filled.GppGood" Color="Color.Success" />
+                                </CardHeaderAvatar>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">Authentification à deux facteurs</MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudText Typo="Typo.body2">Renforcez la sécurité de votre compte en activant la 2FA</MudText>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Variant="Variant.Text" 
+                                           Color="Color.Primary"
+                                           OnClick="@(() => NavigationManager.NavigateTo("/two-factor-auth"))">
+                                    Configurer
+                                </MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                    
+                    <MudItem xs="12" md="6">
+                        <MudCard Elevation="0" Style="background-color: #1b1f27;" Class="rounded-xl pa-3">
+                            <MudCardHeader>
+                                <CardHeaderAvatar>
+                                    <MudIcon Icon="@Icons.Material.Filled.Devices" Color="Color.Info" />
+                                </CardHeaderAvatar>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">Appareils connectés</MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudText Typo="Typo.body2">Gérez les appareils connectés à votre compte</MudText>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Variant="Variant.Text" 
+                                           Color="Color.Primary"
+                                           OnClick="@(() => NavigationManager.NavigateTo("/connected-devices"))">
+                                    Gérer
+                                </MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                    
+                    <MudItem xs="12" md="6">
+                        <MudCard Elevation="0" Style="background-color: #1b1f27;" Class="rounded-xl pa-3">
+                            <MudCardHeader>
+                                <CardHeaderAvatar>
+                                    <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Error" />
+                                </CardHeaderAvatar>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">Supprimer mon compte</MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudText Typo="Typo.body2">Cette action est irréversible</MudText>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Variant="Variant.Text" 
+                                           Color="Color.Error"
+                                           OnClick="OpenDeleteDialog">
+                                    Supprimer
+                                </MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    /* Styles spécifiques à la page Profile */
+    ::deep .mud-input-control.mud-input-focused:not(.mud-input-error) .mud-input-border::after {
+        border-color: #00aaff !important;
+    }
+    
+    ::deep .mud-input-control.mud-input-focused:not(.mud-input-error) .mud-input-label.mud-input-label-inputcontrol {
+        color: #00aaff !important;
+    }
+    
+    .profile-button:hover {
+        box-shadow: 0 0 12px #00aaff80;
+        transform: translateY(-2px);
+    }
+</style>
+
+@code {
+    private UserProfile userProfile = new();
+    private bool isLoading = false;
+    private string errorMessage = string.Empty;
+    private bool updateSuccess = false;
+    private bool deleteDialogOpen = false;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProfile();
+    }
+    
+    private async Task LoadProfile()
+    {
+        isLoading = true;
+        
+        try
+        {
+            // Cette ligne devrait être implémentée avec un vrai service
+            // var response = await AuthService.GetUserProfile();
+            
+            // Pour le moment, on simule une réponse
+            await Task.Delay(500); // Simule un appel API
+            
+            userProfile = new UserProfile
+            {
+                Id = "user123",
+                Username = "GamerPro",
+                Email = "gamer@example.com",
+                FirstName = "John",
+                LastName = "Doe",
+                Bio = "Passionné de jeux vidéo et modding depuis plus de 10 ans.",
+                Website = "https://johndoe.com",
+                Location = "Paris, France",
+                AvatarUrl = "",
+                Roles = new[] { "User" },
+                CreatedAt = DateTime.Now.AddYears(-1),
+                IsVerified = true,
+                IsActive = true
+            };
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erreur lors du chargement du profil: {ex.Message}";
+            Snackbar.Add(errorMessage, Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    
+    private async Task UpdateProfile()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+        updateSuccess = false;
+        
+        try
+        {
+            // Cette ligne devrait être implémentée avec un vrai service
+            // var response = await AuthService.UpdateProfile(userProfile);
+            
+            // Pour le moment, on simule une mise à jour
+            await Task.Delay(1000); // Simule un appel API
+            
+            updateSuccess = true;
+            Snackbar.Add("Profil mis à jour avec succès", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erreur lors de la mise à jour du profil: {ex.Message}";
+            Snackbar.Add(errorMessage, Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    
+    private void OpenDeleteDialog()
+    {
+        // Dans une vraie implémentation, ça ouvrirait une boîte de dialogue MudDialog
+        // Pour confirmer la suppression du compte
+        NavigationManager.NavigateTo("/account-deletion");
+    }
+    
+    private async Task LogoutUser()
+    {
+        try
+        {
+            // Cette ligne devrait être implémentée avec un vrai service
+            // await AuthService.Logout();
+            
+            NavigationManager.NavigateTo("/login");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors de la déconnexion: {ex.Message}", Severity.Error);
+        }
+    }
+}

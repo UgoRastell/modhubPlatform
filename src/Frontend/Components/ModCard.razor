@@ -1,0 +1,190 @@
+@using Frontend.Models
+
+<MudCard Class="mod-card rounded-xl h-100" Elevation="2" Style="background-color: #1b1f27;">
+    <div style="position: relative;">
+        <img src="@Mod.ThumbnailUrl" alt="@Mod.Name" style="height: 180px; width: 100%; object-fit: cover; border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem;" />
+        
+        <div class="badges-container" style="position: absolute; top: 8px; right: 8px; display: flex; flex-direction: column; gap: 4px;">
+            @if (Mod.IsPremium)
+            {
+                <MudChip T="string" Size="Size.Small" 
+                         Class="premium-badge" 
+                         Style="font-weight: 600;">
+                    PREMIUM
+                </MudChip>
+            }
+            
+            @if (Mod.IsNew)
+            {
+                <MudChip T="string" Size="Size.Small" 
+                         Class="new-badge"
+                         Style="font-weight: 600;">
+                    NOUVEAU
+                </MudChip>
+            }
+            
+            @if (Mod.IsPopular)
+            {
+                <MudChip T="string" Size="Size.Small" 
+                         Class="popular-badge"
+                         Style="font-weight: 600;">
+                    POPULAIRE
+                </MudChip>
+            }
+        </div>
+    </div>
+    
+    <MudCardContent>
+        <MudText Typo="Typo.h6" Class="text-truncate">@Mod.Name</MudText>
+        <div class="d-flex align-center my-1">
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mr-1">@Mod.GameName</MudText>
+            <MudTooltip Text="Téléchargements">
+                <div class="d-flex align-center ml-auto">
+                    <MudIcon Icon="@Icons.Material.Filled.Download" Size="Size.Small" Class="mr-1" />
+                    <MudText Typo="Typo.body2">@FormatDownloadCount(Mod.DownloadCount)</MudText>
+                </div>
+            </MudTooltip>
+        </div>
+        
+        <div class="d-flex align-center">
+            <MudRating @bind-SelectedValue="@rating" 
+                      ReadOnly="true" 
+                      MaxValue="5" 
+                      Size="Size.Small" />
+            <MudText Typo="Typo.caption" Class="ml-1">(@Mod.ReviewCount)</MudText>
+        </div>
+        
+        <MudText Typo="Typo.body2" Class="mt-2 mod-description">
+            @((Mod.Description.Length > 80) ? Mod.Description.Substring(0, 80) + "..." : Mod.Description)
+        </MudText>
+        
+        <div class="d-flex align-center justify-space-between mt-2">
+            <MudText Typo="Typo.caption" Color="Color.Info">Par @Mod.Author</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Default">@FormatDate(Mod.LastUpdated)</MudText>
+        </div>
+    </MudCardContent>
+    
+    <MudCardActions Class="d-flex justify-space-between">
+        <MudIconButton Icon="@GetFavoriteIcon()" 
+                      Color="@(Mod.IsFavorite ? Color.Error : Color.Default)"
+                      OnClick="@ToggleFavorite" />
+        
+        <MudButton Variant="Variant.Filled" 
+                   Color="Color.Primary" 
+                   Size="Size.Small"
+                   OnClick="@(() => NavigateToDetail(Mod.Id))"
+                   Class="card-button">
+            Voir détails
+        </MudButton>
+    </MudCardActions>
+</MudCard>
+
+<style>
+    .mod-card {
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .mod-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .premium-badge {
+        background: linear-gradient(45deg, #FFD700, #FFA500);
+        color: #000;
+    }
+    
+    .new-badge {
+        background: linear-gradient(45deg, #00aaff, #0077ff);
+    }
+    
+    .popular-badge {
+        background: linear-gradient(45deg, #25e398, #00cc66);
+    }
+    
+    .card-button {
+        border-radius: 8px;
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .card-button:hover {
+        box-shadow: 0 0 12px #00aaff80;
+        transform: translateY(-2px);
+    }
+</style>
+
+@code {
+    [Parameter] public required ModItem Mod { get; set; }
+    [Parameter] public EventCallback<ModItem> OnFavoriteToggled { get; set; }
+    [Parameter] public EventCallback<string> OnNavigateToDetail { get; set; }
+    
+    private int rating;
+    
+    protected override void OnParametersSet()
+    {
+        rating = (int)Math.Round(Mod.Rating);
+    }
+    
+    private string GetFavoriteIcon()
+    {
+        return Mod.IsFavorite ? Icons.Material.Filled.Favorite : Icons.Material.Outlined.FavoriteBorder;
+    }
+    
+    private async Task ToggleFavorite()
+    {
+        Mod.IsFavorite = !Mod.IsFavorite;
+        if (OnFavoriteToggled.HasDelegate)
+        {
+            await OnFavoriteToggled.InvokeAsync(Mod);
+        }
+    }
+    
+    private async Task NavigateToDetail(string modId)
+    {
+        if (OnNavigateToDetail.HasDelegate)
+        {
+            await OnNavigateToDetail.InvokeAsync(modId);
+        }
+    }
+    
+    private string FormatDownloadCount(int count)
+    {
+        if (count >= 1000000)
+        {
+            return Math.Round((double)count / 1000000, 1) + "M";
+        }
+        else if (count >= 1000)
+        {
+            return Math.Round((double)count / 1000, 1) + "K";
+        }
+        
+        return count.ToString();
+    }
+    
+    private string FormatDate(DateTime date)
+    {
+        TimeSpan diff = DateTime.Now - date;
+        
+        if (diff.TotalDays < 1)
+        {
+            return "Aujourd'hui";
+        }
+        else if (diff.TotalDays < 2)
+        {
+            return "Hier";
+        }
+        else if (diff.TotalDays < 7)
+        {
+            return $"Il y a {(int)diff.TotalDays} jours";
+        }
+        else if (diff.TotalDays < 30)
+        {
+            int weeks = (int)(diff.TotalDays / 7);
+            return $"Il y a {weeks} semaine{(weeks > 1 ? "s" : "")}";
+        }
+        else
+        {
+            return date.ToString("dd/MM/yyyy");
+        }
+    }
+}

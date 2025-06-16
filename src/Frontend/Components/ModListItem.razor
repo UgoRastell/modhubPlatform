@@ -1,0 +1,201 @@
+@using Frontend.Models
+
+<MudPaper Class="mod-list-item pa-2 mb-2 rounded-xl d-flex flex-column flex-sm-row" 
+          Elevation="2"
+          Style="background-color: #1b1f27;">
+          
+    <div class="d-flex" style="min-width: 120px; max-width: 180px;">
+        <img src="@Mod.ThumbnailUrl" alt="@Mod.Name" style="width: 180px; height: 90px; object-fit: cover; border-radius: 0.5rem;" />
+    </div>
+    
+    <div class="d-flex flex-column flex-grow-1 pa-3">
+        <div class="d-flex align-center justify-space-between">
+            <div>
+                <MudText Typo="Typo.h6">@Mod.Name</MudText>
+                <div class="d-flex align-center">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@Mod.GameName</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Info" Class="ml-2">Par @Mod.Author</MudText>
+                </div>
+            </div>
+            
+            <div class="d-flex flex-column flex-sm-row gap-1">
+                @if (Mod.IsPremium)
+                {
+                    <MudChip T="string" Size="Size.Small" 
+                             Class="premium-badge" 
+                             Style="font-weight: 600;">
+                        PREMIUM
+                    </MudChip>
+                }
+                
+                @if (Mod.IsNew)
+                {
+                    <MudChip T="string" Size="Size.Small" 
+                             Class="new-badge"
+                             Style="font-weight: 600;">
+                        NOUVEAU
+                    </MudChip>
+                }
+                
+                @if (Mod.IsPopular)
+                {
+                    <MudChip T="string" Size="Size.Small" 
+                             Class="popular-badge"
+                             Style="font-weight: 600;">
+                        POPULAIRE
+                    </MudChip>
+                }
+            </div>
+        </div>
+        
+        <MudText Typo="Typo.body2" Class="my-2 mod-description">
+            @((Mod.Description.Length > 150) ? Mod.Description.Substring(0, 150) + "..." : Mod.Description)
+        </MudText>
+        
+        <div class="d-flex flex-column flex-sm-row justify-space-between align-center">
+            <div class="d-flex align-center">
+                <MudRating @bind-SelectedValue="@rating" 
+                          ReadOnly="true" 
+                          MaxValue="5" 
+                          Size="Size.Small" />
+                <MudText Typo="Typo.caption" Class="ml-1">(@Mod.ReviewCount)</MudText>
+                
+                <MudDivider Vertical="true" FlexItem="true" Class="mx-2" />
+                
+                <MudTooltip Text="Téléchargements">
+                    <div class="d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Download" Size="Size.Small" Class="mr-1" />
+                        <MudText Typo="Typo.body2">@FormatDownloadCount(Mod.DownloadCount)</MudText>
+                    </div>
+                </MudTooltip>
+                
+                <MudText Typo="Typo.caption" Class="ml-4">@FormatDate(Mod.LastUpdated)</MudText>
+            </div>
+            
+            <div class="d-flex align-center mt-2 mt-sm-0">
+                <MudIconButton Icon="@GetFavoriteIcon()" 
+                              Size="Size.Small"
+                              Color="@(Mod.IsFavorite ? Color.Error : Color.Default)"
+                              OnClick="@ToggleFavorite" />
+                              
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           Size="Size.Small"
+                           OnClick="@(() => NavigateToDetail(Mod.Id))"
+                           Class="ml-2 list-button">
+                    Voir détails
+                </MudButton>
+            </div>
+        </div>
+    </div>
+</MudPaper>
+
+<style>
+    .mod-list-item {
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .mod-list-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .premium-badge {
+        background: linear-gradient(45deg, #FFD700, #FFA500);
+        color: #000;
+    }
+    
+    .new-badge {
+        background: linear-gradient(45deg, #00aaff, #0077ff);
+    }
+    
+    .popular-badge {
+        background: linear-gradient(45deg, #25e398, #00cc66);
+    }
+    
+    .list-button {
+        border-radius: 8px;
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .list-button:hover {
+        box-shadow: 0 0 12px #00aaff80;
+        transform: translateY(-2px);
+    }
+</style>
+
+@code {
+    [Parameter] public required ModItem Mod { get; set; }
+    [Parameter] public EventCallback<ModItem> OnFavoriteToggled { get; set; }
+    [Parameter] public EventCallback<string> OnNavigateToDetail { get; set; }
+    
+    private int rating;
+    
+    protected override void OnParametersSet()
+    {
+        rating = (int)Math.Round(Mod.Rating);
+    }
+    
+    private string GetFavoriteIcon()
+    {
+        return Mod.IsFavorite ? Icons.Material.Filled.Favorite : Icons.Material.Outlined.FavoriteBorder;
+    }
+    
+    private async Task ToggleFavorite()
+    {
+        Mod.IsFavorite = !Mod.IsFavorite;
+        if (OnFavoriteToggled.HasDelegate)
+        {
+            await OnFavoriteToggled.InvokeAsync(Mod);
+        }
+    }
+    
+    private async Task NavigateToDetail(string modId)
+    {
+        if (OnNavigateToDetail.HasDelegate)
+        {
+            await OnNavigateToDetail.InvokeAsync(modId);
+        }
+    }
+    
+    private string FormatDownloadCount(int count)
+    {
+        if (count >= 1000000)
+        {
+            return Math.Round((double)count / 1000000, 1) + "M";
+        }
+        else if (count >= 1000)
+        {
+            return Math.Round((double)count / 1000, 1) + "K";
+        }
+        
+        return count.ToString();
+    }
+    
+    private string FormatDate(DateTime date)
+    {
+        TimeSpan diff = DateTime.Now - date;
+        
+        if (diff.TotalDays < 1)
+        {
+            return "Aujourd'hui";
+        }
+        else if (diff.TotalDays < 2)
+        {
+            return "Hier";
+        }
+        else if (diff.TotalDays < 7)
+        {
+            return $"Il y a {(int)diff.TotalDays} jours";
+        }
+        else if (diff.TotalDays < 30)
+        {
+            int weeks = (int)(diff.TotalDays / 7);
+            return $"Il y a {weeks} semaine{(weeks > 1 ? "s" : "")}";
+        }
+        else
+        {
+            return date.ToString("dd/MM/yyyy");
+        }
+    }
+}

@@ -9,10 +9,10 @@
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
-<PageTitle>Inscription - ModsGamingPlatform</PageTitle>
+<PageTitle>Inscription - ModHub</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8 py-8">
-    <MudCard Elevation="25" Class="rounded-lg">
+    <MudCard Elevation="3" Class="rounded-xl" Style="background-color: #232634;">
         <MudCardHeader>
             <MudText Typo="Typo.h4" Align="Align.Center" Class="w-100">Créer un compte</MudText>
         </MudCardHeader>
@@ -88,7 +88,8 @@
                           ButtonType="ButtonType.Submit" 
                           Size="Size.Large" 
                           FullWidth="true" 
-                          Class="mt-4"
+                          Class="mt-4 register-button"
+                          Style="transition: all 0.2s ease-in-out; border-radius: 8px;"
                           Disabled="isLoading">
                     @if (isLoading)
                     {
@@ -102,8 +103,20 @@
                 </MudButton>
                 
                 <div class="d-flex justify-center mt-4">
-                    <MudText>Vous avez déjà un compte ? <MudLink Href="/login">Se connecter</MudLink></MudText>
+                    <MudText>Vous avez déjà un compte ? <MudLink Href="/login" Color="Color.Primary">Se connecter</MudLink></MudText>
                 </div>
+                
+                <MudDivider Class="my-6" />
+                
+                <MudText Align="Align.Center" Class="mb-4">Ou inscrivez-vous avec</MudText>
+                
+                <MudButton Variant="Variant.Outlined" 
+                          StartIcon="@Icons.Custom.Brands.Google"
+                          Color="Color.Error"
+                          FullWidth="true"
+                          OnClick="HandleGoogleSignIn">
+                    Google
+                </MudButton>
             </EditForm>
         </MudCardContent>
     </MudCard>
@@ -180,6 +193,39 @@
         finally
         {
             isLoading = false;
+        }
+    }
+    
+    private void HandleGoogleSignIn()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+        
+        try
+        {
+            // Redirection vers l'authentification Google OAuth
+            var redirectUri = NavigationManager.BaseUri + "signin-google";
+            var authorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
+            
+            var queryParams = new Dictionary<string, string>
+            {
+                { "client_id", "809448317022-j15ftsa8viduc70o0e02b7u90tfrtscv.apps.googleusercontent.com" },
+                { "redirect_uri", redirectUri },
+                { "response_type", "code" },
+                { "scope", "openid email profile" },
+                { "access_type", "offline" },
+                { "state", Guid.NewGuid().ToString() }
+            };
+            
+            var queryString = string.Join("&", queryParams.Select(p => $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value)}"));
+            var authorizationRequest = $"{authorizationEndpoint}?{queryString}";
+            
+            NavigationManager.NavigateTo(authorizationRequest, true);
+        }
+        catch (Exception ex)
+        {
+            isLoading = false;
+            errorMessage = $"Erreur: {ex.Message}";
         }
     }
 }
