@@ -2,6 +2,7 @@
 @using Frontend.Models
 @using Frontend.Services
 @using System.Threading.Tasks
+@using PaymentHistoryModel = Frontend.Models.PaymentHistory
 @inject IPaymentService PaymentService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ISnackbar Snackbar
@@ -102,8 +103,7 @@
                                 <MudText Typo="Typo.h6">@payment.Description</MudText>
                             </CardHeaderContent>
                             <CardHeaderActions>
-                                <MudChip<string> Label="true" Color="Color.Primary"
-                                      Class="@GetStatusClass(payment.Status)">
+                                <MudChip T="string" Class="@GetStatusClass(payment.Status)">
                                     @GetStatusText(payment.Status)
                                 </MudChip>
                             </CardHeaderActions>
@@ -137,8 +137,8 @@
 </MudContainer>
 
 @code {
-    private List<PaymentHistory> _payments = new();
-    private List<PaymentHistory> _filteredPayments = new();
+    private List<PaymentHistoryModel> _payments = new();
+    private List<PaymentHistoryModel> _filteredPayments = new();
     private bool _isLoading = true;
     private DateRange _dateRange = null;
     private string _currentUserId = string.Empty;
@@ -164,7 +164,7 @@
                 if (!string.IsNullOrEmpty(_currentUserId))
                 {
                     _payments = await PaymentService.GetPaymentHistoryAsync(_currentUserId);
-                    _filteredPayments = new List<PaymentHistory>(_payments);
+                    _filteredPayments = new List<PaymentHistoryModel>(_payments);
                 }
             }
             else
@@ -186,7 +186,7 @@
     {
         if (status == "all")
         {
-            _filteredPayments = new List<PaymentHistory>(_payments);
+            _filteredPayments = new List<PaymentHistoryModel>(_payments);
         }
         else
         {

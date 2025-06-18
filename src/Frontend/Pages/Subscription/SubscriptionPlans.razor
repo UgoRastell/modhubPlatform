@@ -2,6 +2,7 @@
 @using Frontend.Services.Subscription
 @using Frontend.Models.Subscription
 @using System.Threading
+@using MudBlazor
 @inject ISubscriptionService SubscriptionService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -50,15 +51,13 @@
                         }
                         
                         <MudCardHeader>
-                            <CardHeaderContent>
+                            <ChildContent>
                                 <MudText Typo="Typo.h5" Style="@($"color: {tier.ThemeColor};")" Class="mb-0">@tier.Name</MudText>
-                            </CardHeaderContent>
-                            @if (!string.IsNullOrEmpty(tier.ImageUrl))
-                            {
-                                <CardHeaderActions>
+                                @if (!string.IsNullOrEmpty(tier.ImageUrl))
+                                {
                                     <MudAvatar Square="true" Size="Size.Medium" Image="@tier.ImageUrl" />
-                                </CardHeaderActions>
-                            }
+                                }
+                            </ChildContent>
                         </MudCardHeader>
                         
                         <MudCardContent>
@@ -71,7 +70,7 @@
                             
                             @if (tier.TrialPeriodDays > 0)
                             {
-                                <MudChip Size="Size.Small" Color="Color.Success" Class="mb-3">
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success" Class="mb-3">
                                     Essai gratuit de @tier.TrialPeriodDays jours
                                 </MudChip>
                             }
@@ -114,10 +113,10 @@
     @if (_subscriptionTiers.Count > 0)
     {
         <div class="d-flex justify-center mt-6 mb-4">
-            <MudToggleGroup SelectedValue="@_selectedBillingCycle" SelectedValueChanged="@OnBillingCycleChanged"
+            <MudToggleGroup T="string" SelectedValue="@_selectedBillingCycle" SelectedValueChanged="@OnBillingCycleChanged"
                           Color="Color.Primary" Rounded="true">
                 <MudToggleItem Value="@("monthly")">Facturation mensuelle</MudToggleItem>
-                <MudToggleItem Value="@("yearly")">Facturation annuelle <MudChip Size="Size.Small" Color="Color.Success">Économisez 20%</MudChip></MudToggleItem>
+                <MudToggleItem Value="@("yearly")">Facturation annuelle <MudChip T="string" Size="Size.Small" Color="Color.Success">Économisez 20%</MudChip></MudToggleItem>
             </MudToggleGroup>
         </div>
     }
@@ -164,10 +163,10 @@
         </MudExpansionPanel>
         
         <MudExpansionPanel Text="Questions fréquentes" Class="mt-2">
-            <MudList Clickable="false">
+            <MudList T="string" Clickable="false">
                 @foreach (var faq in _frequentlyAskedQuestions)
                 {
-                    <MudListItem>
+                    <MudListItem T="string">
                         <MudText Typo="Typo.subtitle1">@faq.Question</MudText>
                         <MudText Typo="Typo.body2" Class="mt-1">@faq.Answer</MudText>
                     </MudListItem>

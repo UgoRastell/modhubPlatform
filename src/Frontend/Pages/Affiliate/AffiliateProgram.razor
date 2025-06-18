@@ -1,7 +1,10 @@
 @page "/affiliate-program"
 @using Frontend.Services.Affiliate
 @using Frontend.Models.Affiliate
+@using Frontend.Models.Affiliate.Requests
+@using Frontend.Components.Affiliate
 @using System.Threading
+@using Microsoft.AspNetCore.Authorization
 @inject IAffiliateService AffiliateService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
@@ -61,19 +64,19 @@
                     {
                         <div class="d-flex justify-center mb-4">
                             <MudAvatar Size="Size.Large" Style="background-color: var(--mud-palette-primary); color: white;">
-                                @_statistics.CurrentLevel.Name[0]
+                                @(_levelName != null && _levelName.Length > 0 ? _levelName[0] : '?')
                             </MudAvatar>
                         </div>
-                        <MudText Typo="Typo.h5" Align="Align.Center">@_statistics.CurrentLevel.Name</MudText>
-                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mb-4">@_statistics.CurrentLevel.Description</MudText>
+                        <MudText Typo="Typo.h5" Align="Align.Center">@_levelName</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mb-4">@_levelDescription</MudText>
                         
-                        <MudText Typo="Typo.subtitle2" Class="mb-2">Commission: <strong>@(_statistics.CurrentLevel.BonusCommissionPercentage + _programDetails?.CommissionPercentage ?? 0)%</strong></MudText>
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Commission: <strong>@(_bonusPercentage + _programDetails?.CommissionPercentage ?? 0)%</strong></MudText>
                         
                         <MudText Typo="Typo.subtitle2" Class="mt-3 mb-2">Progression vers le niveau suivant:</MudText>
                         <MudProgressLinear Value="@_statistics.NextLevelProgress" Color="Color.Info" Class="mb-4" />
                         
                         <MudText Typo="Typo.subtitle2" Class="mt-3 mb-2">Avantages:</MudText>
-                        @foreach (var benefit in _statistics.CurrentLevel.Benefits)
+                        @foreach (var benefit in _levelBenefits)
                         {
                             <MudText Typo="Typo.body2" Class="d-flex align-center">
                                 <MudIcon Icon="@Icons.Material.Filled.Check" Class="mr-2" Color="Color.Success" Size="Size.Small" />
@@ -189,7 +192,7 @@
                                 <MudTd DataLabel="Description">@context.Description</MudTd>
                                 <MudTd DataLabel="Montant">@context.Amount.ToString("C2")</MudTd>
                                 <MudTd DataLabel="Statut">
-                                    <MudChip Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                                    <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
                                         @context.Status
                                     </MudChip>
                                 </MudTd>
@@ -239,12 +242,18 @@
 </MudContainer>
 
 @code {
-    private bool _loading = true;
     private AffiliateProgramInfo? _programDetails;
-    private AffiliateStatistics? _statistics;
-    private List<AffiliateLink> _affiliateLinks = new();
-    private List<AffiliateCommission> _commissions = new();
+    private AffiliateUserStatistics? _statistics;
+    private List<AffiliateLink>? _affiliateLinks;
+    private List<AffiliateCommission>? _commissions;
+    private bool _loading = true;
     private CancellationTokenSource _cts = new();
+    
+    // Properties to handle CurrentLevel data 
+    private string _levelName = "Standard";
+    private string _levelDescription = "Niveau standard d'affiliation";
+    private decimal _bonusPercentage = 0;
+    private List<string> _levelBenefits = new List<string>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -270,11 +279,70 @@
         // Charger les statistiques de l'utilisateur
         _statistics = await AffiliateService.GetUserStatisticsAsync();
         
+        // Déterminer le niveau d'affiliation en fonction de la valeur CurrentLevel
+        if (_statistics != null)
+        {
+            SetLevelProperties(_statistics.CurrentLevel);
+        }
+        
         // Charger les liens d'affiliation de l'utilisateur
         _affiliateLinks = await AffiliateService.GetUserAffiliateLinksAsync();
         
         // Charger les commissions de l'utilisateur
         _commissions = await AffiliateService.GetUserCommissionsAsync();
+    }
+    
+    // Méthode pour définir les propriétés de niveau en fonction de l'ID de niveau
+    private void SetLevelProperties(int levelId)
+    {
+        switch (levelId)
+        {
+            case 1:
+                _levelName = "Bronze";
+                _levelDescription = "Niveau de départ pour les affiliés";
+                _bonusPercentage = 0;
+                _levelBenefits = new List<string> { "Commission de base", "Support par email" };
+                break;
+            case 2:
+                _levelName = "Silver";
+                _levelDescription = "Niveau intermédiaire pour affiliés actifs";
+                _bonusPercentage = 2.5m;
+                _levelBenefits = new List<string> { 
+                    "Commission augmentée de 2.5%", 
+                    "Support prioritaire",
+                    "Accès aux promotions exclusives" 
+                };
+                break;
+            case 3:
+                _levelName = "Gold";
+                _levelDescription = "Niveau premium pour affiliés performants";
+                _bonusPercentage = 5m;
+                _levelBenefits = new List<string> { 
+                    "Commission augmentée de 5%", 
+                    "Support VIP",
+                    "Promotions exclusives",
+                    "Paiements prioritaires" 
+                };
+                break;
+            case 4:
+                _levelName = "Platinum";
+                _levelDescription = "Niveau élite pour les meilleurs affiliés";
+                _bonusPercentage = 10m;
+                _levelBenefits = new List<string> { 
+                    "Commission augmentée de 10%", 
+                    "Support dédié 24/7",
+                    "Promotions exclusives",
+                    "Paiements accélérés",
+                    "Commissions sur les renouvellements" 
+                };
+                break;
+            default:
+                _levelName = "Standard";
+                _levelDescription = "Niveau standard d'affiliation";
+                _bonusPercentage = 0;
+                _levelBenefits = new List<string> { "Commission de base" };
+                break;
+        }
     }
     
     private async Task OpenGenerateLinkDialog()

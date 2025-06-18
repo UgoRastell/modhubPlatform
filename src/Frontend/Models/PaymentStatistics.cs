@@ -64,6 +64,12 @@ namespace Frontend.Models
         public long MonthlyRecurringRevenue { get; set; }
         
         /// <summary>
+        /// Revenu mensuel en centimes
+        /// </summary>
+        [JsonPropertyName("monthlyRevenue")]
+        public long MonthlyRevenue { get; set; }
+        
+        /// <summary>
         /// Nombre de transactions nécessitant une intervention
         /// </summary>
         [JsonPropertyName("transactionsRequiringReview")]
@@ -124,6 +130,12 @@ namespace Frontend.Models
         public string Name { get; set; } = string.Empty;
         
         /// <summary>
+        /// Étiquette pour la légende du graphique
+        /// </summary>
+        [JsonPropertyName("label")]
+        public string Label { get; set; } = string.Empty;
+        
+        /// <summary>
         /// Valeurs des données
         /// </summary>
         [JsonPropertyName("data")]
@@ -166,6 +178,12 @@ namespace Frontend.Models
         public string UserId { get; set; } = string.Empty;
         
         /// <summary>
+        /// Email de l'utilisateur
+        /// </summary>
+        [JsonPropertyName("userEmail")]
+        public string UserEmail { get; set; } = string.Empty;
+        
+        /// <summary>
         /// Montant de la transaction en centimes
         /// </summary>
         [JsonPropertyName("amount")]
@@ -184,10 +202,28 @@ namespace Frontend.Models
         public string Status { get; set; } = string.Empty;
         
         /// <summary>
+        /// Date de la transaction
+        /// </summary>
+        [JsonPropertyName("transactionDate")]
+        public DateTime TransactionDate { get; set; }
+        
+        /// <summary>
         /// Date de création
         /// </summary>
         [JsonPropertyName("createdAt")]
         public DateTime CreatedAt { get; set; }
+        
+        /// <summary>
+        /// Type de problème
+        /// </summary>
+        [JsonPropertyName("issueType")]
+        public string IssueType { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Priorité du problème
+        /// </summary>
+        [JsonPropertyName("priority")]
+        public string Priority { get; set; } = "Normal";
         
         /// <summary>
         /// Raison de l'intervention nécessaire

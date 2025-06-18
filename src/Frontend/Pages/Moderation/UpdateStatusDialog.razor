@@ -1,5 +1,6 @@
 @using Frontend.Models.Moderation
 @using Frontend.Services.Moderation
+@using MudBlazor
 @inject IModerationService ModerationService
 @inject ISnackbar Snackbar
 
@@ -49,7 +50,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public ContentReport Report { get; set; } = new();
     [Parameter] public ReportStatus CurrentStatus { get; set; }
     

@@ -16,7 +16,7 @@
             <MudTooltip Text="Ajouter une dépendance">
                 <MudIconButton Icon="@Icons.Material.Filled.Add" 
                               Color="Color.Primary" 
-                              OnClick="OpenDependencyDialog"
+                              OnClick="@(() => OpenDependencyDialog())"
                               Class="neon-glow-primary" />
             </MudTooltip>
         </CardHeaderActions>
@@ -189,7 +189,7 @@
         try 
         {
             // Récupérer tous les mods (sauf celui en cours)
-            var result = await ModService.GetModsAsync();
+            var result = await ModService.GetModsAsync(1, 1000, "", "", "");
             _availableMods = result.Where(m => m.Id != ModId).ToList();
         }
         catch (Exception ex)

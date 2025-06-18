@@ -1,5 +1,6 @@
 @using Frontend.Models
 @using Frontend.Theme
+@using MudBlazor
 
 <MudDialog Class="mods-dialog neon-border">
     <DialogContent>
@@ -12,20 +13,20 @@
                                 <MudText Typo="Typo.h6">Détails de la transaction</MudText>
                             </CardHeaderContent>
                             <CardHeaderActions>
-                                <MudChip T="string" Color="@GetStatusColor()" Size="Size.Small" Class="neon-chip">@Transaction.IssueType</MudChip>
-                                <MudChip T="string" Color="@GetPriorityColor()" Size="Size.Small" Class="neon-chip">Priorité @Transaction.Priority</MudChip>
+                                <MudChip T="string" Color="@GetStatusColor()" Size="Size.Small" Class="neon-chip">@Transaction.Status</MudChip>
+                                <MudChip T="string" Color="@GetPriorityColor()" Size="Size.Small" Class="neon-chip">Priorité @Transaction.ReviewPriority</MudChip>
                             </CardHeaderActions>
                         </MudCardHeader>
                         <MudCardContent>
                             <MudGrid>
                                 <MudItem xs="6">
-                                    <MudField Label="ID" Variant="Variant.Outlined">@Transaction.TransactionId</MudField>
+                                    <MudField Label="ID" Variant="Variant.Outlined">@Transaction.Id</MudField>
                                 </MudItem>
                                 <MudItem xs="6">
                                     <MudField Label="ID Externe" Variant="Variant.Outlined">@Transaction.ExternalId</MudField>
                                 </MudItem>
                                 <MudItem xs="6">
-                                    <MudField Label="Date" Variant="Variant.Outlined">@Transaction.TransactionDate.ToLocalTime().ToString("g")</MudField>
+                                    <MudField Label="Date" Variant="Variant.Outlined">@Transaction.CreatedAt.ToLocalTime().ToString("g")</MudField>
                                 </MudItem>
                                 <MudItem xs="6">
                                     <MudField Label="Montant" Variant="Variant.Outlined">@FormattedAmount</MudField>
@@ -33,39 +34,17 @@
                                 <MudItem xs="12">
                                     <MudField Label="Utilisateur" Variant="Variant.Outlined">
                                         <div class="d-flex">
-                                            <MudText>@Transaction.UserEmail</MudText>
-                                            <MudText Class="ml-2">(@Transaction.UserId)</MudText>
+                                            <MudText>@Transaction.UserId</MudText>
                                         </div>
                                     </MudField>
                                 </MudItem>
                                 <MudItem xs="12">
-                                    <MudField Label="Description" Variant="Variant.Outlined">@Transaction.Description</MudField>
+                                    <MudField Label="Description" Variant="Variant.Outlined">@Transaction.Status</MudField>
                                 </MudItem>
                                 <MudItem xs="12">
-                                    <MudField Label="Problème détecté" Variant="Variant.Outlined">@Transaction.IssueDescription</MudField>
+                                    <MudField Label="Problème détecté" Variant="Variant.Outlined">@Transaction.ReviewReason</MudField>
                                 </MudItem>
-                                <MudItem xs="12" Class="mt-2">
-                                    <MudExpansionPanels>
-                                        <MudExpansionPanel Text="Historique des événements">
-                                            <MudTimeline>
-                                                @foreach (var entry in Transaction.EventLog)
-                                                {
-                                                    <MudTimelineItem Color="@GetEventColor(entry.EventType)">
-                                                        <ItemOpposite>@entry.Timestamp.ToLocalTime().ToString("g")</ItemOpposite>
-                                                        <ItemContent>
-                                                            <MudText Color="@GetEventColor(entry.EventType)">@entry.EventType</MudText>
-                                                            <MudText>@entry.Description</MudText>
-                                                            @if (!string.IsNullOrEmpty(entry.AdditionalData))
-                                                            {
-                                                                <MudText Typo="Typo.caption">@entry.AdditionalData</MudText>
-                                                            }
-                                                        </ItemContent>
-                                                    </MudTimelineItem>
-                                                }
-                                            </MudTimeline>
-                                        </MudExpansionPanel>
-                                    </MudExpansionPanels>
-                                </MudItem>
+                                <!-- Journal d'événements retiré car pas disponible dans le modèle actuel -->
                             </MudGrid>
                         </MudCardContent>
                     </MudCard>
@@ -80,7 +59,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
     
     [Parameter] public ReviewTransaction Transaction { get; set; } = default!;
     
@@ -96,7 +75,7 @@
 
     private Color GetStatusColor()
     {
-        return Transaction.IssueType.ToLower() switch
+        return Transaction.Status.ToLower() switch
         {
             "failed" => Color.Error,
             "dispute" => Color.Error,
@@ -108,7 +87,7 @@
 
     private Color GetPriorityColor()
     {
-        return Transaction.Priority switch
+        return Transaction.ReviewPriority switch
         {
             1 => Color.Info,
             2 => Color.Warning,
@@ -117,17 +96,5 @@
         };
     }
 
-    private Color GetEventColor(string eventType)
-    {
-        return eventType.ToLower() switch
-        {
-            "created" => Color.Info,
-            "succeeded" => Color.Success,
-            "failed" => Color.Error,
-            "refunded" => Color.Warning,
-            "disputed" => Color.Error,
-            "review_requested" => Color.Warning,
-            _ => Color.Default
-        };
-    }
+    // Fonction retirée car EventLog n'est pas disponible dans le modèle actuel
 }

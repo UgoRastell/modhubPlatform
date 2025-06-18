@@ -2,6 +2,19 @@
   "version": 3,
   "targets": {
     "net9.0": {
+      "FluentValidation/12.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/FluentValidation.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/FluentValidation.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.AspNetCore.Authorization/9.0.2": {
         "type": "package",
         "dependencies": {
@@ -678,6 +691,19 @@
       }
     },
     "net9.0/browser-wasm": {
+      "FluentValidation/12.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/FluentValidation.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/FluentValidation.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.AspNetCore.Authorization/9.0.2": {
         "type": "package",
         "dependencies": {
@@ -1355,6 +1381,21 @@
     }
   },
   "libraries": {
+    "FluentValidation/12.0.0": {
+      "sha512": "8NVLxtMUXynRHJIX3Hn1ACovaqZIJASufXIIFkD0EUbcd5PmMsL1xUD5h548gCezJ5BzlITaR9CAMrGe29aWpA==",
+      "type": "package",
+      "path": "fluentvalidation/12.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "fluent-validation-icon.png",
+        "fluentvalidation.12.0.0.nupkg.sha512",
+        "fluentvalidation.nuspec",
+        "lib/net8.0/FluentValidation.dll",
+        "lib/net8.0/FluentValidation.xml"
+      ]
+    },
     "Microsoft.AspNetCore.Authorization/9.0.2": {
       "sha512": "XpB+xelGR4xxV8UX0Sa2OXr1ZsZgNyF5Xv1Yn3K5GCnzl7wkwczmnER5/E2A+7tBRf424OSPrBdN3gzz5wa14Q==",
       "type": "package",
@@ -2510,6 +2551,7 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
+      "FluentValidation >= 12.0.0",
       "Microsoft.AspNetCore.Components.WebAssembly >= 9.0.2",
       "Microsoft.AspNetCore.Components.WebAssembly.Authentication >= 9.0.2",
       "Microsoft.AspNetCore.Components.WebAssembly.DevServer >= 9.0.2",
@@ -2524,19 +2566,19 @@
   },
   "packageFolders": {
     "C:\\Users\\ugora\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "D:\\Visual Studio\\SDK\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\Frontend.csproj",
+      "projectUniqueName": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Frontend\\Frontend.csproj",
       "projectName": "Frontend",
-      "projectPath": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\Frontend.csproj",
+      "projectPath": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Frontend\\Frontend.csproj",
       "packagesPath": "C:\\Users\\ugora\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\",
+      "outputPath": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Frontend\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "D:\\Visual Studio\\SDK\\NuGetPackages"
       ],
       "configFilePaths": [
         "C:\\Users\\ugora\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -2548,15 +2590,14 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "c:\\Users\\ugora\\Desktop\\modhub\\src\\Shared\\Shared.csproj": {
-              "projectPath": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Shared\\Shared.csproj"
+            "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Shared\\Shared.csproj": {
+              "projectPath": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Shared\\Shared.csproj"
             }
           }
         }
@@ -2577,6 +2618,10 @@
       "net9.0": {
         "targetAlias": "net9.0",
         "dependencies": {
+          "FluentValidation": {
+            "target": "Package",
+            "version": "[12.0.0, )"
+          },
           "Microsoft.AspNetCore.Components.WebAssembly": {
             "target": "Package",
             "version": "[9.0.2, )"

@@ -119,12 +119,21 @@
                                         <div class="mt-1">
                                             @foreach (var tag in context.Tags.Take(3))
                                             {
-                                                <MudChip Size="Size.Small" Label="true" Color="Color.Primary" Class="ma-1">@tag</MudChip>
+                                                <MudChip T="string" Size="Size.Small" Label="true" Color="Color.Primary" Class="ma-1">@tag</MudChip>
+                                            }
+                                            
+                                            @if (context.IsPinned)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Class="mr-2">Épinglé</MudChip>
+                                            }
+                                            @if (context.IsLocked)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Error" Class="mr-2">Verrouillé</MudChip>
                                             }
                                             
                                             @if (context.Tags.Count > 3)
                                             {
-                                                <MudChip Size="Size.Small" Label="true" Class="ma-1">+@(context.Tags.Count - 3)</MudChip>
+                                                <MudChip T="string" Size="Size.Small" Label="true" Class="ma-1">+@(context.Tags.Count - 3)</MudChip>
                                             }
                                         </div>
                                         
@@ -164,6 +173,7 @@
                 }
             </MudItem>
         </MudGrid>
+    }
 </MudContainer>
 
 @code {
@@ -230,7 +240,7 @@
             _refreshing = true;
             var pageSize = 20;
             var result = await ForumService.GetTopicsByCategoryAsync(CategoryId, _currentPage, pageSize, _sortOrder);
-            _topics = result.Topics;
+            _topics = result.Items;
             _totalPages = result.TotalPages;
         }
         catch (Exception ex)

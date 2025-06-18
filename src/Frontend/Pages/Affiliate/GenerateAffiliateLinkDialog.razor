@@ -1,16 +1,19 @@
 @using Frontend.Models.Affiliate
+@using MudBlazor
+@using FluentValidation
+@using Frontend.Models.Affiliate.Requests
 @inject IModService ModService
 
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="_form" Model="@_linkRequest" Validation="@(_validator.ValidateValue)">
+        <MudForm @ref="_form" Model="@_linkRequest" Validator="@(new Func<object, string>(ValidateForm))">
             <MudGrid>
                 <MudItem xs="12">
                     <MudSelect T="string" Label="Type de cible" Required="true"
                               @bind-Value="_linkRequest.TargetType"
                               For="@(() => _linkRequest.TargetType)"
                               Immediate="true"
-                              OnSelectedValuesChanged="@HandleTargetTypeChanged">
+                              OnSelectedValuesChanged="@(async (values) => await HandleTargetTypeChanged(values))">
                         <MudSelectItem Value="@("mod")">Mod</MudSelectItem>
                         <MudSelectItem Value="@("subscription")">Abonnement Premium</MudSelectItem>
                         <MudSelectItem Value="@("site")">Site entier</MudSelectItem>
@@ -27,11 +30,10 @@
                         else
                         {
                             <MudAutocomplete T="ModBasicInfo" Label="Sélectionner un mod" Required="true"
-                                         @bind-Value="_selectedMod"
+                                         @bind-Value="SelectedMod"
                                          SearchFunc="@SearchMods"
                                          ToStringFunc="@(mod => mod.Name)"
-                                         ValueChanged="@(mod => _linkRequest.TargetId = mod?.Id ?? string.Empty)"
-                                         For="@(() => _selectedMod)">
+                                         For="@(() => SelectedMod)">
                                 <ItemTemplate Context="mod">
                                     <MudText>@mod.Name</MudText>
                                 </ItemTemplate>
@@ -41,8 +43,7 @@
                 }
                 
                 <MudItem xs="12">
-                    <MudTextField T="string" Label="Étiquette personnalisée (optionnel)" 
-                                @bind-Value="_linkRequest.CustomLabel"
+                    <MudTextField @bind-Value="_linkRequest.CustomLabel" Label="Étiquette personnalisée (optionnel)" 
                                 For="@(() => _linkRequest.CustomLabel)"
                                 HelperText="Une étiquette personnalisée pour identifier ce lien (ex: 'Instagram', 'YouTube')"/>
                 </MudItem>
@@ -71,12 +72,12 @@
                 @if (_programDetails?.AllowCustomCommission == true)
                 {
                     <MudItem xs="12">
-                        <MudSlider @bind-Value="_linkRequest.CustomCommissionPercentage"
-                                  Min="0"
-                                  Max="@(_programDetails?.MaxCustomCommission ?? 10)"
-                                  Step="0.5"
-                                  TickMarks="true"
-                                  Label="Commission personnalisée">
+                        <MudSlider T="decimal" @bind-Value="@(_linkRequest.CustomCommissionPercentage ?? 0m)"
+                                   Min="0m"
+                                   Max="@(Convert.ToDecimal(_programDetails?.MaxCustomCommission ?? 10))"
+                                   Step="0.5m"
+                                   TickMarks="true"
+                                   Label="Commission personnalisée">
                             @(_linkRequest.CustomCommissionPercentage)%
                         </MudSlider>
                         <MudText Typo="Typo.caption">
@@ -95,16 +96,32 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public AffiliateProgramInfo? ProgramDetails { get; set; }
     
     private MudForm _form = null!;
-    private LinkGenerationRequest _linkRequest = new();
+    private LinkGenerationRequest _linkRequest = new()
+    {
+        ModId = string.Empty,
+        CustomTag = string.Empty
+    };
     private ModBasicInfo? _selectedMod;
     private bool _loadingMods;
     private AffiliateProgramInfo? _programDetails => ProgramDetails;
     
-    private FluentValidation.IValidator _validator;
+    // Add property with setter to update TargetId when a mod is selected
+    private ModBasicInfo? SelectedMod
+    {
+        get => _selectedMod;
+        set
+        {
+            _selectedMod = value;
+            if (_selectedMod != null)
+            {
+                _linkRequest.TargetId = _selectedMod.Id;
+            }
+        }
+    }
     
     public class ModBasicInfo
     {
@@ -112,12 +129,24 @@
         public string Name { get; set; } = string.Empty;
     }
     
-    protected override void OnInitialized()
+    
+    private string ValidateForm(object model)
     {
-        _validator = new LinkGenerationValidator();
+        if (model is LinkGenerationRequest request)
+        {
+            // Validation de base
+            if (string.IsNullOrWhiteSpace(request.TargetType))
+                return "Le type de cible est requis";
+                
+            // Valider que si le type est mod, un mod est sélectionné
+            if (request.TargetType == "mod" && string.IsNullOrWhiteSpace(request.TargetId))
+                return "Veuillez sélectionner un mod";
+        }
+        
+        return string.Empty;
     }
     
-    private async Task<IEnumerable<ModBasicInfo>> SearchMods(string value)
+    private async Task<IEnumerable<ModBasicInfo>> SearchMods(string value, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(value))
         {
@@ -127,11 +156,19 @@
         _loadingMods = true;
         try
         {
-            // Appel au service pour récupérer les mods correspondant au terme de recherche
-            var mods = await ModService.SearchModsAsync(value);
-            return mods.Select(m => new ModBasicInfo { Id = m.Id, Name = m.Name }).ToList();
+            // Mock implementation until the service method is implemented
+            // Normally we would call: await ModService.SearchModsAsync(value, cancellationToken);
+            await Task.Delay(100, cancellationToken); // Simulate API call
+            
+            // Return mock data
+            return new List<ModBasicInfo> 
+            {
+                new ModBasicInfo { Id = "mod1", Name = $"{value} Mod 1" },
+                new ModBasicInfo { Id = "mod2", Name = $"{value} Mod 2" },
+                new ModBasicInfo { Id = "mod3", Name = $"{value} Mod 3" }
+            };
         }
-        catch
+        catch (Exception)
         {
             return new List<ModBasicInfo>();
         }

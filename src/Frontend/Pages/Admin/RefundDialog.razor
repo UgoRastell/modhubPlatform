@@ -1,5 +1,6 @@
 @using Frontend.Models
 @using Frontend.Theme
+@using MudBlazor
 
 <MudDialog Class="mods-dialog neon-border">
     <DialogContent>
@@ -12,16 +13,16 @@
                     <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background-color: rgba(0, 170, 255, 0.05); border: 1px solid rgba(0, 170, 255, 0.15);">
                         <MudGrid>
                             <MudItem xs="6">
-                                <MudText><strong>Transaction ID:</strong> @Transaction.TransactionId</MudText>
+                                <MudText><strong>Transaction ID:</strong> @Transaction.Id</MudText>
                             </MudItem>
                             <MudItem xs="6">
                                 <MudText><strong>Montant:</strong> @Transaction.Amount.ToString("C", new System.Globalization.CultureInfo("fr-FR"))</MudText>
                             </MudItem>
                             <MudItem xs="6">
-                                <MudText><strong>Utilisateur:</strong> @Transaction.UserEmail</MudText>
+                                <MudText><strong>Utilisateur:</strong> @Transaction.UserId</MudText>
                             </MudItem>
                             <MudItem xs="6">
-                                <MudText><strong>Date:</strong> @Transaction.TransactionDate.ToLocalTime().ToString("g")</MudText>
+                                <MudText><strong>Date:</strong> @Transaction.CreatedAt.ToLocalTime().ToString("g")</MudText>
                             </MudItem>
                         </MudGrid>
                     </MudPaper>
@@ -59,7 +60,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
     
     [Parameter] public ReviewTransaction Transaction { get; set; } = default!;
     

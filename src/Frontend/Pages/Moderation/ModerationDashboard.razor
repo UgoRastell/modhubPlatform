@@ -1,6 +1,7 @@
 @page "/admin/moderation"
 @using Frontend.Models.Moderation
 @using Frontend.Services.Moderation
+@using Microsoft.AspNetCore.Authorization
 @inject IModerationService ModerationService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -100,9 +101,9 @@
                         <MudTd DataLabel="ID">@context.Id.Substring(0, Math.Min(8, context.Id.Length))...</MudTd>
                         <MudTd DataLabel="Date">@context.CreatedAt.ToString("dd/MM/yyyy HH:mm")</MudTd>
                         <MudTd DataLabel="Type">
-                            <MudChip<string> Size="Size.Small" Color="@GetContentTypeColor(context.ContentType)">
+                            <MudChip T="string" Size="Size.Small" Color="@GetContentTypeColor(context.ContentType)">
                                 @context.ContentType.ToString()
-                            </MudChip<string>>
+                            </MudChip>
                         </MudTd>
                         <MudTd DataLabel="Raison">
                             <MudTooltip Text="@context.Description">
@@ -111,14 +112,14 @@
                         </MudTd>
                         <MudTd DataLabel="Signalé par">@context.ReportedByUsername</MudTd>
                         <MudTd DataLabel="Statut">
-                            <MudChip<string> Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                            <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
                                 @context.Status.ToString()
-                            </MudChip<string>>
+                            </MudChip>
                         </MudTd>
                         <MudTd DataLabel="Priorité">
-                            <MudChip<string> Size="Size.Small" Color="@GetPriorityColor(context.Priority)">
+                            <MudChip T="string" Size="Size.Small" Color="@GetPriorityColor(context.Priority)">
                                 @context.Priority.ToString()
-                            </MudChip<string>>
+                            </MudChip>
                         </MudTd>
                         <MudTd Style="text-align: center">
                             <MudIconButton Icon="@Icons.Material.Filled.Visibility" 

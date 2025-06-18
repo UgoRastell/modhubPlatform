@@ -1,5 +1,7 @@
 @using Frontend.Models.Moderation
 @using Frontend.Services.Moderation
+@using MudBlazor
+@using Microsoft.AspNetCore.Authorization
 @inject IModerationService ModerationService
 @inject ISnackbar Snackbar
 
@@ -13,45 +15,45 @@
         </MudText>
         
         <MudForm @ref="_form" @bind-IsValid="_formIsValid">
-            <MudRadioGroup<ModeratorAction> @bind-SelectedOption="_request.Action" Required="true" RequiredError="Veuillez sélectionner une action" Class="mb-3">
+            <MudRadioGroup T="ModeratorAction" @bind-SelectedOption="_request.Action" Required="true" RequiredError="Veuillez sélectionner une action" Class="mb-3">
                 <MudText Typo="Typo.subtitle2" Class="mb-2">Action à prendre:</MudText>
                 
-                <MudRadio<ModeratorAction> Option="@(ModeratorAction.ContentRemoved)" Color="Color.Error">
+                <MudRadio T="ModeratorAction" Option="@(ModeratorAction.ContentRemoved)" Color="Color.Error">
                     Supprimer le contenu
                 </MudRadio>
                 <MudText Typo="Typo.caption" Class="ml-4 mb-2">Supprime définitivement le contenu signalé</MudText>
                 
-                <MudRadio<ModeratorAction> Option="@(ModeratorAction.ContentEdited)" Color="Color.Warning">
+                <MudRadio T="ModeratorAction" Option="@(ModeratorAction.ContentEdited)" Color="Color.Warning">
                     Éditer le contenu
                 </MudRadio>
                 <MudText Typo="Typo.caption" Class="ml-4 mb-2">Modifie le contenu pour supprimer ou corriger la partie problématique</MudText>
                 
-                <MudRadio<ModeratorAction> Option="@(ModeratorAction.UserWarned)" Color="Color.Info">
+                <MudRadio T="ModeratorAction" Option="@(ModeratorAction.UserWarned)" Color="Color.Info">
                     Avertir l'utilisateur
                 </MudRadio>
                 <MudText Typo="Typo.caption" Class="ml-4 mb-2">Envoie un avertissement à l'utilisateur concernant son comportement</MudText>
                 
-                <MudRadio<ModeratorAction> Option="@(ModeratorAction.UserSuspended)" Color="Color.Warning">
+                <MudRadio T="ModeratorAction" Option="@(ModeratorAction.UserSuspended)" Color="Color.Warning">
                     Suspendre l'utilisateur
                 </MudRadio>
                 <MudText Typo="Typo.caption" Class="ml-4 mb-2">Suspend temporairement l'accès de l'utilisateur à la plateforme</MudText>
                 
-                <MudRadio<ModeratorAction> Option="@(ModeratorAction.UserBanned)" Color="Color.Error">
+                <MudRadio T="ModeratorAction" Option="@(ModeratorAction.UserBanned)" Color="Color.Error">
                     Bannir l'utilisateur
                 </MudRadio>
                 <MudText Typo="Typo.caption" Class="ml-4 mb-2">Bannit définitivement l'utilisateur de la plateforme</MudText>
                 
-                <MudRadio<ModeratorAction> Option="@(ModeratorAction.ReportRejected)" Color="Color.Default">
+                <MudRadio T="ModeratorAction" Option="@(ModeratorAction.ReportRejected)" Color="Color.Default">
                     Rejeter le signalement
                 </MudRadio>
                 <MudText Typo="Typo.caption" Class="ml-4 mb-2">Rejette le signalement car le contenu ne viole pas les règles</MudText>
                 
-                <MudRadio<ModeratorAction> Option="@(ModeratorAction.EscalatedToAdmin)" Color="Color.Secondary">
+                <MudRadio T="ModeratorAction" Option="@(ModeratorAction.EscalatedToAdmin)" Color="Color.Secondary">
                     Escalader aux administrateurs
                 </MudRadio>
                 <MudText Typo="Typo.caption" Class="ml-4 mb-2">Transfère le signalement à un administrateur pour une décision finale</MudText>
                 
-                <MudRadio<ModeratorAction> Option="@(ModeratorAction.NoAction)" Color="Color.Default">
+                <MudRadio T="ModeratorAction" Option="@(ModeratorAction.NoAction)" Color="Color.Default">
                     Aucune action
                 </MudRadio>
                 <MudText Typo="Typo.caption" Class="ml-4 mb-2">Marquer comme résolu sans prendre d'action supplémentaire</MudText>
@@ -88,7 +90,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public ContentReport Report { get; set; } = new();
     
     private ModeratorActionRequest _request = new();

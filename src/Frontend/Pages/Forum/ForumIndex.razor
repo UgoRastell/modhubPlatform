@@ -55,7 +55,7 @@
                     <div class="d-flex flex-wrap">
                         @foreach (var tag in _popularTags)
                         {
-                            <MudChip Color="Color.Primary" 
+                            <MudChip T="string" Color="Color.Primary" 
                                    Size="Size.Small" 
                                    Label="true" 
                                    OnClick="@(() => HandleTagSearch(tag))"
@@ -95,8 +95,8 @@
                                     <MudText Typo="Typo.body2">@category.Description</MudText>
                                 </CardHeaderContent>
                                 <CardHeaderActions>
-                                    <MudChip Size="Size.Small" Color="Color.Secondary">@category.TopicCount sujets</MudChip>
-                                    <MudChip Size="Size.Small" Color="Color.Secondary">@category.PostCount messages</MudChip>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@category.TopicCount sujets</MudChip>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@category.PostCount messages</MudChip>
                                 </CardHeaderActions>
                             </MudCardHeader>
                             
@@ -184,7 +184,17 @@
 @code {
     private List<ForumCategoryViewModel> _categories = new();
     private List<string> _popularTags = new();
-    private ForumStatistics _forumStats = new();
+    private ForumStatistics _forumStats = new ForumStatistics
+    {
+        MostActiveCategory = "Loading...",
+        MostActiveCategoryId = string.Empty,
+        MostActiveTopic = "Loading...",
+        MostActiveTopicId = string.Empty,
+        MostActiveUser = "Loading...",
+        MostActiveUserId = string.Empty,
+        NewestMemberId = string.Empty,
+        NewestMemberName = "Loading..."
+    };
     private bool _loading = true;
     private string _searchQuery = string.Empty;
     private CancellationTokenSource _cts = new();
