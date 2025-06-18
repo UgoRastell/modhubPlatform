@@ -1,0 +1,339 @@
+@page "/wiki"
+@using Frontend.Services.Wiki
+@using Frontend.Models.Wiki
+@inject IWikiService WikiService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Wiki - ModsGamingPlatform</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
+    <MudGrid>
+        <MudItem xs="12">
+            <div class="d-flex justify-space-between align-center mb-4">
+                <div>
+                    <MudText Typo="Typo.h4">Wiki ModsGamingPlatform</MudText>
+                    <MudText Typo="Typo.body2" Class="mt-1">
+                        Consultez et contribuez à la documentation collaborative des mods et du jeu
+                    </MudText>
+                </div>
+                <div>
+                    <AuthorizeView Roles="Admin,Moderator,Creator">
+                        <Authorized>
+                            <MudButton StartIcon="@Icons.Material.Filled.Add" 
+                                      Variant="Variant.Filled" 
+                                      Color="Color.Primary"
+                                      Href="/wiki/create"
+                                      Class="ml-2">
+                                Nouvel article
+                            </MudButton>
+                        </Authorized>
+                    </AuthorizeView>
+                </div>
+            </div>
+            
+            @if (_loading)
+            {
+                <div class="d-flex justify-center my-8">
+                    <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else
+            {
+                <MudPaper Elevation="3" Class="pa-4 mb-4">
+                    <div class="d-flex mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-3" />
+                        <MudTextField @bind-Value="_searchQuery" 
+                                    Placeholder="Rechercher dans le wiki..." 
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.End" 
+                                    AdornmentIcon="@Icons.Material.Filled.Search"
+                                    AdornmentColor="Color.Primary" 
+                                    OnAdornmentClick="HandleSearch"
+                                    OnKeyDown="@(e => { if(e.Key == "Enter") { HandleSearch(); }})"
+                                    Class="flex-grow-1" />
+                    </div>
+                    
+                    <div class="d-flex flex-wrap">
+                        @foreach (var tag in _popularTags)
+                        {
+                            <MudChip Color="Color.Primary" 
+                                   Size="Size.Small" 
+                                   Label="true" 
+                                   OnClick="@(() => HandleTagSearch(tag))"
+                                   Class="ma-1">
+                                @tag
+                            </MudChip>
+                        }
+                    </div>
+                </MudPaper>
+
+                <MudGrid>
+                    <MudItem xs="12" md="8">
+                        <MudCard Elevation="2" Class="mb-4">
+                            <MudCardHeader>
+                                <CardHeaderAvatar>
+                                    <MudIcon Icon="@Icons.Material.Filled.Bookmarks" Color="Color.Primary" />
+                                </CardHeaderAvatar>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">Articles populaires</MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudDivider />
+                            <MudCardContent>
+                                @if (_featuredPages.Count == 0)
+                                {
+                                    <MudAlert Severity="Severity.Info">
+                                        Aucun article populaire disponible pour le moment.
+                                    </MudAlert>
+                                }
+                                else
+                                {
+                                    <MudList Clickable="true">
+                                        @foreach (var page in _featuredPages)
+                                        {
+                                            <MudListItem Href="@($"/wiki/page/{page.Slug}")">
+                                                <div class="d-flex flex-row">
+                                                    <div class="mr-3">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Article" Color="Color.Secondary" />
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <MudText Typo="Typo.body1">@page.Title</MudText>
+                                                        <MudText Typo="Typo.caption">
+                                                            @((page.Summary.Length > 120) ? page.Summary.Substring(0, 120) + "..." : page.Summary)
+                                                        </MudText>
+                                                    </div>
+                                                    <div class="d-flex flex-column align-end">
+                                                        <MudText Typo="Typo.caption">@page.ViewCount vues</MudText>
+                                                        <MudText Typo="Typo.caption">Mis à jour @FormatTimeAgo(page.LastModifiedAt)</MudText>
+                                                    </div>
+                                                </div>
+                                            </MudListItem>
+                                        }
+                                    </MudList>
+                                }
+                            </MudCardContent>
+                        </MudCard>
+                        
+                        <MudCard Elevation="2" Class="mb-4">
+                            <MudCardHeader>
+                                <CardHeaderAvatar>
+                                    <MudIcon Icon="@Icons.Material.Filled.Update" Color="Color.Primary" />
+                                </CardHeaderAvatar>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">Articles récemment mis à jour</MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudDivider />
+                            <MudCardContent>
+                                @if (_recentPages.Count == 0)
+                                {
+                                    <MudAlert Severity="Severity.Info">
+                                        Aucun article récemment mis à jour.
+                                    </MudAlert>
+                                }
+                                else
+                                {
+                                    <MudList Clickable="true">
+                                        @foreach (var page in _recentPages)
+                                        {
+                                            <MudListItem Href="@($"/wiki/page/{page.Slug}")">
+                                                <div class="d-flex flex-row">
+                                                    <div class="mr-3">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Article" Color="Color.Secondary" />
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <MudText Typo="Typo.body1">@page.Title</MudText>
+                                                        <MudText Typo="Typo.caption">
+                                                            @((page.Summary.Length > 120) ? page.Summary.Substring(0, 120) + "..." : page.Summary)
+                                                        </MudText>
+                                                    </div>
+                                                    <div class="d-flex flex-column align-end">
+                                                        <MudText Typo="Typo.caption">Par @page.LastModifiedByName</MudText>
+                                                        <MudText Typo="Typo.caption">@FormatTimeAgo(page.LastModifiedAt)</MudText>
+                                                    </div>
+                                                </div>
+                                            </MudListItem>
+                                        }
+                                    </MudList>
+                                    
+                                    <div class="d-flex justify-end mt-3">
+                                        <MudButton Variant="Variant.Text" 
+                                                 Color="Color.Primary"
+                                                 Href="/wiki/recent">
+                                            Voir tous les articles récents
+                                        </MudButton>
+                                    </div>
+                                }
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                    
+                    <MudItem xs="12" md="4">
+                        <MudCard Elevation="2" Class="mb-4">
+                            <MudCardHeader>
+                                <CardHeaderAvatar>
+                                    <MudIcon Icon="@Icons.Material.Filled.Category" Color="Color.Primary" />
+                                </CardHeaderAvatar>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">Catégories</MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudDivider />
+                            <MudCardContent>
+                                @if (_categories.Count == 0)
+                                {
+                                    <MudAlert Severity="Severity.Info">
+                                        Aucune catégorie disponible.
+                                    </MudAlert>
+                                }
+                                else
+                                {
+                                    <MudList Clickable="true">
+                                        @foreach (var category in _categories)
+                                        {
+                                            <MudListItem Href="@($"/wiki/category/{category.Slug}")">
+                                                <div class="d-flex justify-space-between">
+                                                    <MudText Typo="Typo.body1">@category.Name</MudText>
+                                                    <MudChip Size="Size.Small" Color="Color.Secondary">@category.PageCount</MudChip>
+                                                </div>
+                                            </MudListItem>
+                                        }
+                                    </MudList>
+                                }
+                            </MudCardContent>
+                        </MudCard>
+                        
+                        <MudCard Elevation="2" Class="mb-4">
+                            <MudCardHeader>
+                                <CardHeaderAvatar>
+                                    <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" />
+                                </CardHeaderAvatar>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">À propos du Wiki</MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudDivider />
+                            <MudCardContent>
+                                <MudText Typo="Typo.body2">
+                                    Ce wiki est une ressource collaborative où les membres de la communauté peuvent partager leur connaissance sur les mods et le jeu.
+                                </MudText>
+                                
+                                <MudDivider Class="my-3" />
+                                
+                                <MudText Typo="Typo.body2" Class="mb-2">
+                                    <strong>Statistiques du Wiki</strong>
+                                </MudText>
+                                
+                                <MudList Dense="true">
+                                    <MudListItem Icon="@Icons.Material.Filled.Article" IconColor="Color.Secondary">
+                                        @_wikiStats.TotalPages articles
+                                    </MudListItem>
+                                    <MudListItem Icon="@Icons.Material.Filled.Category" IconColor="Color.Secondary">
+                                        @_wikiStats.TotalCategories catégories
+                                    </MudListItem>
+                                    <MudListItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Secondary">
+                                        @_wikiStats.TotalRevisions modifications
+                                    </MudListItem>
+                                    <MudListItem Icon="@Icons.Material.Filled.Person" IconColor="Color.Secondary">
+                                        @_wikiStats.TotalContributors contributeurs
+                                    </MudListItem>
+                                </MudList>
+                                
+                                <MudDivider Class="my-3" />
+                                
+                                <AuthorizeView>
+                                    <Authorized>
+                                        <MudButton Variant="Variant.Filled" 
+                                                 Color="Color.Primary"
+                                                 StartIcon="@Icons.Material.Filled.Edit"
+                                                 Href="/wiki/contribute"
+                                                 FullWidth="true">
+                                            Comment contribuer
+                                        </MudButton>
+                                    </Authorized>
+                                    <NotAuthorized>
+                                        <MudAlert Severity="Severity.Info" Class="mb-3">
+                                            Connectez-vous pour contribuer au wiki.
+                                        </MudAlert>
+                                        <MudButton Variant="Variant.Filled" 
+                                                 Color="Color.Primary"
+                                                 Href="/login"
+                                                 FullWidth="true">
+                                            Se connecter
+                                        </MudButton>
+                                    </NotAuthorized>
+                                </AuthorizeView>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            }
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private List<WikiPageViewModel> _featuredPages = new();
+    private List<WikiPageViewModel> _recentPages = new();
+    private List<WikiCategoryViewModel> _categories = new();
+    private List<string> _popularTags = new();
+    private WikiStatistics _wikiStats = new();
+    private bool _loading = true;
+    private string _searchQuery = string.Empty;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadWikiData();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur de chargement du wiki: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+    
+    private async Task LoadWikiData()
+    {
+        _featuredPages = await WikiService.GetFeaturedPagesAsync();
+        _recentPages = await WikiService.GetRecentPagesAsync(10);
+        _categories = await WikiService.GetAllCategoriesAsync();
+        _popularTags = await WikiService.GetPopularTagsAsync();
+        _wikiStats = await WikiService.GetWikiStatisticsAsync();
+    }
+    
+    private void HandleSearch()
+    {
+        if (!string.IsNullOrWhiteSpace(_searchQuery))
+        {
+            NavigationManager.NavigateTo($"/wiki/search?q={Uri.EscapeDataString(_searchQuery)}");
+        }
+    }
+    
+    private void HandleTagSearch(string tag)
+    {
+        NavigationManager.NavigateTo($"/wiki/search?tag={Uri.EscapeDataString(tag)}");
+    }
+    
+    private string FormatTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.UtcNow - dateTime;
+
+        if (timeSpan.TotalMinutes < 1)
+            return "à l'instant";
+        if (timeSpan.TotalMinutes < 60)
+            return $"il y a {(int)timeSpan.TotalMinutes} min";
+        if (timeSpan.TotalHours < 24)
+            return $"il y a {(int)timeSpan.TotalHours} h";
+        if (timeSpan.TotalDays < 7)
+            return $"il y a {(int)timeSpan.TotalDays} j";
+            
+        return dateTime.ToString("dd/MM/yyyy");
+    }
+}

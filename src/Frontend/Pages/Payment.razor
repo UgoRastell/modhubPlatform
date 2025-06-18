@@ -1,0 +1,232 @@
+@page "/payment"
+@using Frontend.Models
+@using Frontend.Services
+@inject IPaymentService PaymentService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@implements IAsyncDisposable
+
+<PageTitle>Paiement - ModsGamingPlatform</PageTitle>
+
+<MudContainer Class="mt-6">
+    <MudCard>
+        <MudCardHeader>
+            <MudText Typo="Typo.h4">Paiement sécurisé</MudText>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudText Typo="Typo.body1" Class="mb-4">Vous êtes sur le point d'effectuer un paiement sécurisé via Stripe.</MudText>
+            
+            @if (isLoading)
+            {
+                <div class="d-flex justify-center my-4">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                </div>
+            }
+            else
+            {
+                <MudForm @ref="form" @bind-IsValid="@isValid">
+                    <MudTextField T="string" 
+                                Label="Nom sur la carte" 
+                                @bind-Value="cardholderName" 
+                                Required="true" 
+                                RequiredError="Le nom est requis"
+                                Class="mb-4" />
+                    
+                    <MudText Typo="Typo.subtitle1" Class="mb-2">Informations de carte</MudText>
+                    <div id="card-element" class="p-3 mb-3" style="border: 1px solid #e0e0e0; border-radius: 4px;"></div>
+                    <div id="card-errors" class="mud-error mb-4" style="display: none;"></div>
+                    
+                    <MudText Typo="Typo.subtitle1" Class="mb-2">Détails de la commande</MudText>
+                    <MudPaper Elevation="0" Class="pa-4 mb-4" Style="background-color: #f8f9fa;">
+                        <MudText Typo="Typo.body1">@productDescription</MudText>
+                        <MudText Typo="Typo.h6" Class="mt-2">@FormatAmount(amount)</MudText>
+                    </MudPaper>
+                </MudForm>
+            }
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Text" 
+                      Color="Color.Secondary" 
+                      OnClick="CancelPayment"
+                      Disabled="@isProcessing">
+                Annuler
+            </MudButton>
+            <MudSpacer />
+            <MudButton Variant="Variant.Filled" 
+                      Color="Color.Primary" 
+                      Disabled="@(!isValid || isProcessing || isLoading)" 
+                      OnClick="ProcessPayment"
+                      EndIcon="@Icons.Material.Filled.Payment">
+                @if (isProcessing)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    <span>Traitement...</span>
+                }
+                else
+                {
+                    <span>Payer @FormatAmount(amount)</span>
+                }
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+</MudContainer>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "productId")]
+    public string ProductId { get; set; } = string.Empty;
+    
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "amount")]
+    public decimal Amount { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "description")]
+    public string Description { get; set; } = string.Empty;
+    
+    private MudForm form;
+    private bool isValid;
+    private bool isLoading = true;
+    private bool isProcessing;
+    private string cardholderName = string.Empty;
+    private string userId = string.Empty;
+    
+    // Si ces paramètres ne sont pas fournis, utilisez des valeurs par défaut
+    private long amount = 1999; // 19.99€
+    private string productDescription = "Abonnement Premium ModsGamingPlatform";
+    private string productId = "premium-subscription";
+    
+    protected override async Task OnInitializedAsync()
+    {
+        // Récupérer l'ID de l'utilisateur connecté
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        userId = authState.User.FindFirst("sub")?.Value ?? string.Empty;
+        
+        // Utiliser les paramètres de requête s'ils sont fournis
+        if (!string.IsNullOrEmpty(ProductId))
+        {
+            productId = ProductId;
+        }
+        
+        if (Amount > 0)
+        {
+            amount = Convert.ToInt64(Amount * 100); // Convertir en centimes
+        }
+        
+        if (!string.IsNullOrEmpty(Description))
+        {
+            productDescription = Description;
+        }
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await InitializeStripe();
+        }
+    }
+    
+    private async Task InitializeStripe()
+    {
+        try
+        {
+            // Charger la bibliothèque Stripe.js
+            await JSRuntime.InvokeVoidAsync("loadStripe");
+            
+            // Créer un PaymentIntent côté serveur
+            var request = new PaymentIntentRequest
+            {
+                Amount = amount,
+                Currency = "eur",
+                Description = productDescription,
+                UserId = userId,
+                ProductId = productId
+            };
+            
+            var response = await PaymentService.CreatePaymentIntentAsync(request);
+            
+            // Initialiser le formulaire de carte avec le PaymentIntent
+            await JSRuntime.InvokeVoidAsync("initializeCardForm", 
+                response.PublishableKey, 
+                response.ClientSecret);
+            
+            isLoading = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            isLoading = false;
+            Snackbar.Add($"Erreur lors de l'initialisation du paiement: {ex.Message}", Severity.Error, 
+                config => config.VisibleStateDuration = 10000);
+            StateHasChanged();
+        }
+    }
+    
+    private async Task ProcessPayment()
+    {
+        if (!isValid)
+        {
+            Snackbar.Add("Veuillez remplir tous les champs requis", Severity.Warning);
+            return;
+        }
+        
+        isProcessing = true;
+        
+        try
+        {
+            // Confirmer le paiement avec les informations de carte
+            var result = await JSRuntime.InvokeAsync<Dictionary<string, object>>("confirmCardPayment", cardholderName);
+            
+            if (result.TryGetValue("success", out var successObj) && successObj is bool success && success)
+            {
+                Snackbar.Add("Paiement réussi!", Severity.Success);
+                NavigationManager.NavigateTo("/payment-success");
+            }
+            else
+            {
+                string errorMessage = "Le paiement a échoué";
+                if (result.TryGetValue("error", out var errorObj) && errorObj is string error)
+                {
+                    errorMessage = error;
+                }
+                
+                Snackbar.Add($"Erreur: {errorMessage}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+    
+    private void CancelPayment()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+    
+    private string FormatAmount(long amountInCents)
+    {
+        var amount = amountInCents / 100.0m;
+        return amount.ToString("C", new System.Globalization.CultureInfo("fr-FR"));
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            // Nettoyer les éléments Stripe si nécessaire
+            await JSRuntime.InvokeVoidAsync("console.log", "Nettoyage des ressources Stripe");
+        }
+        catch
+        {
+            // Ignorer les erreurs lors de la disposition
+        }
+    }
+}

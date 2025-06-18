@@ -1,0 +1,133 @@
+@using Frontend.Models
+@using Frontend.Theme
+
+<MudDialog Class="mods-dialog neon-border">
+    <DialogContent>
+        <MudContainer>
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudCard Class="mods-card" Style="background-color: var(--bg-secondary); border-radius: 16px;">
+                        <MudCardHeader Class="mods-card-header" Style="background-color: rgba(0, 170, 255, 0.05);">
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Détails de la transaction</MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudChip T="string" Color="@GetStatusColor()" Size="Size.Small" Class="neon-chip">@Transaction.IssueType</MudChip>
+                                <MudChip T="string" Color="@GetPriorityColor()" Size="Size.Small" Class="neon-chip">Priorité @Transaction.Priority</MudChip>
+                            </CardHeaderActions>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid>
+                                <MudItem xs="6">
+                                    <MudField Label="ID" Variant="Variant.Outlined">@Transaction.TransactionId</MudField>
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudField Label="ID Externe" Variant="Variant.Outlined">@Transaction.ExternalId</MudField>
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudField Label="Date" Variant="Variant.Outlined">@Transaction.TransactionDate.ToLocalTime().ToString("g")</MudField>
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudField Label="Montant" Variant="Variant.Outlined">@FormattedAmount</MudField>
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudField Label="Utilisateur" Variant="Variant.Outlined">
+                                        <div class="d-flex">
+                                            <MudText>@Transaction.UserEmail</MudText>
+                                            <MudText Class="ml-2">(@Transaction.UserId)</MudText>
+                                        </div>
+                                    </MudField>
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudField Label="Description" Variant="Variant.Outlined">@Transaction.Description</MudField>
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudField Label="Problème détecté" Variant="Variant.Outlined">@Transaction.IssueDescription</MudField>
+                                </MudItem>
+                                <MudItem xs="12" Class="mt-2">
+                                    <MudExpansionPanels>
+                                        <MudExpansionPanel Text="Historique des événements">
+                                            <MudTimeline>
+                                                @foreach (var entry in Transaction.EventLog)
+                                                {
+                                                    <MudTimelineItem Color="@GetEventColor(entry.EventType)">
+                                                        <ItemOpposite>@entry.Timestamp.ToLocalTime().ToString("g")</ItemOpposite>
+                                                        <ItemContent>
+                                                            <MudText Color="@GetEventColor(entry.EventType)">@entry.EventType</MudText>
+                                                            <MudText>@entry.Description</MudText>
+                                                            @if (!string.IsNullOrEmpty(entry.AdditionalData))
+                                                            {
+                                                                <MudText Typo="Typo.caption">@entry.AdditionalData</MudText>
+                                                            }
+                                                        </ItemContent>
+                                                    </MudTimelineItem>
+                                                }
+                                            </MudTimeline>
+                                        </MudExpansionPanel>
+                                    </MudExpansionPanels>
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Class="mods-button">Fermer</MudButton>
+        <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="InitiateRefund" Class="mods-button neon-glow">Rembourser</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    
+    [Parameter] public ReviewTransaction Transaction { get; set; } = default!;
+    
+    private string FormattedAmount => Transaction.Amount.ToString("C", new System.Globalization.CultureInfo("fr-FR"));
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void InitiateRefund()
+    {
+        // Ferme ce dialogue et passer les détails de la transaction au dialogue de remboursement
+        MudDialog.Close(DialogResult.Ok(Transaction));
+    }
+
+    private Color GetStatusColor()
+    {
+        return Transaction.IssueType.ToLower() switch
+        {
+            "failed" => Color.Error,
+            "dispute" => Color.Error,
+            "refunded" => Color.Warning,
+            "pending" => Color.Info,
+            _ => Color.Default
+        };
+    }
+
+    private Color GetPriorityColor()
+    {
+        return Transaction.Priority switch
+        {
+            1 => Color.Info,
+            2 => Color.Warning,
+            3 => Color.Error,
+            _ => Color.Default
+        };
+    }
+
+    private Color GetEventColor(string eventType)
+    {
+        return eventType.ToLower() switch
+        {
+            "created" => Color.Info,
+            "succeeded" => Color.Success,
+            "failed" => Color.Error,
+            "refunded" => Color.Warning,
+            "disputed" => Color.Error,
+            "review_requested" => Color.Warning,
+            _ => Color.Default
+        };
+    }
+}

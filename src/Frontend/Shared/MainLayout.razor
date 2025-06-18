@@ -1,9 +1,15 @@
 @inherits LayoutComponentBase
+@using Frontend.Theme
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
 <div class="page">
+    <MudThemeProvider Theme="ModsGamingTheme.GetTheme()" />
+    <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Medium" CloseButton="true" DisableBackdropClick="true"
+                    CloseOnEscapeKey="true" Position="DialogPosition.Center" />
+    <MudSnackbarProvider />
+    
     <MudLayout>
         <MudAppBar Elevation="1">
             <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" 

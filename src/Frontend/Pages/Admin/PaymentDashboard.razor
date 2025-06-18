@@ -1,0 +1,315 @@
+@page "/admin/payments"
+@using Frontend.Models
+@using Frontend.Services
+@using Frontend.Theme
+@using System.Globalization
+@inject IPaymentService PaymentService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Tableau de bord des paiements - Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mods-container">
+    <MudText Typo="Typo.h3" Class="mb-4 mods-title neon-text-primary">Tableau de bord des paiements</MudText>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="mods-loader" />
+    }
+    else
+    {
+        <MudGrid>
+            <!-- Statistiques de paiement -->
+            <MudItem xs="12">
+                <MudText Typo="Typo.h5" Class="mb-2 neon-text-secondary">Aperçu des revenus</MudText>
+                <MudPaper Elevation="3" Class="pa-4 rounded-lg neon-border mods-card">
+                    <MudGrid>
+                        <MudItem xs="12" md="3">
+                            <MudPaper Elevation="0" Class="pa-4 rounded-lg neon-card neon-border-primary">
+                                <MudText Typo="Typo.subtitle1">Revenus totaux</MudText>
+                                <MudText Typo="Typo.h4">@FormatCurrency(_statistics.TotalRevenue)</MudText>
+                                <MudText Typo="Typo.caption">De tous les temps</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudPaper Elevation="0" Class="pa-4 rounded-lg neon-card neon-border-secondary">
+                                <MudText Typo="Typo.subtitle1">Revenus mensuels</MudText>
+                                <MudText Typo="Typo.h4">@FormatCurrency(_statistics.MonthlyRevenue)</MudText>
+                                <MudText Typo="Typo.caption">Ce mois-ci</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudPaper Elevation="0" Class="pa-4 rounded-lg neon-card neon-border-info">
+                                <MudText Typo="Typo.subtitle1">Abonnements</MudText>
+                                <MudText Typo="Typo.h4">@_statistics.ActiveSubscriptions</MudText>
+                                <MudText Typo="Typo.caption">Actifs</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudPaper Elevation="0" Class="pa-4 rounded-lg neon-card neon-border-warning">
+                                <MudText Typo="Typo.subtitle1">Transactions à réviser</MudText>
+                                <MudText Typo="Typo.h4">@_statistics.TransactionsRequiringReview</MudText>
+                                <MudText Typo="Typo.caption">Échecs et litiges</MudText>
+                            </MudPaper>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Graphique des revenus -->
+            <MudItem xs="12">
+                <MudText Typo="Typo.h5" Class="mb-2 neon-text-secondary">Tendance des revenus</MudText>
+                <MudPaper Elevation="3" Class="pa-4 rounded-lg neon-border mods-card">
+                    <div class="d-flex justify-space-between mb-4">
+                        <MudSelect T="string" Label="Période" Value="_selectedPeriod" ValueChanged="OnPeriodChanged" Class="mods-select">
+                            <MudSelectItem Value="day">Jour</MudSelectItem>
+                            <MudSelectItem Value="week">Semaine</MudSelectItem>
+                            <MudSelectItem Value="month">Mois</MudSelectItem>
+                        </MudSelect>
+                        <MudSelect T="int" Label="Nombre" Value="_dataCount" ValueChanged="OnDataCountChanged" Class="mods-select">
+                            <MudSelectItem Value="7">7</MudSelectItem>
+                            <MudSelectItem Value="14">14</MudSelectItem>
+                            <MudSelectItem Value="30">30</MudSelectItem>
+                            <MudSelectItem Value="90">90</MudSelectItem>
+                        </MudSelect>
+                    </div>
+                    
+                    @if (_chartData != null && _chartData.Labels.Any())
+                    {
+                        <MudChart ChartType="ChartType.Line" ChartSeries="@_chartSeries" 
+                                 XAxisLabels="@_chartData.Labels" Width="100%" Height="350px" />
+                    }
+                    else
+                    {
+                        <MudText>Aucune donnée disponible pour cette période</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Transactions à réviser -->
+            <MudItem xs="12">
+                <MudText Typo="Typo.h5" Class="mt-4 mb-2 neon-text-secondary">Transactions nécessitant une révision</MudText>
+                <MudPaper Elevation="3" Class="pa-4 rounded-lg neon-border mods-card">
+                    <MudTable Items="@_reviewTransactions" Dense="true" Hover="true" Bordered="true" Striped="true" Class="mods-table">
+                        <ToolBarContent>
+                            <MudText Typo="Typo.h6">Transactions à problèmes</MudText>
+                            <MudSpacer />
+                            <MudSelect T="int" Label="Priorité min." Value="_minPriority" ValueChanged="OnMinPriorityChanged" Class="ml-2" Style="width:100px">
+                                <MudSelectItem Value="1">1</MudSelectItem>
+                                <MudSelectItem Value="2">2</MudSelectItem>
+                                <MudSelectItem Value="3">3</MudSelectItem>
+                            </MudSelect>
+                            <MudTextField @bind-Value="_searchString" Placeholder="Rechercher" Adornment="Adornment.Start" 
+                                        AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0 ml-2"></MudTextField>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>Date</MudTh>
+                            <MudTh>Utilisateur</MudTh>
+                            <MudTh>Montant</MudTh>
+                            <MudTh>Problème</MudTh>
+                            <MudTh>Priorité</MudTh>
+                            <MudTh>Actions</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Date">@context.TransactionDate.ToLocalTime().ToString("g")</MudTd>
+                            <MudTd DataLabel="Utilisateur">@context.UserEmail</MudTd>
+                            <MudTd DataLabel="Montant">@FormatCurrency(context.Amount)</MudTd>
+                            <MudTd DataLabel="Problème">
+                                <MudChip T="string" Color="@GetIssueColor(context.IssueType)" Size="Size.Small" Class="neon-chip">@context.IssueType</MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Priorité">
+                                <MudChip T="string" Color="@GetPriorityColor(context.Priority)" Size="Size.Small" Class="neon-chip">@context.Priority</MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Actions">
+                                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => ViewDetails(context))" Class="mods-button neon-glow">
+                                Détails
+                            </MudButton>
+                            <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Warning" OnClick="@(() => InitiateRefund(context))" Class="mods-button neon-warning-glow ml-2">
+                                Rembourser
+                            </MudButton>
+                            </MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager />
+                        </PagerContent>
+                        <NoRecordsContent>
+                            <MudText>Aucune transaction à réviser</MudText>
+                        </NoRecordsContent>
+                    </MudTable>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private PaymentStatistics _statistics = new();
+    private PaymentChartData _chartData = new();
+    private List<ChartSeries> _chartSeries = new();
+    private List<ReviewTransaction> _reviewTransactions = new();
+    private string _selectedPeriod = "day";
+    private int _dataCount = 30;
+    private int _minPriority = 1;
+    private string _searchString = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardDataAsync();
+    }
+
+    private async Task LoadDashboardDataAsync()
+    {
+        try
+        {
+            _loading = true;
+            
+            // Charger les statistiques
+            _statistics = await PaymentService.GetPaymentStatisticsAsync();
+            
+            // Charger les données du graphique
+            await LoadChartDataAsync();
+            
+            // Charger les transactions à réviser
+            await LoadReviewTransactionsAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des données: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadChartDataAsync()
+    {
+        try
+        {
+            _chartData = await PaymentService.GetRevenueChartDataAsync(_selectedPeriod, _dataCount);
+            UpdateChartSeries();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des données graphiques: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadReviewTransactionsAsync()
+    {
+        try
+        {
+            _reviewTransactions = await PaymentService.GetTransactionsRequiringReviewAsync(_minPriority);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des transactions à réviser: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void UpdateChartSeries()
+    {
+        _chartSeries = new List<ChartSeries>();
+        
+        if (_chartData?.Datasets != null)
+        {
+            foreach (var dataset in _chartData.Datasets)
+            {
+                _chartSeries.Add(new ChartSeries 
+                { 
+                    Name = dataset.Label, 
+                    Data = dataset.Data.ToArray() 
+                });
+            }
+        }
+    }
+    
+    private async Task OnPeriodChanged(string period)
+    {
+        _selectedPeriod = period;
+        await LoadChartDataAsync();
+    }
+    
+    private async Task OnDataCountChanged(int count)
+    {
+        _dataCount = count;
+        await LoadChartDataAsync();
+    }
+    
+    private async Task OnMinPriorityChanged(int priority)
+    {
+        _minPriority = priority;
+        await LoadReviewTransactionsAsync();
+    }
+    
+    private string FormatCurrency(decimal amount, string currency = "EUR")
+    {
+        return amount.ToString("C", new CultureInfo("fr-FR"));
+    }
+
+    private Color GetPriorityColor(int priority)
+    {
+        return priority switch
+        {
+            1 => Color.Info,
+            2 => Color.Warning,
+            3 => Color.Error,
+            _ => Color.Default
+        };
+    }
+    
+    private Color GetIssueColor(string issueType)
+    {
+        return issueType.ToLower() switch
+        {
+            "failed" => Color.Error,
+            "dispute" => Color.Error,
+            "refunded" => Color.Warning,
+            "pending" => Color.Info,
+            _ => Color.Default
+        };
+    }
+
+    private async Task ViewDetails(ReviewTransaction transaction)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Transaction", transaction }
+        };
+
+        var dialog = DialogService.Show<TransactionDetailsDialog>("Détails de la transaction", parameters);
+        await dialog.Result;
+    }
+
+    private async Task InitiateRefund(ReviewTransaction transaction)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Transaction", transaction }
+        };
+
+        var dialog = DialogService.Show<RefundDialog>("Initier un remboursement", parameters);
+        var result = await dialog.Result;
+        
+        if (!result.Cancelled)
+        {
+            var refundDetails = (RefundRequest)result.Data;
+            var success = await PaymentService.RefundPaymentAsync(
+                refundDetails.PaymentId, 
+                refundDetails.Amount, 
+                refundDetails.Reason);
+
+            if (success)
+            {
+                Snackbar.Add("Remboursement initié avec succès!", Severity.Success);
+                await LoadDashboardDataAsync(); // Recharger les données
+            }
+            else
+            {
+                Snackbar.Add("Échec de l'initiation du remboursement", Severity.Error);
+            }
+        }
+    }
+}

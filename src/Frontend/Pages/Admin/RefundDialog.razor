@@ -1,0 +1,92 @@
+@using Frontend.Models
+@using Frontend.Theme
+
+<MudDialog Class="mods-dialog neon-border">
+    <DialogContent>
+        <MudContainer>
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudText>Vous êtes sur le point d'initier un remboursement pour la transaction suivante :</MudText>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background-color: rgba(0, 170, 255, 0.05); border: 1px solid rgba(0, 170, 255, 0.15);">
+                        <MudGrid>
+                            <MudItem xs="6">
+                                <MudText><strong>Transaction ID:</strong> @Transaction.TransactionId</MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudText><strong>Montant:</strong> @Transaction.Amount.ToString("C", new System.Globalization.CultureInfo("fr-FR"))</MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudText><strong>Utilisateur:</strong> @Transaction.UserEmail</MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudText><strong>Date:</strong> @Transaction.TransactionDate.ToLocalTime().ToString("g")</MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudRadioGroup T="bool" @bind-SelectedOption="@_isPartialRefund" Class="mt-4 mods-radio-group">
+                        <MudRadio T="bool" Option="@false">Remboursement complet</MudRadio>
+                        <MudRadio T="bool" Option="@true">Remboursement partiel</MudRadio>
+                    </MudRadioGroup>
+                </MudItem>
+                @if (_isPartialRefund)
+                {
+                    <MudItem xs="12">
+                        <MudNumericField @bind-Value="_refundAmount" Label="Montant à rembourser" 
+                                        Class="mods-input"
+                                        Variant="Variant.Outlined" Min="1" Max="@((int)Transaction.Amount * 100)"
+                                        HelperText="Le montant à rembourser en centimes" />
+                    </MudItem>
+                }
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_refundReason" Label="Motif du remboursement" 
+                                 Class="mods-input"
+                                 Variant="Variant.Outlined" Lines="3" />
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Class="mods-button">Annuler</MudButton>
+        <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="ProcessRefund" 
+                   Disabled="@(!IsFormValid())" Class="mods-button neon-warning-glow">
+            Rembourser
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    
+    [Parameter] public ReviewTransaction Transaction { get; set; } = default!;
+    
+    private bool _isPartialRefund = false;
+    private long _refundAmount = 0;
+    private string _refundReason = string.Empty;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void ProcessRefund()
+    {
+        var refundRequest = new RefundRequest
+        {
+            PaymentId = Transaction.ExternalId, // Utiliser l'ID externe (Stripe) pour le remboursement
+            Amount = _isPartialRefund ? _refundAmount : null,
+            Reason = _refundReason
+        };
+        
+        MudDialog.Close(DialogResult.Ok(refundRequest));
+    }
+
+    private bool IsFormValid()
+    {
+        if (_isPartialRefund && _refundAmount <= 0)
+            return false;
+            
+        // Le motif est optional
+        return true;
+    }
+}

@@ -1,0 +1,129 @@
+@using Frontend.Models.Moderation
+@using Frontend.Services.Moderation
+@inject IModerationService ModerationService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-3">Signaler un contenu</MudText>
+        
+        <MudText Typo="Typo.body2" Class="mb-4">
+            Merci d'aider à maintenir notre communauté en signalant tout contenu qui viole nos règles.
+            Votre signalement sera examiné par nos modérateurs.
+        </MudText>
+        
+        <MudForm @ref="_form" Model="@_reportRequest" @bind-IsValid="@_formIsValid">
+            <MudSelect T="ReportReason" Label="Raison du signalement" 
+                      Required="true"
+                      RequiredError="Veuillez sélectionner une raison"
+                      @bind-Value="@_reportRequest.Reason"
+                      AnchorOrigin="Origin.BottomCenter"
+                      Class="mb-3">
+                <MudSelectItem Value="@ReportReason.Spam">Spam ou contenu commercial non sollicité</MudSelectItem>
+                <MudSelectItem Value="@ReportReason.Harassment">Harcèlement ou intimidation</MudSelectItem>
+                <MudSelectItem Value="@ReportReason.Violence">Violence ou menaces</MudSelectItem>
+                <MudSelectItem Value="@ReportReason.Pornography">Contenu pornographique ou sexuellement explicite</MudSelectItem>
+                <MudSelectItem Value="@ReportReason.IllegalContent">Contenu illégal</MudSelectItem>
+                <MudSelectItem Value="@ReportReason.ChildAbuse">Exploitation ou abus d'enfants</MudSelectItem>
+                <MudSelectItem Value="@ReportReason.HateSpeech">Discours haineux ou discrimination</MudSelectItem>
+                <MudSelectItem Value="@ReportReason.Misinformation">Désinformation ou informations trompeuses</MudSelectItem>
+                <MudSelectItem Value="@ReportReason.Copyright">Violation de droits d'auteur</MudSelectItem>
+                <MudSelectItem Value="@ReportReason.Other">Autre raison</MudSelectItem>
+            </MudSelect>
+            
+            <MudTextField T="string"
+                        Label="Description détaillée"
+                        HelperText="Veuillez décrire pourquoi ce contenu est inapproprié (minimum 10 caractères)"
+                        Validation="@(new Func<string, string>(ValidateDescription))"
+                        Lines="4"
+                        Counter="500"
+                        MaxLength="500"
+                        @bind-Value="@_reportRequest.Description"
+                        Required="true"
+                        RequiredError="Veuillez fournir des détails sur votre signalement"
+                        Class="mb-3" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text" Color="Color.Default">Annuler</MudButton>
+        <MudButton OnClick="SubmitReport" 
+                 Variant="Variant.Filled" 
+                 Color="Color.Error" 
+                 Disabled="@(!_formIsValid || _isSubmitting)">
+            @if (_isSubmitting)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <span class="ms-2">Envoi en cours</span>
+            }
+            else
+            {
+                <span>Signaler</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public ContentType ContentType { get; set; }
+    [Parameter] public string ContentId { get; set; } = string.Empty;
+    [Parameter] public string ContentUrl { get; set; } = string.Empty;
+    [Parameter] public string ContentSnippet { get; set; } = string.Empty;
+    [Parameter] public string ContentCreatorUserId { get; set; } = string.Empty;
+    [Parameter] public string ContentCreatorUsername { get; set; } = string.Empty;
+    
+    private CreateReportRequest _reportRequest = new();
+    private MudForm _form = new();
+    private bool _formIsValid;
+    private bool _isSubmitting;
+    
+    protected override void OnInitialized()
+    {
+        _reportRequest = new CreateReportRequest
+        {
+            ContentType = ContentType,
+            ContentId = ContentId,
+            ContentUrl = ContentUrl,
+            ContentSnippet = ContentSnippet,
+            ContentCreatorUserId = ContentCreatorUserId,
+            ContentCreatorUsername = ContentCreatorUsername
+        };
+    }
+    
+    private string ValidateDescription(string description)
+    {
+        if (string.IsNullOrWhiteSpace(description) || description.Length < 10)
+            return "La description doit contenir au moins 10 caractères";
+        return null;
+    }
+    
+    private async Task SubmitReport()
+    {
+        await _form.Validate();
+        
+        if (!_formIsValid)
+            return;
+            
+        _isSubmitting = true;
+        
+        try
+        {
+            var result = await ModerationService.ReportContentAsync(_reportRequest);
+            
+            Snackbar.Add("Votre signalement a été soumis avec succès. Merci de contribuer à maintenir notre communauté saine.", 
+                Severity.Success, config => { config.VisibleStateDuration = 6000; });
+            
+            MudDialog.Close(DialogResult.Ok(result));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors de l'envoi du signalement: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+    
+    private void Cancel() => MudDialog.Cancel();
+}

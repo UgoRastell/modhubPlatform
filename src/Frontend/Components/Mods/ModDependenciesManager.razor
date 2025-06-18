@@ -1,0 +1,323 @@
+@using Frontend.Models
+@using Frontend.Services
+@inject IModDependencyService DependencyService
+@inject IModService ModService 
+@inject ISnackbar Snackbar
+
+<MudCard Class="neon-card mt-4">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5" Class="neon-text-primary">
+                <MudIcon Icon="@Icons.Material.Filled.Link" Class="mr-2" />
+                Dépendances
+            </MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudTooltip Text="Ajouter une dépendance">
+                <MudIconButton Icon="@Icons.Material.Filled.Add" 
+                              Color="Color.Primary" 
+                              OnClick="OpenDependencyDialog"
+                              Class="neon-glow-primary" />
+            </MudTooltip>
+        </CardHeaderActions>
+    </MudCardHeader>
+    <MudCardContent>
+        @if(Dependencies == null)
+        {
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        }
+        else if (Dependencies.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-2">
+                Ce mod ne dépend d'aucun autre mod.
+            </MudAlert>
+        }
+        else
+        {
+            <MudTable Items="Dependencies" Hover="true" Breakpoint="Breakpoint.Sm" 
+                     Class="neon-border rounded pa-2" T="ModDependencyDto">
+                <HeaderContent>
+                    <MudTh>Mod</MudTh>
+                    <MudTh>Version requise</MudTh>
+                    <MudTh>Type</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Nom">@context.DependencyModName</MudTd>
+                    <MudTd DataLabel="Version">
+                        @context.MinimumVersion
+                        @if (!string.IsNullOrEmpty(context.MaximumVersion))
+                        {
+                            <span> à @context.MaximumVersion</span>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Type">
+                        @if (context.IsRequired)
+                        {
+                            <MudChip T="string" Color="Color.Error" Size="Size.Small" Class="neon-chip">Requise</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Color="Color.Info" Size="Size.Small" Class="neon-chip">Optionnelle</MudChip>
+                        }
+                    </MudTd>
+                    <MudTd>
+                        <MudTooltip Text="Modifier">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                         Size="Size.Small" 
+                                         OnClick="@(() => OpenDependencyDialog(context))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Supprimer">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                         Size="Size.Small" 
+                                         Color="Color.Error" 
+                                         OnClick="@(() => ConfirmDeleteDependency(context))" />
+                        </MudTooltip>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </MudCardContent>
+</MudCard>
+
+@if (_dependencyDialogVisible)
+{
+    <MudDialog Open="true" ClassContent="mods-dialog">
+        <TitleContent>
+            <MudText Typo="Typo.h6" Class="neon-text-primary">
+                @(_selectedDependency == null ? "Ajouter une dépendance" : "Modifier une dépendance")
+            </MudText>
+        </TitleContent>
+        <DialogContent>
+            <MudForm Model="_dependencyForm" @ref="_form">
+                <MudSelect T="string" Label="Mod requis" @bind-Value="_dependencyForm.DependencyModId" Required="true"
+                           For="@(() => _dependencyForm.DependencyModId)" Class="mb-3">
+                    @foreach (var mod in _availableMods)
+                    {
+                        <MudSelectItem T="string" Value="@mod.Id">@mod.Name</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudTextField T="string" Label="Version minimale" 
+                              @bind-Value="_dependencyForm.MinimumVersion" 
+                              Required="true"
+                              For="@(() => _dependencyForm.MinimumVersion)"
+                              HelperText="Ex: 1.0.0" 
+                              Class="mb-3" />
+
+                <MudTextField T="string" Label="Version maximale" 
+                              @bind-Value="_dependencyForm.MaximumVersion" 
+                              HelperText="Optionnel, ex: 2.0.0" 
+                              Class="mb-3" />
+
+                <MudCheckBox T="bool" Label="Dépendance requise" 
+                            @bind-Checked="_dependencyForm.IsRequired"
+                            For="@(() => _dependencyForm.IsRequired)"
+                            HelperText="Si cochée, le mod ne fonctionnera pas sans cette dépendance" 
+                            Color="Color.Primary" 
+                            Class="mb-3" />
+
+                <MudTextField T="string" Label="Notes" 
+                              @bind-Value="_dependencyForm.Notes" 
+                              Lines="2" 
+                              Class="mb-3" />
+
+                <MudTextField T="string" Label="URL de documentation" 
+                              @bind-Value="_dependencyForm.DocumentationUrl" 
+                              Class="mb-3" />
+            </MudForm>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Color="Color.Error" OnClick="CloseDependencyDialog" Class="mr-2">Annuler</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveDependency" Class="mods-button neon-glow">Enregistrer</MudButton>
+        </DialogActions>
+    </MudDialog>
+}
+
+@if (_deleteConfirmationVisible)
+{
+    <MudDialog Open="true" ClassContent="mods-dialog">
+        <TitleContent>
+            <MudText Typo="Typo.h6" Class="neon-text-error">Confirmer la suppression</MudText>
+        </TitleContent>
+        <DialogContent>
+            <MudText>Êtes-vous sûr de vouloir supprimer la dépendance au mod "@(_dependencyToDelete?.DependencyModName)" ?</MudText>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="CancelDeleteDependency">Annuler</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="DeleteDependency" Class="mods-button neon-warning-glow">Supprimer</MudButton>
+        </DialogActions>
+    </MudDialog>
+}
+
+@code {
+    [Parameter]
+    public string ModId { get; set; } = string.Empty;
+    
+    [Parameter]
+    public string? VersionNumber { get; set; }
+    
+    [Parameter]
+    public EventCallback OnDependenciesUpdated { get; set; }
+    
+    public List<ModDependencyDto>? Dependencies { get; set; }
+    
+    private bool _dependencyDialogVisible = false;
+    private bool _deleteConfirmationVisible = false;
+    private ModDependencyDto? _selectedDependency;
+    private ModDependencyDto? _dependencyToDelete;
+    private ModDependencyDto _dependencyForm = new();
+    private List<ModDto> _availableMods = new();
+    private MudForm _form = null!;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDependencies();
+        await LoadAvailableMods();
+    }
+    
+    private async Task LoadDependencies()
+    {
+        if (string.IsNullOrEmpty(ModId))
+            return;
+            
+        Dependencies = await DependencyService.GetModDependenciesAsync(ModId, VersionNumber);
+    }
+    
+    private async Task LoadAvailableMods()
+    {
+        try 
+        {
+            // Récupérer tous les mods (sauf celui en cours)
+            var result = await ModService.GetModsAsync();
+            _availableMods = result.Where(m => m.Id != ModId).ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+    }
+    
+    private void OpenDependencyDialog(ModDependencyDto? dependency = null)
+    {
+        _selectedDependency = dependency;
+        
+        if (dependency != null)
+        {
+            // Édition d'une dépendance existante
+            _dependencyForm = new ModDependencyDto
+            {
+                Id = dependency.Id,
+                DependencyModId = dependency.DependencyModId,
+                DependencyModName = dependency.DependencyModName,
+                MinimumVersion = dependency.MinimumVersion,
+                MaximumVersion = dependency.MaximumVersion,
+                IsRequired = dependency.IsRequired,
+                Notes = dependency.Notes,
+                DocumentationUrl = dependency.DocumentationUrl
+            };
+        }
+        else
+        {
+            // Nouvelle dépendance
+            _dependencyForm = new ModDependencyDto
+            {
+                IsRequired = true
+            };
+        }
+        
+        _dependencyDialogVisible = true;
+    }
+    
+    private void CloseDependencyDialog()
+    {
+        _dependencyDialogVisible = false;
+        _selectedDependency = null;
+    }
+    
+    private async Task SaveDependency()
+    {
+        await _form.Validate();
+        
+        if (_form.IsValid)
+        {
+            try
+            {
+                bool success;
+                
+                // Mise à jour du nom pour affichage
+                if (!string.IsNullOrEmpty(_dependencyForm.DependencyModId))
+                {
+                    var relatedMod = _availableMods.FirstOrDefault(m => m.Id == _dependencyForm.DependencyModId);
+                    if (relatedMod != null)
+                    {
+                        _dependencyForm.DependencyModName = relatedMod.Name;
+                    }
+                }
+                
+                success = await DependencyService.AddModDependencyAsync(ModId, VersionNumber ?? "latest", _dependencyForm);
+                
+                if (success)
+                {
+                    Snackbar.Add("Dépendance enregistrée avec succès!", Severity.Success);
+                    await LoadDependencies();
+                    await OnDependenciesUpdated.InvokeAsync();
+                }
+                else
+                {
+                    Snackbar.Add("Erreur lors de l'enregistrement de la dépendance", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+            }
+            
+            _dependencyDialogVisible = false;
+        }
+    }
+    
+    private void ConfirmDeleteDependency(ModDependencyDto dependency)
+    {
+        _dependencyToDelete = dependency;
+        _deleteConfirmationVisible = true;
+    }
+    
+    private void CancelDeleteDependency()
+    {
+        _deleteConfirmationVisible = false;
+        _dependencyToDelete = null;
+    }
+    
+    private async Task DeleteDependency()
+    {
+        if (_dependencyToDelete != null)
+        {
+            try
+            {
+                var success = await DependencyService.DeleteModDependencyAsync(
+                    ModId, 
+                    VersionNumber ?? "latest", 
+                    _dependencyToDelete.Id);
+                
+                if (success)
+                {
+                    Snackbar.Add("Dépendance supprimée avec succès!", Severity.Success);
+                    await LoadDependencies();
+                    await OnDependenciesUpdated.InvokeAsync();
+                }
+                else
+                {
+                    Snackbar.Add("Erreur lors de la suppression de la dépendance", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+            }
+        }
+        
+        _deleteConfirmationVisible = false;
+        _dependencyToDelete = null;
+    }
+}

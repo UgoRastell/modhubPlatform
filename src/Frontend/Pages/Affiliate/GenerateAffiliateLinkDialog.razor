@@ -1,0 +1,187 @@
+@using Frontend.Models.Affiliate
+@inject IModService ModService
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" Model="@_linkRequest" Validation="@(_validator.ValidateValue)">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudSelect T="string" Label="Type de cible" Required="true"
+                              @bind-Value="_linkRequest.TargetType"
+                              For="@(() => _linkRequest.TargetType)"
+                              Immediate="true"
+                              OnSelectedValuesChanged="@HandleTargetTypeChanged">
+                        <MudSelectItem Value="@("mod")">Mod</MudSelectItem>
+                        <MudSelectItem Value="@("subscription")">Abonnement Premium</MudSelectItem>
+                        <MudSelectItem Value="@("site")">Site entier</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                
+                @if (_linkRequest.TargetType == "mod")
+                {
+                    <MudItem xs="12">
+                        @if (_loadingMods)
+                        {
+                            <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                        }
+                        else
+                        {
+                            <MudAutocomplete T="ModBasicInfo" Label="Sélectionner un mod" Required="true"
+                                         @bind-Value="_selectedMod"
+                                         SearchFunc="@SearchMods"
+                                         ToStringFunc="@(mod => mod.Name)"
+                                         ValueChanged="@(mod => _linkRequest.TargetId = mod?.Id ?? string.Empty)"
+                                         For="@(() => _selectedMod)">
+                                <ItemTemplate Context="mod">
+                                    <MudText>@mod.Name</MudText>
+                                </ItemTemplate>
+                            </MudAutocomplete>
+                        }
+                    </MudItem>
+                }
+                
+                <MudItem xs="12">
+                    <MudTextField T="string" Label="Étiquette personnalisée (optionnel)" 
+                                @bind-Value="_linkRequest.CustomLabel"
+                                For="@(() => _linkRequest.CustomLabel)"
+                                HelperText="Une étiquette personnalisée pour identifier ce lien (ex: 'Instagram', 'YouTube')"/>
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudTextField T="string" Label="UTM Source (optionnel)"
+                                @bind-Value="_linkRequest.UtmSource"
+                                For="@(() => _linkRequest.UtmSource)"
+                                HelperText="Permet de suivre la source du trafic (ex: 'newsletter', 'twitter')"/>
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudTextField T="string" Label="UTM Medium (optionnel)"
+                                @bind-Value="_linkRequest.UtmMedium"
+                                For="@(() => _linkRequest.UtmMedium)"
+                                HelperText="Permet de suivre le média (ex: 'social', 'email')"/>
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudTextField T="string" Label="UTM Campaign (optionnel)"
+                                @bind-Value="_linkRequest.UtmCampaign"
+                                For="@(() => _linkRequest.UtmCampaign)"
+                                HelperText="Permet de suivre la campagne spécifique (ex: 'summer_sale')"/>
+                </MudItem>
+                
+                @if (_programDetails?.AllowCustomCommission == true)
+                {
+                    <MudItem xs="12">
+                        <MudSlider @bind-Value="_linkRequest.CustomCommissionPercentage"
+                                  Min="0"
+                                  Max="@(_programDetails?.MaxCustomCommission ?? 10)"
+                                  Step="0.5"
+                                  TickMarks="true"
+                                  Label="Commission personnalisée">
+                            @(_linkRequest.CustomCommissionPercentage)%
+                        </MudSlider>
+                        <MudText Typo="Typo.caption">
+                            Définissez une commission personnalisée pour ce lien (maximum @(_programDetails?.MaxCustomCommission)%).
+                            Laissez à 0 pour utiliser la commission standard de @(_programDetails?.CommissionPercentage)%.
+                        </MudText>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annuler</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Créer le lien</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public AffiliateProgramInfo? ProgramDetails { get; set; }
+    
+    private MudForm _form = null!;
+    private LinkGenerationRequest _linkRequest = new();
+    private ModBasicInfo? _selectedMod;
+    private bool _loadingMods;
+    private AffiliateProgramInfo? _programDetails => ProgramDetails;
+    
+    private FluentValidation.IValidator _validator;
+    
+    public class ModBasicInfo
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+    }
+    
+    protected override void OnInitialized()
+    {
+        _validator = new LinkGenerationValidator();
+    }
+    
+    private async Task<IEnumerable<ModBasicInfo>> SearchMods(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return new List<ModBasicInfo>();
+        }
+        
+        _loadingMods = true;
+        try
+        {
+            // Appel au service pour récupérer les mods correspondant au terme de recherche
+            var mods = await ModService.SearchModsAsync(value);
+            return mods.Select(m => new ModBasicInfo { Id = m.Id, Name = m.Name }).ToList();
+        }
+        catch
+        {
+            return new List<ModBasicInfo>();
+        }
+        finally
+        {
+            _loadingMods = false;
+            StateHasChanged();
+        }
+    }
+    
+    private Task HandleTargetTypeChanged(IEnumerable<string> values)
+    {
+        // Réinitialiser l'ID de cible si le type change
+        _linkRequest.TargetId = string.Empty;
+        _selectedMod = null;
+        
+        // Si le type est "site", il n'y a pas d'ID spécifique à sélectionner
+        if (_linkRequest.TargetType == "site")
+        {
+            _linkRequest.TargetId = "site";
+        }
+        else if (_linkRequest.TargetType == "subscription")
+        {
+            _linkRequest.TargetId = "premium";
+        }
+        
+        return Task.CompletedTask;
+    }
+    
+    private void Submit()
+    {
+        _form.Validate();
+        if (_form.IsValid)
+        {
+            MudDialog.Close(DialogResult.Ok(_linkRequest));
+        }
+    }
+    
+    private void Cancel() => MudDialog.Cancel();
+    
+    public class LinkGenerationValidator : FluentValidation.AbstractValidator<LinkGenerationRequest>
+    {
+        public LinkGenerationValidator()
+        {
+            RuleFor(x => x.TargetType)
+                .NotEmpty().WithMessage("Le type de cible est requis");
+                
+            RuleFor(x => x.TargetId)
+                .NotEmpty().When(x => x.TargetType == "mod")
+                .WithMessage("Veuillez sélectionner un mod");
+        }
+    }
+}

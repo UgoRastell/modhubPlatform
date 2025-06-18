@@ -42,6 +42,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStatePr
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IModService, ModService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 // Configuration des services MudBlazor
 builder.Services.AddMudServices(config =>
