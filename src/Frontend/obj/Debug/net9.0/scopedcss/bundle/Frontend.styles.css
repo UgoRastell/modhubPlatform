@@ -76,6 +76,95 @@ main[b-yxi2lmzgn0] {
         padding-right: 1.5rem !important;
     }
 }
+/* /Shared/MainLayout.razor.rz.scp.css */
+.page[b-gknvvqa2uj] {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-primary, #1b1f27);
+}
+
+main[b-gknvvqa2uj] {
+    flex: 1;
+    padding: 24px;
+}
+
+.sidebar[b-gknvvqa2uj] {
+    background-color: var(--bg-secondary, #232634);
+}
+
+.mud-drawer[b-gknvvqa2uj] {
+    border-right: 1px solid var(--divider, #2f3441);
+}
+
+.mud-nav-link:hover[b-gknvvqa2uj] {
+    background-color: rgba(0, 170, 255, 0.08);
+    transform: scale(1.03);
+    transition: all 0.2s ease-out;
+}
+
+.mud-button[b-gknvvqa2uj] {
+    border-radius: 8px;
+}
+
+.mud-button-filled:hover[b-gknvvqa2uj] {
+    box-shadow: 0 4px 16px rgba(0, 170, 255, 0.27);
+    transform: scale(1.03);
+    transition: all 0.2s ease-out;
+}
+
+.mud-card[b-gknvvqa2uj] {
+    border-radius: 16px;
+    background-color: var(--bg-secondary, #232634);
+}
+
+.mud-paper[b-gknvvqa2uj] {
+    background-color: var(--bg-secondary, #232634);
+}
+
+.mud-table[b-gknvvqa2uj] {
+    background-color: var(--bg-secondary, #232634);
+    color: var(--text-primary, #f5f7fa);
+}
+
+.mud-input[b-gknvvqa2uj] {
+    background-color: var(--bg-primary, #1b1f27);
+}
+
+.mud-input-outlined[b-gknvvqa2uj] {
+    border-color: var(--divider, #2f3441);
+}
+
+.mud-input-outlined:focus-within[b-gknvvqa2uj] {
+    border-color: var(--accent-primary, #00aaff);
+}
+
+.mud-chip[b-gknvvqa2uj] {
+    border-radius: 8px;
+}
+
+/* Effets de glow pour les éléments principaux */
+.mud-theme-primary[b-gknvvqa2uj] {
+    box-shadow: 0 0 8px rgba(0, 170, 255, 0.2);
+}
+
+.mud-theme-secondary[b-gknvvqa2uj] {
+    box-shadow: 0 0 8px rgba(37, 227, 152, 0.2);
+}
+
+/* Animations pour les loaders */
+.mud-progress-circular[b-gknvvqa2uj] {
+    animation: glow-b-gknvvqa2uj 1.5s infinite alternate;
+}
+
+@keyframes glow-b-gknvvqa2uj {
+    from {
+        filter: drop-shadow(0 0 2px rgba(0, 170, 255, 0.5));
+    }
+    to {
+        filter: drop-shadow(0 0 8px rgba(37, 227, 152, 0.5));
+    }
+}
 /* /Shared/NavMenu.razor.rz.scp.css */
 /* Styles for the navigation menu */
 .mud-nav-link[b-9ljbyqraro] {

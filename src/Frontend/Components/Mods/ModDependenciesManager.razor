@@ -190,7 +190,7 @@
         {
             // Récupérer tous les mods (sauf celui en cours)
             var result = await ModService.GetModsAsync(1, 1000, "", "", "");
-            _availableMods = result.Where(m => m.Id != ModId).ToList();
+            _availableMods = result.Data.Items.Where(m => m.Id != ModId).ToList();
         }
         catch (Exception ex)
         {

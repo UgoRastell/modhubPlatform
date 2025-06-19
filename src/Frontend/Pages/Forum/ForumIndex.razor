@@ -74,7 +74,7 @@
                 }
                 else
                 {
-                    @foreach (var category in _categories.OrderBy(c => c.Order))
+                    @foreach (var category in _categories.OrderBy(c => c.Name))
                     {
                         <MudCard Elevation="2" Class="mb-4">
                             <MudCardHeader>
@@ -95,8 +95,8 @@
                                     <MudText Typo="Typo.body2">@category.Description</MudText>
                                 </CardHeaderContent>
                                 <CardHeaderActions>
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@category.TopicCount sujets</MudChip>
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@category.PostCount messages</MudChip>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@category.TopicsCount sujets</MudChip>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@category.PostsCount messages</MudChip>
                                 </CardHeaderActions>
                             </MudCardHeader>
                             
@@ -135,13 +135,13 @@
                                         }
                                     </div>
                                     
-                                    @if (category.TopicCount > 3)
+                                    @if (category.TopicsCount > 3)
                                     {
                                         <div class="d-flex justify-end mt-2">
                                             <MudButton Variant="Variant.Text" 
                                                      Color="Color.Primary"
                                                      Href="@($"/forum/category/{category.Id}")">
-                                                Voir tous les @category.TopicCount sujets
+                                                Voir tous les @category.TopicsCount sujets
                                             </MudButton>
                                         </div>
                                     }

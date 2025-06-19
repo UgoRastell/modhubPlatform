@@ -13,7 +13,7 @@
                               @bind-Value="_linkRequest.TargetType"
                               For="@(() => _linkRequest.TargetType)"
                               Immediate="true"
-                              OnSelectedValuesChanged="@(async (values) => await HandleTargetTypeChanged(values))">
+                              OnSelectedValuesChanged="@HandleTargetTypeChanged">
                         <MudSelectItem Value="@("mod")">Mod</MudSelectItem>
                         <MudSelectItem Value="@("subscription")">Abonnement Premium</MudSelectItem>
                         <MudSelectItem Value="@("site")">Site entier</MudSelectItem>
@@ -72,13 +72,13 @@
                 @if (_programDetails?.AllowCustomCommission == true)
                 {
                     <MudItem xs="12">
-                        <MudSlider T="decimal" @bind-Value="@(_linkRequest.CustomCommissionPercentage ?? 0m)"
+                        <MudSlider T="decimal" @bind-Value="CommissionValue"
                                    Min="0m"
                                    Max="@(Convert.ToDecimal(_programDetails?.MaxCustomCommission ?? 10))"
                                    Step="0.5m"
                                    TickMarks="true"
                                    Label="Commission personnalisée">
-                            @(_linkRequest.CustomCommissionPercentage)%
+                            @(CommissionValue)%
                         </MudSlider>
                         <MudText Typo="Typo.caption">
                             Définissez une commission personnalisée pour ce lien (maximum @(_programDetails?.MaxCustomCommission)%).
@@ -108,6 +108,13 @@
     private ModBasicInfo? _selectedMod;
     private bool _loadingMods;
     private AffiliateProgramInfo? _programDetails => ProgramDetails;
+    
+    // Propriété intermédiaire pour le binding avec MudSlider
+    private decimal CommissionValue
+    {
+        get => _linkRequest.CustomCommissionPercentage ?? 0m;
+        set => _linkRequest.CustomCommissionPercentage = value > 0m ? value : null;
+    }
     
     // Add property with setter to update TargetId when a mod is selected
     private ModBasicInfo? SelectedMod

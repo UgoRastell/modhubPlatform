@@ -64,9 +64,9 @@
                 <MudPaper Elevation="3" Class="pa-4 rounded-lg neon-border mods-card">
                     <div class="d-flex justify-space-between mb-4">
                         <MudSelect T="string" Label="Période" Value="_selectedPeriod" ValueChanged="OnPeriodChanged" Class="mods-select">
-                            <MudSelectItem Value="day">Jour</MudSelectItem>
-                            <MudSelectItem Value="week">Semaine</MudSelectItem>
-                            <MudSelectItem Value="month">Mois</MudSelectItem>
+                            <MudSelectItem Value="@("day")">Jour</MudSelectItem>
+                            <MudSelectItem Value="@("week")">Semaine</MudSelectItem>
+                            <MudSelectItem Value="@("month")">Mois</MudSelectItem>
                         </MudSelect>
                         <MudSelect T="int" Label="Nombre" Value="_dataCount" ValueChanged="OnDataCountChanged" Class="mods-select">
                             <MudSelectItem Value="7">7</MudSelectItem>
@@ -79,7 +79,7 @@
                     @if (_chartData != null && _chartData.Labels.Any())
                     {
                         <MudChart ChartType="ChartType.Line" ChartSeries="@_chartSeries" 
-                                 XAxisLabels="@_chartData.Labels" Width="100%" Height="350px" />
+                                 XAxisLabels="@_chartData.Labels.ToArray()" Width="100%" Height="350px" />
                     }
                     else
                     {
@@ -120,7 +120,7 @@
                                 <MudChip T="string" Color="@GetIssueColor(context.IssueType)" Size="Size.Small" Class="neon-chip">@context.IssueType</MudChip>
                             </MudTd>
                             <MudTd DataLabel="Priorité">
-                                <MudChip T="string" Color="@GetPriorityColor(context.Priority)" Size="Size.Small" Class="neon-chip">@context.Priority</MudChip>
+                                <MudChip T="string" Color="@GetPriorityColor(int.Parse(context.Priority))" Size="Size.Small" Class="neon-chip">@context.Priority</MudChip>
                             </MudTd>
                             <MudTd DataLabel="Actions">
                                 <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => ViewDetails(context))" Class="mods-button neon-glow">
@@ -221,7 +221,7 @@
                 _chartSeries.Add(new ChartSeries 
                 { 
                     Name = dataset.Label, 
-                    Data = dataset.Data.ToArray() 
+                    Data = dataset.Data.Select(d => (double)d).ToArray() 
                 });
             }
         }
@@ -291,10 +291,10 @@
             { "Transaction", transaction }
         };
 
-        var dialog = DialogService.Show<RefundDialog>("Initier un remboursement", parameters);
+        var dialog = await DialogService.ShowAsync<RefundDialog>("Initier un remboursement", parameters);
         var result = await dialog.Result;
         
-        if (!result.Cancelled)
+        if (!result.Canceled)
         {
             var refundDetails = (RefundRequest)result.Data;
             var success = await PaymentService.RefundPaymentAsync(

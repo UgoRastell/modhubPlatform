@@ -79,18 +79,14 @@
                             
                             <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">Ce plan inclut:</MudText>
                             
-                            @foreach (var benefit in tier.Benefits.OrderByDescending(b => b.IsHighlighted))
+                            @foreach (var benefit in tier.Benefits)
                             {
                                 <div class="d-flex align-center mb-2">
-                                    <MudIcon Icon="@(!string.IsNullOrEmpty(benefit.Icon) ? benefit.Icon : "fas fa-check")" 
-                                            Color="@(benefit.IsHighlighted ? Color.Success : Color.Default)"
+                                    <MudIcon Icon="fas fa-check" 
+                                            Color="Color.Success"
                                             Size="Size.Small" Class="mr-2" />
-                                    <MudText Typo="Typo.body2" Class="@(benefit.IsHighlighted ? "font-weight-bold" : "")">
-                                        @benefit.Name
-                                        @if (benefit.NumericValue.HasValue)
-                                        {
-                                            <span>(@benefit.NumericValue @benefit.ValueUnit)</span>
-                                        }
+                                    <MudText Typo="Typo.body2">
+                                        @benefit
                                     </MudText>
                                 </div>
                             }

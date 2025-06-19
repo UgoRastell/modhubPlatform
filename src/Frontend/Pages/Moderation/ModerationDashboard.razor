@@ -256,7 +256,7 @@
         var parameters = new DialogParameters();
         parameters.Add("Report", report);
         
-        DialogService.Show<ReportDetailsDialog>("Détails du signalement", parameters);
+        DialogService.ShowAsync<ReportDetailsDialog>("Détails du signalement", parameters);
     }
     
     private async Task UpdateReportStatus(ContentReport report)
@@ -265,10 +265,10 @@
         parameters.Add("Report", report);
         parameters.Add("CurrentStatus", report.Status);
         
-        var dialog = DialogService.Show<UpdateStatusDialog>("Mettre à jour le statut", parameters);
+        var dialog = await DialogService.ShowAsync<UpdateStatusDialog>("Mettre à jour le statut", parameters);
         var result = await dialog.Result;
         
-        if (!result.Cancelled)
+        if (!result.Canceled)
         {
             await LoadReportsAsync();
         }
@@ -279,10 +279,10 @@
         var parameters = new DialogParameters();
         parameters.Add("Report", report);
         
-        var dialog = DialogService.Show<ModeratorActionDialog>("Prendre une action", parameters);
+        var dialog = await DialogService.ShowAsync<ModeratorActionDialog>("Prendre une action", parameters);
         var result = await dialog.Result;
         
-        if (!result.Cancelled)
+        if (!result.Canceled)
         {
             await LoadReportsAsync();
         }
@@ -297,7 +297,12 @@
             var stats = await ModerationService.GetModerationStatisticsAsync();
             parameters.Add("Statistics", stats);
             
-            DialogService.Show<ModerationStatisticsDialog>("Statistiques de modération", parameters);
+            // Le composant ModerationStatisticsDialog n'existe pas, utilisons un dialogue standard à la place
+            await DialogService.ShowMessageBox(
+                "Statistiques de modération",
+                $"Total des signalements: {stats.TotalReports}, En attente: {stats.PendingReports}, Résolus: {stats.ResolvedReports}",
+                yesText: "OK");
+            
         }
         catch (Exception ex)
         {
