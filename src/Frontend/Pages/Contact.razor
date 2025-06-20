@@ -1,0 +1,174 @@
+@page "/contact"
+@using Frontend.Models
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<PageTitle>Contact - ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudPaper Class="pa-6 rounded-xl" Elevation="3" Style="background-color: #232634;">
+        <MudText Typo="Typo.h4" Class="mb-4">Contactez-nous</MudText>
+        
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.body1" Class="mb-6">
+                    Nous sommes à votre écoute pour toute question, suggestion ou problème technique.
+                    Remplissez le formulaire ci-dessous et notre équipe vous répondra dans les plus brefs délais.
+                </MudText>
+                
+                <MudForm @ref="form" @bind-IsValid="@success">
+                    <MudSelect T="string" @bind-Value="contactCategory" Label="Sujet de votre message" 
+                             Required RequiredError="Veuillez sélectionner un sujet"
+                             Class="mb-4">
+                        <MudSelectItem Value="@("support")">Support technique</MudSelectItem>
+                        <MudSelectItem Value="@("bug")">Signaler un bug</MudSelectItem>
+                        <MudSelectItem Value="@("feature")">Suggestion de fonctionnalité</MudSelectItem>
+                        <MudSelectItem Value="@("partnership")">Partenariat</MudSelectItem>
+                        <MudSelectItem Value="@("other")">Autre</MudSelectItem>
+                    </MudSelect>
+                    
+                    <MudTextField @bind-Value="name" Label="Nom complet" Required 
+                                 RequiredError="Le nom est requis"
+                                 Class="mb-4" />
+                    
+                    <MudTextField @bind-Value="email" Label="Email" Required 
+                                 RequiredError="L'email est requis" 
+                                 Validation="@(new EmailAddressAttribute() {ErrorMessage = "L'adresse email n'est pas valide"})"
+                                 Class="mb-4" />
+                    
+                    <MudTextField @bind-Value="message" Label="Message" Required 
+                                 RequiredError="Le message est requis" 
+                                 Lines="5"
+                                 Class="mb-4" />
+                    
+                    <div class="d-flex mt-4">
+                        <MudButton Variant="Variant.Filled" 
+                                   Color="Color.Primary" 
+                                   OnClick="SubmitForm"
+                                   Disabled="@(!success)">
+                            Envoyer le message
+                        </MudButton>
+                    </div>
+                </MudForm>
+            </MudItem>
+            
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-6 rounded-xl d-flex flex-column gap-4 h-100" Elevation="0" Style="background-color: rgba(255, 255, 255, 0.05);">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Class="mr-2" />
+                            Adresse
+                        </MudText>
+                        <MudText Typo="Typo.body1">
+                            123 Rue de l'Innovation<br />
+                            75000 Paris, France
+                        </MudText>
+                    </div>
+                    
+                    <div>
+                        <MudText Typo="Typo.h6" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Email" Class="mr-2" />
+                            Email
+                        </MudText>
+                        <MudLink Href="mailto:contact@modhub.com" Color="Color.Primary">
+                            contact@modhub.com
+                        </MudLink>
+                    </div>
+                    
+                    <div>
+                        <MudText Typo="Typo.h6" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Phone" Class="mr-2" />
+                            Téléphone
+                        </MudText>
+                        <MudText Typo="Typo.body1">
+                            +33 1 23 45 67 89
+                        </MudText>
+                    </div>
+                    
+                    <div>
+                        <MudText Typo="Typo.h6" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.AccessTime" Class="mr-2" />
+                            Heures d'ouverture
+                        </MudText>
+                        <MudText Typo="Typo.body1">
+                            Lundi - Vendredi: 9h - 18h<br />
+                            Weekend: Fermé
+                        </MudText>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <MudText Typo="Typo.h6" Class="mb-2">
+                            Suivez-nous
+                        </MudText>
+                        <div class="d-flex gap-2">
+                            <MudIconButton Icon="@Icons.Custom.Brands.Facebook" Color="Color.Primary" Variant="Variant.Outlined" />
+                            <MudIconButton Icon="@Icons.Custom.Brands.Twitter" Color="Color.Primary" Variant="Variant.Outlined" />
+                            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Primary" Variant="Variant.Outlined" />
+                            <MudIconButton Icon="@Icons.Custom.Brands.Discord" Color="Color.Primary" Variant="Variant.Outlined" />
+                        </div>
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+        
+        <MudDivider Class="my-6" />
+        
+        <MudText Typo="Typo.h5" Class="mb-4">Foire aux questions</MudText>
+        <MudExpansionPanels>
+            <MudExpansionPanel Text="Comment puis-je devenir créateur de mods sur ModHub ?" IsInitiallyExpanded="false">
+                <MudText Typo="Typo.body1">
+                    Pour devenir créateur, vous devez vous inscrire sur notre plateforme puis soumettre une demande via votre espace personnel. 
+                    Notre équipe examinera votre profil et vos créations passées avant de valider votre statut de créateur.
+                </MudText>
+            </MudExpansionPanel>
+            <MudExpansionPanel Text="Quels sont les délais de réponse au support ?" IsInitiallyExpanded="false">
+                <MudText Typo="Typo.body1">
+                    Notre équipe s'efforce de répondre à toutes les demandes dans un délai de 24 à 48 heures ouvrables. 
+                    Les utilisateurs premium bénéficient d'un support prioritaire.
+                </MudText>
+            </MudExpansionPanel>
+            <MudExpansionPanel Text="Comment signaler un mod qui ne respecte pas les règles ?" IsInitiallyExpanded="false">
+                <MudText Typo="Typo.body1">
+                    Vous pouvez signaler un mod directement depuis sa page en cliquant sur le bouton "Signaler". 
+                    Vous pouvez également contacter notre équipe de modération via ce formulaire en sélectionnant "Signaler un bug".
+                </MudText>
+            </MudExpansionPanel>
+            <MudExpansionPanel Text="Je souhaite proposer un partenariat, comment procéder ?" IsInitiallyExpanded="false">
+                <MudText Typo="Typo.body1">
+                    Pour les propositions de partenariat, veuillez utiliser ce formulaire en sélectionnant "Partenariat" comme sujet. 
+                    Notre équipe commerciale vous contactera pour discuter des possibilités de collaboration.
+                </MudText>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private string contactCategory = "";
+    private string name = "";
+    private string email = "";
+    private string message = "";
+    private bool success;
+    private MudForm form;
+    
+    private async Task SubmitForm()
+    {
+        await form.Validate();
+        
+        if (success)
+        {
+            // Dans une application réelle, envoyez les données à votre API
+            // await ContactService.SendMessage(new ContactRequest { ... });
+            
+            // Réinitialiser le formulaire
+            contactCategory = "";
+            name = "";
+            email = "";
+            message = "";
+            // Remarque : MudForm n'a pas de méthode Reset(), nous réinitialisons manuellement les champs
+            
+            // Afficher un message de succès
+            Snackbar.Add("Votre message a été envoyé avec succès. Nous vous répondrons dans les plus brefs délais.", Severity.Success);
+        }
+    }
+}

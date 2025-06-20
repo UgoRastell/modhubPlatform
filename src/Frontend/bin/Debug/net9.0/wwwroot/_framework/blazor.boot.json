@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "Frontend",
   "resources": {
-    "hash": "sha256-ejgpQMebfczkMgrHE60ADH+U1vIuJauV9HR7mNbHVAg=",
+    "hash": "sha256-eSxPNKJ2OJgs6/AP654ug8yXKt8UBjHd49ioGpKy3sc=",
     "fingerprinting": {
       "FluentValidation.b28mz0qrx7.wasm": "FluentValidation.wasm",
       "Microsoft.AspNetCore.Authorization.esv38zo127.wasm": "Microsoft.AspNetCore.Authorization.wasm",
@@ -213,10 +213,10 @@
       "icudt_CJK.tjcz0u77k5.dat": "icudt_CJK.dat",
       "icudt_EFIGS.tptq2av103.dat": "icudt_EFIGS.dat",
       "icudt_no_CJK.lfu7j35m59.dat": "icudt_no_CJK.dat",
-      "Shared.sqm4korhxq.wasm": "Shared.wasm",
-      "Shared.6sv3q0vf5p.pdb": "Shared.pdb",
-      "Frontend.cizg4tym7m.wasm": "Frontend.wasm",
-      "Frontend.pt5l7u5up6.pdb": "Frontend.pdb"
+      "Shared.gko5a8gmg8.wasm": "Shared.wasm",
+      "Shared.97mpcw02l6.pdb": "Shared.pdb",
+      "Frontend.euqu04jvr0.wasm": "Frontend.wasm",
+      "Frontend.9tkyutest4.pdb": "Frontend.pdb"
     },
     "jsModuleNative": {
       "dotnet.native.8bti36lthm.js": "sha256-HFADmT26AarHu4tMjFaTPxINmQjBJGtdPN+CKjtNMFE="
@@ -438,12 +438,12 @@
       "WindowsBase.tuf34ieu7y.wasm": "sha256-Bd+l972cOS1eVeLzrQNlgD6LPWV1QXBSzJhv8Tx1WGI=",
       "mscorlib.5q5u0swn6q.wasm": "sha256-g9cI1sECkF7bxMqOSB+W0a4utdDsqTrqZzyiAEeA65g=",
       "netstandard.w8gk1pigg1.wasm": "sha256-QFR5QNPfvyZTexW3IA/AFx6ZmIF/TecvOUsSK4gM4po=",
-      "Shared.sqm4korhxq.wasm": "sha256-JDA1g2ou+KFRHuyjTy310Yr79UQDCzp0xwtasrJCLxU=",
-      "Frontend.cizg4tym7m.wasm": "sha256-PDAgxFOCqX/Ln6AJ6nzggBfbVbQ3ZkRn5J3Q5plN3kE="
+      "Shared.gko5a8gmg8.wasm": "sha256-oPWDGDQUktMy0cLLP+9KgzDJNzjdHmGRl/+VgVK7omo=",
+      "Frontend.euqu04jvr0.wasm": "sha256-mpzsKzff5tCwHWLEnxF5f/OYC1LR67YKjekbcXj4Lc4="
     },
     "pdb": {
-      "Shared.6sv3q0vf5p.pdb": "sha256-ps0udPJvsdtuzJjo1XJsAg2w1jqi0s3Nyl9tgHYZ9G8=",
-      "Frontend.pt5l7u5up6.pdb": "sha256-vX+5XF9ko0pQSEQtJkv6sJ6ig3tDmQKcejlJmlFm0vw="
+      "Shared.97mpcw02l6.pdb": "sha256-WzccOStHToW3DVTcxKgA7HYWki6aSpr/ODq7Ct08z4I=",
+      "Frontend.9tkyutest4.pdb": "sha256-3e/M+MAoYqpVLMIo6XoVpiUSgsojDfO+YnSNsz0r2iM="
     }
   },
   "cacheBootResources": true,

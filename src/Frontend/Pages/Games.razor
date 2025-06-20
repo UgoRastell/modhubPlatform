@@ -1,0 +1,152 @@
+@page "/games"
+@using Frontend.Models
+@inject NavigationManager NavigationManager
+
+<PageTitle>Jeux Supportés - ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Jeux Supportés</MudText>
+    
+    <MudPaper Class="pa-4 mb-4 rounded-xl" Elevation="3" Style="background-color: #232634;">
+        <MudText Typo="Typo.body1">
+            ModHub prend en charge de nombreux jeux populaires. Découvrez notre catalogue de jeux supportés et les mods disponibles pour chacun d'entre eux.
+        </MudText>
+    </MudPaper>
+
+    <!-- Filtres et recherche -->
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" md="8">
+            <MudTextField @bind-Value="searchQuery" 
+                       Label="Rechercher un jeu" 
+                       Variant="Variant.Outlined"
+                       Adornment="Adornment.End"
+                       AdornmentIcon="@Icons.Material.Filled.Search"
+                       OnAdornmentClick="SearchGames" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudSelect T="string" Label="Trier par" Variant="Variant.Outlined" Value="sortOption" ValueChanged="@((string val) => SortGames(val))">
+                <MudSelectItem Value="@("popularity")">Popularité</MudSelectItem>
+                <MudSelectItem Value="@("modCount")">Nombre de mods</MudSelectItem>
+                <MudSelectItem Value="@("name")">Ordre alphabétique</MudSelectItem>
+                <MudSelectItem Value="@("recent")">Ajouts récents</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+    </MudGrid>
+    
+    <!-- Liste des jeux -->
+    <MudGrid>
+        @foreach (var game in filteredGames)
+        {
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudCard Elevation="3" Class="rounded-xl h-100 d-flex flex-column">
+                    <MudCardMedia Image="@game.ImageUrl" Height="150" />
+                    <MudCardContent Class="flex-grow-1">
+                        <div class="d-flex justify-space-between align-center mb-2">
+                            <MudText Typo="Typo.h6">@game.Name</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Primary">@game.ModCount mods</MudChip>
+                        </div>
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">@game.ShortDescription</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" 
+                                 Color="Color.Primary" 
+                                 FullWidth="true"
+                                 EndIcon="@Icons.Material.Filled.ArrowForward"
+                                 Href="@($"/catalog?game={game.Id}")">
+                            Voir les mods
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+</MudContainer>
+
+@code {
+    // Classes pour les modèles de données
+    private class Game
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string ShortDescription { get; set; }
+        public string ImageUrl { get; set; }
+        public int ModCount { get; set; }
+    }
+    
+    // Variables
+    private string searchQuery = "";
+    private string sortOption = "popularity";
+    
+    // Données de démonstration
+    private List<Game> games = new List<Game>
+    {
+        new Game
+        {
+            Id = "skyrim",
+            Name = "The Elder Scrolls V: Skyrim",
+            ShortDescription = "RPG de monde ouvert médiéval-fantastique de Bethesda",
+            ImageUrl = "/images/games/skyrim.jpg",
+            ModCount = 8547
+        },
+        new Game
+        {
+            Id = "minecraft",
+            Name = "Minecraft",
+            ShortDescription = "Jeu bac à sable de construction et de survie",
+            ImageUrl = "/images/games/minecraft.jpg",
+            ModCount = 6238
+        },
+        new Game
+        {
+            Id = "fallout4",
+            Name = "Fallout 4",
+            ShortDescription = "RPG post-apocalyptique en monde ouvert",
+            ImageUrl = "/images/games/fallout4.jpg",
+            ModCount = 5921
+        },
+        new Game
+        {
+            Id = "witcher3",
+            Name = "The Witcher 3: Wild Hunt",
+            ShortDescription = "RPG en monde ouvert basé sur la saga du Sorceleur",
+            ImageUrl = "/images/games/witcher3.jpg",
+            ModCount = 2847
+        },
+        new Game
+        {
+            Id = "stardewvalley",
+            Name = "Stardew Valley",
+            ShortDescription = "Simulation de ferme et RPG relaxant",
+            ImageUrl = "/images/games/stardewvalley.jpg",
+            ModCount = 1953
+        },
+        new Game
+        {
+            Id = "cyberpunk2077",
+            Name = "Cyberpunk 2077",
+            ShortDescription = "RPG futuriste en monde ouvert",
+            ImageUrl = "/images/games/cyberpunk2077.jpg",
+            ModCount = 1845
+        }
+    };
+    
+    private List<Game> filteredGames => games
+        .Where(g => string.IsNullOrEmpty(searchQuery) || 
+                    g.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    g.ShortDescription.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+    
+    // Méthodes
+    private void SearchGames()
+    {
+        // Dans une implémentation réelle, ce serait un appel API
+        StateHasChanged();
+    }
+    
+    private void SortGames(string option)
+    {
+        sortOption = option;
+        // Dans une implémentation réelle, ce serait un appel API ou un tri local
+        StateHasChanged();
+    }
+}

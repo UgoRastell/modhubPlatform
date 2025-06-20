@@ -1,0 +1,406 @@
+@page "/forums"
+@using Frontend.Models
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<PageTitle>Forums - ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Forums de la communauté</MudText>
+    
+    <MudPaper Class="pa-4 mb-4 rounded-xl" Elevation="3" Style="background-color: #232634;">
+        <div class="d-flex flex-column flex-md-row gap-2 justify-space-between align-center">
+            <MudText Typo="Typo.body1">
+                Bienvenue dans les forums de discussion de ModHub. Échangez avec d'autres joueurs, 
+                créateurs de mods et passionnés de jeux vidéo.
+            </MudText>
+            <AuthorizeView>
+                <Authorized>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Href="/forums/new-topic">
+                        Nouveau sujet
+                    </MudButton>
+                </Authorized>
+                <NotAuthorized>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Login" Href="/login?returnUrl=/forums">
+                        Se connecter pour participer
+                    </MudButton>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </MudPaper>
+
+    <MudGrid>
+        <MudItem xs="12" md="8">
+            <!-- Catégories principales -->
+            <MudCard Class="mb-4 rounded-xl" Elevation="3" Style="background-color: #232634;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Catégories de discussion</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudDivider />
+                <MudCardContent>
+                    <MudList T="string" Clickable="true">
+                        @foreach (var category in forumCategories)
+                        {
+                            <MudListItem T="string" Href="@($"/forum/category/{category.Id}")" Icon="@Icons.Material.Filled.Forum">
+                                <div class="d-flex flex-grow-1 flex-column flex-sm-row gap-2 justify-space-between">
+                                    <div>
+                                        <MudText Typo="Typo.h6">@category.Name</MudText>
+                                        <MudText Typo="Typo.body2">@category.Description</MudText>
+                                    </div>
+                                    <div class="d-flex gap-4 align-center">
+                                        <div class="text-center">
+                                            <MudText Typo="Typo.subtitle2">@category.TopicsCount</MudText>
+                                            <MudText Typo="Typo.caption">Sujets</MudText>
+                                        </div>
+                                        <div class="text-center">
+                                            <MudText Typo="Typo.subtitle2">@category.PostsCount</MudText>
+                                            <MudText Typo="Typo.caption">Messages</MudText>
+                                        </div>
+                                    </div>
+                                </div>
+                            </MudListItem>
+                            <MudDivider />
+                        }
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+
+            <!-- Discussions récentes -->
+            <MudCard Class="mb-4 rounded-xl" Elevation="3" Style="background-color: #232634;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Discussions récentes</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/forum/latest">Voir tout</MudButton>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudDivider />
+                <MudCardContent>
+                    <MudList T="string" Clickable="true">
+                        @foreach (var topic in latestTopics)
+                        {
+                            <MudListItem T="string" Href="@($"/forum/topic/{topic.Id}")">
+                                <div class="d-flex flex-grow-1 gap-3">
+                                    <MudAvatar Color="Color.Primary" Style="@($"background:{GetRandomColor()};")">
+                                        @topic.AuthorName.Substring(0, 1).ToUpper()
+                                    </MudAvatar>
+                                    <div class="d-flex flex-column flex-grow-1">
+                                        <div class="d-flex justify-space-between align-center">
+                                            <MudText Typo="Typo.subtitle1">@topic.Title</MudText>
+                                            <MudChip Size="Size.Small" Color="Color.Default">
+                                                @topic.CategoryName
+                                            </MudChip>
+                                        </div>
+                                        <div class="d-flex justify-space-between align-center">
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                                Par @topic.AuthorName · @topic.PostedDate
+                                            </MudText>
+                                            <div class="d-flex gap-2 align-center">
+                                                <MudIcon Icon="@Icons.Material.Filled.Comment" Size="Size.Small" />
+                                                <MudText Typo="Typo.body2">@topic.RepliesCount</MudText>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </MudListItem>
+                            <MudDivider />
+                        }
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <!-- Statistiques -->
+            <MudCard Class="mb-4 rounded-xl" Elevation="3" Style="background-color: #232634;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Statistiques du forum</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudDivider />
+                <MudCardContent>
+                    <MudList T="string" Dense="true">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Topic">
+                            <MudText>@forumStats.TotalTopics sujets au total</MudText>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Comment">
+                            <MudText>@forumStats.TotalPosts messages au total</MudText>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Group">
+                            <MudText>@forumStats.TotalMembers membres inscrits</MudText>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Person">
+                            <MudText>Dernier membre inscrit : @forumStats.LastMemberName</MudText>
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+
+            <!-- Membres actifs -->
+            <MudCard Class="mb-4 rounded-xl" Elevation="3" Style="background-color: #232634;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Membres actifs</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudDivider />
+                <MudCardContent>
+                    <MudList T="string" Dense="true">
+                        @foreach (var member in activeMembers)
+                        {
+                            <MudListItem T="string" Href="@($"/account/profile/{member.Username}")">
+                                <div class="d-flex gap-2 align-center">
+                                    <MudAvatar Size="Size.Small" Color="Color.Secondary" Style="@($"background:{GetRandomColor()};")">
+                                        @member.Username.Substring(0, 1).ToUpper()
+                                    </MudAvatar>
+                                    <div class="d-flex flex-column">
+                                        <MudText Typo="Typo.body2">@member.Username</MudText>
+                                        <MudText Typo="Typo.caption">@member.PostCount messages</MudText>
+                                    </div>
+                                </div>
+                            </MudListItem>
+                        }
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+
+            <!-- Sujets populaires -->
+            <MudCard Class="rounded-xl" Elevation="3" Style="background-color: #232634;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Sujets populaires</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudDivider />
+                <MudCardContent>
+                    <MudList T="string" Dense="true" Clickable="true">
+                        @foreach (var topic in popularTopics)
+                        {
+                            <MudListItem T="string" Href="@($"/forum/topic/{topic.Id}")">
+                                <div class="d-flex flex-column">
+                                    <MudText Typo="Typo.body2">@topic.Title</MudText>
+                                    <div class="d-flex gap-2 align-center">
+                                        <MudIcon Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" />
+                                        <MudText Typo="Typo.caption">@topic.ViewsCount vues</MudText>
+                                    </div>
+                                </div>
+                            </MudListItem>
+                            <MudDivider />
+                        }
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    // Classes pour les modèles de données
+    private class ForumCategory
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int TopicsCount { get; set; }
+        public int PostsCount { get; set; }
+    }
+
+    private class ForumTopic
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string AuthorName { get; set; }
+        public string CategoryName { get; set; }
+        public string CategoryId { get; set; }
+        public string PostedDate { get; set; }
+        public int RepliesCount { get; set; }
+        public int ViewsCount { get; set; }
+    }
+
+    private class ForumMember
+    {
+        public string Username { get; set; }
+        public int PostCount { get; set; }
+    }
+
+    private class ForumStatistics
+    {
+        public int TotalTopics { get; set; }
+        public int TotalPosts { get; set; }
+        public int TotalMembers { get; set; }
+        public string LastMemberName { get; set; }
+    }
+
+    // Données de démonstration
+    private List<ForumCategory> forumCategories = new List<ForumCategory>
+    {
+        new ForumCategory
+        {
+            Id = "general",
+            Name = "Discussion générale",
+            Description = "Discussions générales sur les jeux vidéo et le modding",
+            TopicsCount = 245,
+            PostsCount = 3570
+        },
+        new ForumCategory
+        {
+            Id = "tutorials",
+            Name = "Tutoriels et guides",
+            Description = "Guides et tutoriels pour créer et installer des mods",
+            TopicsCount = 127,
+            PostsCount = 894
+        },
+        new ForumCategory
+        {
+            Id = "showcase",
+            Name = "Présentation de mods",
+            Description = "Présentez vos créations et découvrez celles des autres",
+            TopicsCount = 382,
+            PostsCount = 2156
+        },
+        new ForumCategory
+        {
+            Id = "tech-support",
+            Name = "Support technique",
+            Description = "Assistance pour les problèmes d'installation et de compatibilité",
+            TopicsCount = 523,
+            PostsCount = 4218
+        },
+        new ForumCategory
+        {
+            Id = "suggestions",
+            Name = "Suggestions",
+            Description = "Proposez des idées pour améliorer la plateforme",
+            TopicsCount = 89,
+            PostsCount = 640
+        }
+    };
+
+    private List<ForumTopic> latestTopics = new List<ForumTopic>
+    {
+        new ForumTopic
+        {
+            Id = "topic1",
+            Title = "Comment optimiser les textures HD pour Skyrim ?",
+            AuthorName = "ModMaster64",
+            CategoryName = "Tutoriels",
+            CategoryId = "tutorials",
+            PostedDate = "Il y a 2 heures",
+            RepliesCount = 12,
+            ViewsCount = 153
+        },
+        new ForumTopic
+        {
+            Id = "topic2",
+            Title = "[Nouveau mod] HUD amélioré pour Fallout 4",
+            AuthorName = "CreativeCoder",
+            CategoryName = "Présentation",
+            CategoryId = "showcase",
+            PostedDate = "Il y a 5 heures",
+            RepliesCount = 8,
+            ViewsCount = 97
+        },
+        new ForumTopic
+        {
+            Id = "topic3",
+            Title = "Bug avec le dernier patch du mod Realistic Weather",
+            AuthorName = "Gamer2077",
+            CategoryName = "Support",
+            CategoryId = "tech-support",
+            PostedDate = "Il y a 7 heures",
+            RepliesCount = 23,
+            ViewsCount = 276
+        },
+        new ForumTopic
+        {
+            Id = "topic4",
+            Title = "Idées pour un mod d'amélioration du système de combat",
+            AuthorName = "RPGLover",
+            CategoryName = "Général",
+            CategoryId = "general",
+            PostedDate = "Il y a 12 heures",
+            RepliesCount = 19,
+            ViewsCount = 184
+        },
+        new ForumTopic
+        {
+            Id = "topic5",
+            Title = "Suggestion : Système de notation pour les mods",
+            AuthorName = "IdeaGuru",
+            CategoryName = "Suggestions",
+            CategoryId = "suggestions",
+            PostedDate = "Il y a 1 jour",
+            RepliesCount = 31,
+            ViewsCount = 342
+        }
+    };
+
+    private List<ForumTopic> popularTopics = new List<ForumTopic>
+    {
+        new ForumTopic
+        {
+            Id = "topic6",
+            Title = "Guide complet pour débuter le modding",
+            ViewsCount = 15784
+        },
+        new ForumTopic
+        {
+            Id = "topic7",
+            Title = "Les meilleurs mods graphiques de 2025",
+            ViewsCount = 12653
+        },
+        new ForumTopic
+        {
+            Id = "topic8",
+            Title = "Compatibilité entre mods : astuces et solutions",
+            ViewsCount = 9547
+        },
+        new ForumTopic
+        {
+            Id = "topic9",
+            Title = "Discussion officielle : Outils de création de mods",
+            ViewsCount = 8426
+        },
+        new ForumTopic
+        {
+            Id = "topic10",
+            Title = "Comment monetiser vos mods efficacement",
+            ViewsCount = 7315
+        }
+    };
+
+    private List<ForumMember> activeMembers = new List<ForumMember>
+    {
+        new ForumMember { Username = "ModMaster64", PostCount = 1247 },
+        new ForumMember { Username = "CreativeCoder", PostCount = 876 },
+        new ForumMember { Username = "GameModder", PostCount = 745 },
+        new ForumMember { Username = "RPGLover", PostCount = 623 },
+        new ForumMember { Username = "TechGuru", PostCount = 512 },
+        new ForumMember { Username = "ArtisticMind", PostCount = 489 },
+        new ForumMember { Username = "CodeWizard", PostCount = 378 }
+    };
+
+    private ForumStatistics forumStats = new ForumStatistics
+    {
+        TotalTopics = 2874,
+        TotalPosts = 47980,
+        TotalMembers = 12568,
+        LastMemberName = "NewGamer2025"
+    };
+
+    // Fonction pour générer des couleurs aléatoires pour les avatars
+    private string GetRandomColor()
+    {
+        var colors = new[] {
+            "#1E88E5", "#43A047", "#E53935", "#FDD835", "#FB8C00",
+            "#8E24AA", "#6D4C41", "#546E7A", "#26A69A", "#EC407A"
+        };
+        
+        Random random = new Random();
+        return colors[random.Next(0, colors.Length)];
+    }
+}

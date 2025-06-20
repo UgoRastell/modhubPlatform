@@ -1,0 +1,106 @@
+@page "/terms"
+@using Frontend.Models
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<PageTitle>Conditions d'utilisation - ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudPaper Class="pa-6 rounded-xl" Elevation="3" Style="background-color: #232634;">
+        <MudText Typo="Typo.h4" Class="mb-4">Conditions d'utilisation</MudText>
+        <MudText Typo="Typo.body2" Class="mb-6">Dernière mise à jour : @DateTime.Now.ToString("dd/MM/yyyy")</MudText>
+        
+        <MudDivider Class="my-6" />
+        
+        <MudText Typo="Typo.h5" Class="mb-4">1. Introduction</MudText>
+        <MudText Typo="Typo.body1" Class="mb-6">
+            Bienvenue sur ModHub. En accédant à notre plateforme, vous acceptez d'être lié par ces conditions d'utilisation, 
+            notre politique de confidentialité et toutes les lois et réglementations applicables. Si vous n'acceptez pas ces conditions, 
+            veuillez ne pas utiliser notre plateforme.
+        </MudText>
+        
+        <MudText Typo="Typo.h5" Class="mb-4">2. Définitions</MudText>
+        <MudText Typo="Typo.body1" Class="mb-6">
+            <ul>
+                <li><strong>"Plateforme"</strong> désigne le site web ModHub, accessible via le domaine modhub.com et ses sous-domaines.</li>
+                <li><strong>"Service"</strong> désigne les services proposés par ModHub, incluant l'accès à la plateforme, le téléchargement de mods, et les fonctionnalités associées.</li>
+                <li><strong>"Utilisateur"</strong> désigne toute personne qui accède à la plateforme ou utilise les services.</li>
+                <li><strong>"Contenu"</strong> désigne les mods, textes, images, vidéos, commentaires et tout autre matériel pouvant être publié sur la plateforme.</li>
+                <li><strong>"Créateur"</strong> désigne un utilisateur qui publie du contenu sur la plateforme.</li>
+            </ul>
+        </MudText>
+        
+        <MudText Typo="Typo.h5" Class="mb-4">3. Compte utilisateur</MudText>
+        <MudText Typo="Typo.body1" Class="mb-6">
+            <p>3.1. Pour accéder à certaines fonctionnalités de notre plateforme, vous devrez créer un compte. Vous êtes responsable de maintenir la confidentialité de votre mot de passe et de toutes les activités qui se produisent sous votre compte.</p>
+            <p>3.2. Vous devez fournir des informations précises et complètes lors de la création de votre compte et vous devez les mettre à jour si nécessaire.</p>
+            <p>3.3. Vous ne devez pas partager votre compte avec d'autres personnes ni autoriser des tiers à accéder à votre compte.</p>
+            <p>3.4. Nous nous réservons le droit de suspendre ou de résilier votre compte si nous avons des raisons de croire que vous avez enfreint nos conditions d'utilisation.</p>
+        </MudText>
+        
+        <MudText Typo="Typo.h5" Class="mb-4">4. Droits et responsabilités des utilisateurs</MudText>
+        <MudText Typo="Typo.body1" Class="mb-6">
+            <p>4.1. Vous êtes autorisé à télécharger et utiliser les mods disponibles sur notre plateforme conformément aux licences spécifiées par leurs créateurs.</p>
+            <p>4.2. Vous ne devez pas :</p>
+            <ul>
+                <li>Utiliser notre plateforme d'une manière qui pourrait désactiver, surcharger ou endommager nos serveurs;</li>
+                <li>Tenter d'accéder à des zones de la plateforme auxquelles vous n'êtes pas autorisé à accéder;</li>
+                <li>Utiliser des robots, des scrapers ou d'autres moyens automatisés pour accéder à notre plateforme;</li>
+                <li>Contourner les mesures de sécurité que nous avons mises en place;</li>
+                <li>Utiliser notre plateforme pour des activités illégales ou non autorisées.</li>
+            </ul>
+        </MudText>
+        
+        <MudText Typo="Typo.h5" Class="mb-4">5. Contenu et droits de propriété intellectuelle</MudText>
+        <MudText Typo="Typo.body1" Class="mb-6">
+            <p>5.1. Les créateurs conservent les droits de propriété intellectuelle sur le contenu qu'ils publient sur notre plateforme.</p>
+            <p>5.2. En publiant du contenu sur notre plateforme, vous accordez à ModHub une licence mondiale, non exclusive, libre de redevances pour utiliser, reproduire, modifier, publier et distribuer ce contenu dans le cadre de nos services.</p>
+            <p>5.3. Vous garantissez que vous possédez tous les droits nécessaires sur le contenu que vous publiez et que ce contenu ne viole pas les droits de tiers.</p>
+            <p>5.4. Nous nous réservons le droit de supprimer tout contenu qui enfreint ces conditions d'utilisation ou que nous jugeons inapproprié à notre seule discrétion.</p>
+        </MudText>
+        
+        <MudText Typo="Typo.h5" Class="mb-4">6. Mods premium et paiements</MudText>
+        <MudText Typo="Typo.body1" Class="mb-6">
+            <p>6.1. Certains mods sur notre plateforme peuvent être proposés en tant que "premium" et nécessiter un paiement pour y accéder.</p>
+            <p>6.2. Tous les paiements sont traités par nos prestataires de services de paiement et sont soumis à leurs conditions d'utilisation.</p>
+            <p>6.3. Les prix sont indiqués en euros (€) et incluent toutes les taxes applicables.</p>
+            <p>6.4. Nous nous réservons le droit de modifier les prix des mods premium à tout moment.</p>
+            <p>6.5. Les remboursements peuvent être accordés conformément à notre politique de remboursement en vigueur.</p>
+        </MudText>
+        
+        <MudText Typo="Typo.h5" Class="mb-4">7. Limitation de responsabilité</MudText>
+        <MudText Typo="Typo.body1" Class="mb-6">
+            <p>7.1. Notre plateforme et ses services sont fournis "tels quels" sans garantie d'aucune sorte.</p>
+            <p>7.2. Nous ne garantissons pas que notre plateforme sera disponible de façon ininterrompue, sécurisée ou exempte d'erreurs.</p>
+            <p>7.3. Nous ne sommes pas responsables des dommages pouvant résulter de l'utilisation ou de l'incapacité d'utiliser notre plateforme ou les mods téléchargés depuis notre plateforme.</p>
+            <p>7.4. Nous ne sommes pas responsables du contenu publié par les utilisateurs sur notre plateforme.</p>
+        </MudText>
+        
+        <MudText Typo="Typo.h5" Class="mb-4">8. Indemnisation</MudText>
+        <MudText Typo="Typo.body1" Class="mb-6">
+            Vous acceptez d'indemniser, de défendre et de tenir ModHub et ses affiliés, administrateurs, agents et employés à l'abri de toute réclamation, responsabilité, dommage, perte et dépense, y compris les frais juridiques raisonnables, découlant de votre utilisation de notre plateforme ou de votre violation de ces conditions d'utilisation.
+        </MudText>
+        
+        <MudText Typo="Typo.h5" Class="mb-4">9. Modifications des conditions d'utilisation</MudText>
+        <MudText Typo="Typo.body1" Class="mb-6">
+            Nous nous réservons le droit de modifier ces conditions d'utilisation à tout moment. Les modifications entreront en vigueur dès leur publication sur notre plateforme. Votre utilisation continue de notre plateforme après la publication des modifications constitue votre acceptation de ces modifications.
+        </MudText>
+        
+        <MudText Typo="Typo.h5" Class="mb-4">10. Loi applicable et juridiction</MudText>
+        <MudText Typo="Typo.body1" Class="mb-6">
+            Ces conditions d'utilisation sont régies par et interprétées conformément aux lois françaises. Tout litige relatif à ces conditions ou à votre utilisation de notre plateforme sera soumis à la juridiction exclusive des tribunaux français.
+        </MudText>
+        
+        <MudText Typo="Typo.h5" Class="mb-4">11. Contact</MudText>
+        <MudText Typo="Typo.body1" Class="mb-6">
+            Si vous avez des questions concernant ces conditions d'utilisation, veuillez nous contacter à <MudLink Href="mailto:legal@modhub.com">legal@modhub.com</MudLink> ou via notre <MudLink Href="/contact">formulaire de contact</MudLink>.
+        </MudText>
+        
+        <MudDivider Class="my-6" />
+        
+        <MudText Typo="Typo.body2" Class="text-center">
+            En utilisant notre plateforme, vous reconnaissez avoir lu, compris et accepté ces conditions d'utilisation.
+        </MudText>
+
+    </MudPaper>
+</MudContainer>
