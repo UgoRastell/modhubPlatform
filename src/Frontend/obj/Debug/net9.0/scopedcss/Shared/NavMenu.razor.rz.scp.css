@@ -1,0 +1,38 @@
+/* Styles for the navigation menu */
+.mud-nav-link[b-9ljbyqraro] {
+    padding: 12px 16px;
+    transition: all 0.2s ease;
+}
+
+.mud-nav-link:hover .mud-nav-link-icon[b-9ljbyqraro] {
+    transform: translateX(4px);
+    transition: transform 0.2s ease;
+}
+
+.mud-navmenu .mud-nav-group > .mud-nav-link[b-9ljbyqraro] {
+    font-weight: 500;
+}
+
+/* Animation for dropdown icons */
+.mud-nav-group .mud-nav-link .mud-nav-link-expand-icon[b-9ljbyqraro] {
+    transition: transform 0.3s ease;
+}
+
+.mud-nav-group.expanded .mud-nav-link .mud-nav-link-expand-icon[b-9ljbyqraro] {
+    transform: rotate(180deg);
+}
+
+/* Login/register section in drawer */
+.auth-prompt[b-9ljbyqraro] {
+    padding: 16px;
+    border-radius: 8px;
+    background-color: rgba(0,0,0,0.1);
+    margin: 16px 8px;
+}
+
+.section-header[b-9ljbyqraro] {
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
