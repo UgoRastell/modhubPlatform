@@ -23,8 +23,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identityservice",
-          "Port": 80
+          "Host": "usersservice",
+          "Port": 5001
         }
       ],
       "UpstreamPathTemplate": "/api/auth/{everything}",
@@ -36,6 +36,21 @@
         "PeriodTimespan": 1,
         "Limit": 10
       },
+      "FileCacheOptions": {
+        "TtlSeconds": 0
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/passwordreset/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "usersservice",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/passwordreset/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT" ],
       "FileCacheOptions": {
         "TtlSeconds": 0
       }

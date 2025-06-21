@@ -1,0 +1,227 @@
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudCard Class="settings-card mb-4">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <div class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Lock" Class="mr-2" />
+                <MudText Typo="Typo.h5">Confidentialité</MudText>
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+    
+    <MudCardContent>
+        <MudText Class="mb-4">Gérez les données liées à votre compte ModHub.</MudText>
+        
+        <!-- Data Export Section -->
+        <MudPaper Elevation="0" Class="pa-4 mb-6 rounded-lg" Style="background-color: #2f3441;">
+            <MudText Typo="Typo.subtitle1" Class="mb-2">Exporter mes données</MudText>
+            <MudText Typo="Typo.body2" Class="mb-4" Style="color: #a7b2c2;">
+                Vous pouvez télécharger une copie de vos données personnelles et de votre contenu sur ModHub.
+                L'archive peut prendre quelques minutes à générer et sera envoyée à votre adresse e-mail.
+            </MudText>
+            
+            <div class="d-flex align-center">
+                <MudButton Variant="Variant.Outlined"
+                          Color="Color.Primary"
+                          StartIcon="@Icons.Material.Filled.FileDownload"
+                          OnClick="ExportData"
+                          Disabled="@isExporting">
+                    @if (isExporting)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                        <MudText Class="ms-2">Exportation...</MudText>
+                    }
+                    else
+                    {
+                        <MudText>Exporter mes données</MudText>
+                    }
+                </MudButton>
+            </div>
+        </MudPaper>
+        
+        <!-- Privacy Preferences -->
+        <MudPaper Elevation="0" Class="pa-4 mb-6 rounded-lg" Style="background-color: #2f3441;">
+            <MudText Typo="Typo.subtitle1" Class="mb-4">Préférences de confidentialité</MudText>
+            
+            <MudGrid>
+                <MudItem xs="12">
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <MudText>Profil public</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #a7b2c2;">Rendre votre profil visible pour tous les utilisateurs</MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Checked="privacySettings.PublicProfile" 
+                                  Color="Color.Primary" />
+                    </div>
+                </MudItem>
+                
+                <MudItem xs="12" Class="my-2">
+                    <MudDivider />
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <MudText>Afficher mon activité récente</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #a7b2c2;">Montrer aux autres utilisateurs vos activités récentes</MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Checked="privacySettings.ShowActivity" 
+                                  Color="Color.Primary" />
+                    </div>
+                </MudItem>
+                
+                <MudItem xs="12" Class="my-2">
+                    <MudDivider />
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <MudText>Autoriser les messages privés</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #a7b2c2;">Permettre aux autres utilisateurs de vous envoyer des messages</MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Checked="privacySettings.AllowPrivateMessages" 
+                                  Color="Color.Primary" />
+                    </div>
+                </MudItem>
+                
+                <MudItem xs="12" Class="my-2">
+                    <MudDivider />
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <MudText>Utilisation des données pour améliorer les services</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #a7b2c2;">Autoriser l'utilisation de vos données d'usage pour améliorer l'expérience ModHub</MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Checked="privacySettings.AllowDataUsage" 
+                                  Color="Color.Primary" />
+                    </div>
+                </MudItem>
+            </MudGrid>
+            
+            <div class="d-flex justify-end mt-4">
+                <MudButton Variant="Variant.Filled"
+                          Color="Color.Primary"
+                          OnClick="SavePrivacySettings"
+                          Disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                        <MudText Class="ms-2">Enregistrement...</MudText>
+                    }
+                    else
+                    {
+                        <MudText>Enregistrer</MudText>
+                    }
+                </MudButton>
+            </div>
+        </MudPaper>
+        
+        <!-- Delete Account Section -->
+        <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="border: 1px solid #ff3b3b; background-color: #2f3441;">
+            <MudText Typo="Typo.subtitle1" Class="mb-2" Style="color: #ff3b3b;">Supprimer mon compte</MudText>
+            <MudText Typo="Typo.body2" Class="mb-4" Style="color: #a7b2c2;">
+                Cette action supprimera définitivement votre compte et toutes vos données personnelles.
+                Les mods que vous avez publiés resteront disponibles selon vos paramètres de licence.
+                Cette action est irréversible.
+            </MudText>
+            
+            <MudButton Variant="Variant.Filled"
+                      Color="Color.Error"
+                      StartIcon="@Icons.Material.Filled.DeleteForever"
+                      OnClick="OpenDeleteAccountDialog">
+                Supprimer mon compte
+            </MudButton>
+        </MudPaper>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private bool isSaving = false;
+    private bool isExporting = false;
+    
+    private PrivacySettings privacySettings = new()
+    {
+        PublicProfile = true,
+        ShowActivity = true,
+        AllowPrivateMessages = true,
+        AllowDataUsage = true
+    };
+    
+    private async Task ExportData()
+    {
+        isExporting = true;
+        
+        try
+        {
+            // In real app, we'd call the API to request data export
+            await Task.Delay(2000);
+            
+            Snackbar.Add("Demande d'exportation reçue. Un email contenant vos données sera envoyé à votre adresse email.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isExporting = false;
+            StateHasChanged();
+        }
+    }
+    
+    private async Task SavePrivacySettings()
+    {
+        isSaving = true;
+        
+        try
+        {
+            // In real app, we'd call the API to save privacy settings
+            await Task.Delay(1000);
+            
+            Snackbar.Add("Paramètres de confidentialité enregistrés avec succès", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+    
+    private async Task OpenDeleteAccountDialog()
+    {
+        var parameters = new DialogParameters();
+        var options = new DialogOptions 
+        { 
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            Position = DialogPosition.Center
+        };
+        
+        var dialog = await DialogService.ShowAsync<DeleteAccountDialog>("Suppression du compte", parameters, options);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            Snackbar.Add("Compte supprimé avec succès. Vous serez déconnecté sous peu.", Severity.Warning);
+            // In real app, we would redirect to logout page or home after a delay
+        }
+    }
+    
+    public class PrivacySettings
+    {
+        public bool PublicProfile { get; set; }
+        public bool ShowActivity { get; set; }
+        public bool AllowPrivateMessages { get; set; }
+        public bool AllowDataUsage { get; set; }
+    }
+}

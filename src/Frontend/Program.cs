@@ -43,6 +43,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IModService, ModService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // Configuration des services MudBlazor
 builder.Services.AddMudServices(config =>
@@ -59,6 +61,9 @@ builder.Services.AddMudServices(config =>
 
 // Ajout du thème ModHub personnalisé
 builder.Services.AddSingleton<MudTheme>(ModHubTheme.DefaultTheme);
+
+// Ajout du service de thème pour gérer le mode sombre/clair
+builder.Services.AddSingleton<IThemeService, ThemeService>();
 
 // Construction et exécution de l'application
 await builder.Build().RunAsync();

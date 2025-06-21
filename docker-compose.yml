@@ -61,7 +61,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5001
-      - ConnectionStrings__MongoDB=mongodb://root:example@mongodb:27017
+      - MongoDbSettings__ConnectionString=mongodb://root:example@mongodb:27017/ModsGamingPlatform?authSource=admin
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=admin
       - RabbitMQ__Password=admin
@@ -86,7 +86,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5002
-      - ConnectionStrings__MongoDB=mongodb://root:example@mongodb:27017
+      - MongoDbSettings__ConnectionString=mongodb://root:example@mongodb:27017/ModsGamingPlatform?authSource=admin
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=admin
       - RabbitMQ__Password=admin
@@ -111,7 +111,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5003
-      - ConnectionStrings__MongoDB=mongodb://root:example@mongodb:27017
+      - MongoDbSettings__ConnectionString=mongodb://root:example@mongodb:27017/ModsGamingPlatform?authSource=admin
       - Stripe__ApiKey=sk_test_xxx 
       - LOGSTASH_HOST=logstash
       - LOGSTASH_PORT=5000
@@ -133,7 +133,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5004
-      - ConnectionStrings__MongoDB=mongodb://root:example@mongodb:27017
+      - MongoDbSettings__ConnectionString=mongodb://root:example@mongodb:27017/ModsGamingPlatform?authSource=admin
       - LOGSTASH_HOST=logstash
       - LOGSTASH_PORT=5000
     depends_on:

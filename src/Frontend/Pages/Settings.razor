@@ -1,373 +1,182 @@
-@page "/settings"
-@using Frontend.Models
+@page "/account/settings"
+@using System.ComponentModel.DataAnnotations
+@using Frontend.Components.Settings
 @inject ISnackbar Snackbar
+@inject HttpClient Http
 @inject NavigationManager NavigationManager
 
-<PageTitle>Paramètres - ModHub</PageTitle>
+<style>
+    .settings-sidebar {
+        background-color: #232634;
+        width: 240px;
+        height: 100%;
+    }
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 py-6">
-    <MudText Typo="Typo.h4" Class="mb-6">Paramètres</MudText>
-    
-    <MudGrid>
-        <MudItem xs="12" md="4">
-            <MudNavMenu Class="mud-width-full">
-                <MudText Typo="Typo.subtitle2" Class="ml-4 my-3 mud-text-secondary">Préférences</MudText>
-                <MudNavLink Href="#appearance" Icon="@Icons.Material.Filled.Palette" IconColor="Color.Secondary" Match="NavLinkMatch.All">
-                    Apparence
-                </MudNavLink>
-                <MudNavLink Href="#notifications" Icon="@Icons.Material.Filled.Notifications" IconColor="Color.Info" Match="NavLinkMatch.All">
-                    Notifications
-                </MudNavLink>
-                <MudNavLink Href="#privacy" Icon="@Icons.Material.Filled.PrivacyTip" IconColor="Color.Success" Match="NavLinkMatch.All">
-                    Confidentialité
-                </MudNavLink>
-                <MudNavLink Href="#account" Icon="@Icons.Material.Filled.ManageAccounts" IconColor="Color.Primary" Match="NavLinkMatch.All">
-                    Compte
-                </MudNavLink>
-                <MudNavLink Href="#language" Icon="@Icons.Material.Filled.Language" IconColor="Color.Warning" Match="NavLinkMatch.All">
-                    Langue & Région
-                </MudNavLink>
-                <MudDivider Class="my-3" />
-                <MudText Typo="Typo.subtitle2" Class="ml-4 my-3 mud-text-secondary">Plus d'options</MudText>
-                <MudNavLink Href="/help" Icon="@Icons.Material.Filled.Help" Match="NavLinkMatch.All">
-                    Aide & Support
-                </MudNavLink>
-                <MudNavLink Href="/legal" Icon="@Icons.Material.Filled.Gavel" Match="NavLinkMatch.All">
-                    Mentions légales
-                </MudNavLink>
-            </MudNavMenu>
+    .settings-card {
+        border-radius: 16px;
+        padding: 24px;
+        background-color: #232634;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .settings-danger-card {
+        border: 1px solid #ff3b3b;
+    }
+
+    .menu-item {
+        border-radius: 8px;
+    }
+
+    .menu-item:hover {
+        background-color: rgba(0, 170, 255, 0.1);
+        transition: all 0.2s ease;
+    }
+
+    .menu-item.active {
+        background-color: rgba(0, 170, 255, 0.2);
+    }
+
+    /* Animation for cards */
+    .fade-in {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 960px) {
+        .settings-card {
+            padding: 16px;
+        }
+    }
+
+    /* Accessibility - prefers reduced motion */
+    @@media (prefers-reduced-motion) {
+        .fade-in {
+            animation: none;
+        }
+    }
+</style>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-6">
+    <MudText Typo="Typo.h2" Class="mb-2">Paramètres</MudText>
+    <MudBreadcrumbs Items="@(new[]
+    {
+        new BreadcrumbItem("Mon compte", "/account"),
+        new BreadcrumbItem("Paramètres", null, true)
+    })" />
+
+    <MudGrid Class="mt-4">
+        <!-- Sidebar for desktop -->
+        <MudItem xs="12" md="3" Class="d-none d-md-flex">
+            <MudPaper Class="settings-sidebar pa-3 d-flex flex-column" Elevation="0">
+                @foreach (var menuItem in _menuItems)
+                {
+                    <MudButton StartIcon="@menuItem.Icon" 
+                              Color="Color.Inherit"
+                              Variant="Variant.Text" 
+                              FullWidth="true"
+                              Class="@($"menu-item mb-1 py-2 px-3 text-start {(activeSection == menuItem.Section ? "active" : "")}")"
+                              OnClick="@(() => SetActiveSection(menuItem.Section))">
+                        @menuItem.Text
+                    </MudButton>
+                }
+            </MudPaper>
         </MudItem>
-        
-        <MudItem xs="12" md="8">
-            <MudPaper Class="pa-5 mb-6 rounded-xl" Elevation="3" Style="background-color: #232634;" id="appearance">
-                <MudText Typo="Typo.h5" Class="mb-4">Apparence</MudText>
-                
-                <MudGrid>
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2">Thème</MudText>
-                        <MudRadioGroup T="string" @bind-Value="@preferences.Theme" Class="ml-4 mb-4" Color="Color.Primary">
-                            <MudRadio T="string" Value="@("dark")" Color="Color.Primary">
-                                <div class="d-flex align-center">
-                                    <MudIcon Icon="@Icons.Material.Filled.DarkMode" Class="mr-2" />
-                                    Sombre (recommandé)
-                                </div>
-                            </MudRadio>
-                            <MudRadio T="string" Value="@("light")" Color="Color.Primary">
-                                <div class="d-flex align-center">
-                                    <MudIcon Icon="@Icons.Material.Filled.LightMode" Class="mr-2" />
-                                    Clair
-                                </div>
-                            </MudRadio>
-                            <MudRadio T="string" Value="@("system")" Color="Color.Primary">
-                                <div class="d-flex align-center">
-                                    <MudIcon Icon="@Icons.Material.Filled.SettingsBrightness" Class="mr-2" />
-                                    Système
-                                </div>
-                            </MudRadio>
-                        </MudRadioGroup>
-                    </MudItem>
-                    
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2">Animations</MudText>
-                        <MudSwitch T="bool" @bind-Checked="@isAnimationsEnabled" 
-                                  Color="Color.Primary" 
-                                  Label="Activer les animations et transitions" 
-                                  Class="ml-4" />
-                    </MudItem>
-                    
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2">Densité d'interface</MudText>
-                        <MudSlider @bind-Value="@uiDensity" 
-                                  Min="0" Max="2" 
-                                  Color="Color.Primary" 
-                                  Class="ml-4">
-                            @(uiDensity == 0 ? "Compacte" : uiDensity == 1 ? "Normale" : "Confortable")
-                        </MudSlider>
-                    </MudItem>
-                </MudGrid>
-            </MudPaper>
-            
-            <MudPaper Class="pa-5 mb-6 rounded-xl" Elevation="3" Style="background-color: #232634;" id="notifications">
-                <MudText Typo="Typo.h5" Class="mb-4">Notifications</MudText>
-                
-                <MudGrid>
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2">Emails</MudText>
-                        <MudSwitch T="bool" @bind-Checked="@preferences.EmailNotifications" 
-                                  Color="Color.Primary" 
-                                  Label="Notifications par email" 
-                                  Class="ml-4" />mb-2" />
-                        <MudSwitch T="bool" @bind-Checked="@preferences.MarketingEmails" 
-                                  Color="Color.Primary" 
-                                  Label="Emails marketing et newsletters" 
-                                  Class="ml-4" />
-                    </MudItem>
-                    
-                    <MudItem xs="12" Class="mt-4">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2">Notifications du site</MudText>
-                        <MudSwitch T="bool" @bind-Checked="@sitePushNotifications" 
-                                  Color="Color.Primary" 
-                                  Label="Notifications push sur le site" 
-                                  Class="ml-4" />mb-2" />
-                        <MudSwitch T="bool" @bind-Checked="@browserPushNotifications" 
-                                  Color="Color.Primary" 
-                                  Label="Notifications push du navigateur" 
-                                  Class="ml-4" />
-                    </MudItem>
-                    
-                    <MudItem xs="12" Class="mt-4">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2">Types d'événements</MudText>
-                        <MudCheckBox T="bool" @bind-Checked="@newModNotifications" 
-                                    Color="Color.Primary" 
-                                    Label="Nouveaux mods" 
-                                    Class="ml-4" />mb-2" />
-                        <MudCheckBox T="bool" @bind-Checked="@modUpdateNotifications" 
-                                    Color="Color.Primary" 
-                                    Label="Mises à jour de mods" 
-                                    Class="ml-4" />mb-2" />
-                        <MudCheckBox T="bool" @bind-Checked="@commentNotifications" 
-                                    Color="Color.Primary" 
-                                    Label="Commentaires" 
-                                    Class="ml-4" />
-                    </MudItem>
-                </MudGrid>
-            </MudPaper>
-            
-            <MudPaper Class="pa-5 mb-6 rounded-xl" Elevation="3" Style="background-color: #232634;" id="privacy">
-                <MudText Typo="Typo.h5" Class="mb-4">Confidentialité et données</MudText>
-                
-                <MudGrid>
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2">Cookies et traceurs</MudText>
-                        <MudSwitch T="bool" @bind-Checked="@analyticsConsent" 
-                                  Color="Color.Primary" 
-                                  Label="Analyses et statistiques" 
-                                  Class="ml-4" />mb-2" />
-                        <MudSwitch T="bool" @bind-Checked="@advertisingConsent" 
-                                  Color="Color.Primary" 
-                                  Label="Publicités personnalisées" 
-                                  Class="ml-4" />
-                    </MudItem>
-                    
-                    <MudItem xs="12" Class="mt-4">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2">Visibilité</MudText>
-                        <MudSwitch T="bool" @bind-Checked="@profilePrivacy" 
-                                  Color="Color.Primary" 
-                                  Label="Profil public" 
-                                  Class="ml-4" />mb-2" />
-                        <MudSwitch T="bool" @bind-Checked="@activityPrivacy" 
-                                  Color="Color.Primary" 
-                                  Label="Activité publique" 
-                                  Class="ml-4" />
-                    </MudItem>
-                    
-                    <MudItem xs="12" Class="mt-4">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2">Exportation et suppression</MudText>
-                        <div class="d-flex flex-column flex-md-row gap-2 ml-4 mt-2">
-                            <MudButton Variant="Variant.Outlined" 
-                                      Color="Color.Info"
-                                      OnClick="ExportData"
-                                      StartIcon="@Icons.Material.Filled.Download"
-                                      Class="settings-button">
-                                Exporter mes données
-                            </MudButton>
-                            <MudButton Variant="Variant.Outlined" 
-                                      Color="Color.Error"
-                                      OnClick="RequestDataDeletion"
-                                      StartIcon="@Icons.Material.Filled.DeleteForever"
-                                      Class="settings-button">
-                                Demander la suppression
-                            </MudButton>
-                        </div>
-                    </MudItem>
-                </MudGrid>
-            </MudPaper>
-            
-            <MudPaper Class="pa-5 mb-6 rounded-xl" Elevation="3" Style="background-color: #232634;" id="language">
-                <MudText Typo="Typo.h5" Class="mb-4">Langue et région</MudText>
-                
-                <MudGrid>
-                    <MudItem xs="12" md="6">
-                        <MudSelect T="string" 
-                                  @bind-Value="@preferences.Language"
-                                  Label="Langue" 
-                                  Variant="Variant.Outlined"
-                                  AnchorOrigin="Origin.BottomCenter"
-                                  Dense="true">
-                            <MudSelectItem Value="@("fr")">Français</MudSelectItem>
-                            <MudSelectItem Value="@("en")">English</MudSelectItem>
-                            <MudSelectItem Value="@("de")">Deutsch</MudSelectItem>
-                            <MudSelectItem Value="@("es")">Español</MudSelectItem>
-                            <MudSelectItem Value="@("it")">Italiano</MudSelectItem>
-                        </MudSelect>
-                    </MudItem>
-                    
-                    <MudItem xs="12" md="6">
-                        <MudSelect T="string" 
-                                  @bind-Value="@region"
-                                  Label="Région" 
-                                  Variant="Variant.Outlined"
-                                  AnchorOrigin="Origin.BottomCenter"
-                                  Dense="true">
-                            <MudSelectItem Value="@("fr")">France</MudSelectItem>
-                            <MudSelectItem Value="@("eu")">Europe</MudSelectItem>
-                            <MudSelectItem Value="@("na")">Amérique du Nord</MudSelectItem>
-                            <MudSelectItem Value="@("sa")">Amérique du Sud</MudSelectItem>
-                            <MudSelectItem Value="@("as")">Asie</MudSelectItem>
-                            <MudSelectItem Value="@("oc")">Océanie</MudSelectItem>
-                        </MudSelect>
-                    </MudItem>
-                </MudGrid>
-            </MudPaper>
-            
-            <div class="d-flex justify-end mt-6">
-                <MudButton Variant="Variant.Filled"
-                          Color="Color.Primary"
-                          OnClick="SaveSettings"
-                          Class="settings-save-button"
-                          Style="border-radius: 8px; transition: all 0.2s ease-in-out;"
-                          Disabled="@isLoading">
-                    @if (isLoading)
-                    {
-                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                        <MudText Class="ms-2">Sauvegarde...</MudText>
-                    }
-                    else
-                    {
-                        <MudText>Sauvegarder les paramètres</MudText>
-                    }
-                </MudButton>
+
+        <!-- Drawer button for mobile -->
+        <MudItem xs="12" Class="d-flex d-md-none mb-3">
+            <MudButton Variant="Variant.Outlined" 
+                      StartIcon="@Icons.Material.Filled.Menu" 
+                      FullWidth="true"
+                      OnClick="@(() => drawerOpen = true)">
+                @GetCurrentSectionName()
+            </MudButton>
+        </MudItem>
+
+        <!-- Content area -->
+        <MudItem xs="12" md="9">
+            <div class="fade-in">
+                @switch (activeSection)
+                {
+                    case "profile":
+                        <ProfileSection />
+                        break;
+                    case "security":
+                        <SecuritySection />
+                        break;
+                    case "notifications":
+                        <NotificationsSection />
+                        break;
+                    case "privacy":
+                        <PrivacySection />
+                        break;
+                    case "interface":
+                        <InterfaceSection />
+                        break;
+                    case "payments":
+                        <PaymentsSection />
+                        break;
+                    case "danger":
+                        <DangerZoneSection />
+                        break;
+                }
             </div>
         </MudItem>
     </MudGrid>
 </MudContainer>
 
-<style>
-    /* Styles spécifiques à la page Settings */
-    ::deep .mud-input-control.mud-input-focused:not(.mud-input-error) .mud-input-border::after {
-        border-color: #00aaff !important;
-    }
-    
-    ::deep .mud-input-control.mud-input-focused:not(.mud-input-error) .mud-input-label.mud-input-label-inputcontrol {
-        color: #00aaff !important;
-    }
-    
-    .settings-button {
-        border-radius: 8px;
-        transition: all 0.2s ease-in-out;
-    }
-    
-    .settings-button:hover {
-        transform: translateY(-2px);
-    }
-    
-    .settings-save-button:hover {
-        box-shadow: 0 0 12px #00aaff80;
-        transform: translateY(-2px);
-    }
-    
-    ::deep .mud-nav-link.active {
-        background-color: rgba(0, 170, 255, 0.1) !important;
-        border-right: 3px solid #00aaff;
-    }
-    
-    ::deep .mud-radio-checked {
-        color: #00aaff !important;
-    }
-</style>
+<!-- Mobile drawer -->
+<MudDrawer @bind-Open="drawerOpen" Anchor="Anchor.Left" Elevation="2" Variant="@DrawerVariant.Temporary">
+    <MudDrawerHeader>
+        <MudText Typo="Typo.h6">Paramètres</MudText>
+    </MudDrawerHeader>
+    <MudNavMenu>
+        @foreach (var menuItem in _menuItems)
+        {
+            <MudNavLink Icon="@menuItem.Icon" 
+                        OnClick="@(() => { SetActiveSection(menuItem.Section); drawerOpen = false; })"
+                        Href="javascript:void(0)"
+                        Match="NavLinkMatch.All"
+                        Class="@(activeSection == menuItem.Section ? "active" : "")">
+                @menuItem.Text
+            </MudNavLink>
+        }
+    </MudNavMenu>
+</MudDrawer>
 
 @code {
-    private class UserPreferences
+    private string activeSection = "profile";
+    private bool drawerOpen = false;
+
+    private class MenuItem
     {
-        public bool EmailNotifications { get; set; }
-        public bool MarketingEmails { get; set; }
-        public string Theme { get; set; } = "dark";
-        public string Language { get; set; } = "fr";
+        public string Text { get; set; }
+        public string Icon { get; set; }
+        public string Section { get; set; }
     }
-    
-    private UserPreferences preferences = new();
-    private bool isLoading = false;
-    private bool isAnimationsEnabled = true;
-    private int uiDensity = 1;
-    private bool sitePushNotifications = true;
-    private bool browserPushNotifications = false;
-    private bool newModNotifications = true;
-    private bool modUpdateNotifications = true;
-    private bool commentNotifications = true;
-    private bool analyticsConsent = true;
-    private bool advertisingConsent = false;
-    private bool profilePrivacy = true;
-    private bool activityPrivacy = true;
-    private string region = "fr";
-    
-    protected override async Task OnInitializedAsync()
+
+    private List<MenuItem> _menuItems = new List<MenuItem>
     {
-        await LoadSettings();
+        new MenuItem { Text = "Profil", Icon = Icons.Material.Filled.Person, Section = "profile" },
+        new MenuItem { Text = "Sécurité", Icon = Icons.Material.Filled.Security, Section = "security" },
+        new MenuItem { Text = "Notifications", Icon = Icons.Material.Filled.Notifications, Section = "notifications" },
+        new MenuItem { Text = "Confidentialité", Icon = Icons.Material.Filled.Lock, Section = "privacy" },
+        new MenuItem { Text = "Interface", Icon = Icons.Material.Filled.Palette, Section = "interface" },
+        new MenuItem { Text = "Paiements", Icon = Icons.Material.Filled.CreditCard, Section = "payments" },
+        new MenuItem { Text = "Zone critique", Icon = Icons.Material.Filled.Warning, Section = "danger" }
+    };
+
+    private void SetActiveSection(string section)
+    {
+        activeSection = section;
     }
-    
-    private async Task LoadSettings()
+
+    private string GetCurrentSectionName()
     {
-        isLoading = true;
-        
-        try
-        {
-            // Cette ligne devrait être implémentée avec un vrai service
-            // var response = await UserService.GetUserPreferences();
-            
-            // Pour le moment, on simule une réponse
-            await Task.Delay(500); // Simule un appel API
-            
-            preferences = new UserPreferences
-            {
-                EmailNotifications = true,
-                MarketingEmails = false,
-                Theme = "dark",
-                Language = "fr"
-            };
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Erreur lors du chargement des paramètres: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            isLoading = false;
-        }
-    }
-    
-    private async Task SaveSettings()
-    {
-        isLoading = true;
-        
-        try
-        {
-            // Cette ligne devrait être implémentée avec un vrai service
-            // var response = await UserService.SaveUserPreferences(preferences);
-            
-            // Pour le moment, on simule une mise à jour
-            await Task.Delay(1000); // Simule un appel API
-            
-            Snackbar.Add("Paramètres sauvegardés avec succès", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Erreur lors de la sauvegarde des paramètres: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            isLoading = false;
-        }
-    }
-    
-    private void ExportData()
-    {
-        // Dans une vraie implémentation, cela déclencherait l'export des données utilisateur
-        Snackbar.Add("Demande d'exportation des données envoyée. Vous recevrez un email avec vos données.", Severity.Info);
-    }
-    
-    private void RequestDataDeletion()
-    {
-        // Dans une vraie implémentation, cela ouvrirait une boîte de dialogue de confirmation
-        NavigationManager.NavigateTo("/privacy/data-deletion");
+        return _menuItems.FirstOrDefault(m => m.Section == activeSection)?.Text ?? "Paramètres";
     }
 }

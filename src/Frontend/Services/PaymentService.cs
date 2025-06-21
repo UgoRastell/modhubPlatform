@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace Frontend.Services;
 
@@ -20,12 +21,14 @@ public class PaymentService : IPaymentService
     private readonly HttpClient _httpClient;
     private readonly ILogger<PaymentService> _logger;
     private readonly string _baseApiUrl;
+    private readonly ILocalStorageService _localStorage;
 
-    public PaymentService(HttpClient httpClient, IConfiguration configuration, ILogger<PaymentService> logger)
+    public PaymentService(HttpClient httpClient, IConfiguration configuration, ILogger<PaymentService> logger, ILocalStorageService localStorage)
     {
         _httpClient = httpClient;
         _logger = logger;
-        _baseApiUrl = configuration["ApiBaseUrl"] + "/api/Stripe";
+        _localStorage = localStorage;
+        _baseApiUrl = configuration["ApiBaseUrl"] + "/api/payments";
     }
 
     /// <inheritdoc />
@@ -39,8 +42,25 @@ public class PaymentService : IPaymentService
                 JsonSerializer.Serialize(request),
                 Encoding.UTF8);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            
+            // Ajouter l'authentification en utilisant le token dans le localStorage
+            var token = await _localStorage.GetItemAsync<string>("authToken");
+            
+            _logger.LogInformation("Tentative de création de PaymentIntent avec token : {TokenPresent}", 
+                !string.IsNullOrEmpty(token) ? "[PRÉSENT]" : "[ABSENT]");
+                
+            if (!string.IsNullOrEmpty(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                _logger.LogInformation("En-tête d'autorisation défini : Bearer {TokenFirstChars}...", 
+                    token.Length > 10 ? token.Substring(0, 10) : token);
+            }
+            else
+            {
+                _logger.LogWarning("Aucun token d'authentification trouvé. La requête échouera probablement.");
+            }
 
-            var response = await _httpClient.PostAsync($"{_baseApiUrl}/create-payment-intent", content);
+            var response = await _httpClient.PostAsync($"{_baseApiUrl}/payment-intent", content);
             
             if (!response.IsSuccessStatusCode)
             {

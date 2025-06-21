@@ -5,6 +5,7 @@ using Serilog;
 using Serilog.Exceptions;
 using Serilog.Sinks.Elasticsearch;
 using System.Text;
+using UsersService.Configuration;
 using UsersService.Data;
 using UsersService.Services;
 
@@ -151,6 +152,11 @@ void RegisterServices(WebApplicationBuilder builder)
     // Services
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<IUserService, UserService>();
+    
+    // Email Service
+    builder.Services.Configure<EmailSettings>(
+        builder.Configuration.GetSection("EmailSettings"));
+    builder.Services.AddScoped<IEmailService, EmailService>();
 }
 
 void ConfigureSwagger(WebApplicationBuilder builder)

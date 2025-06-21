@@ -1,0 +1,227 @@
+@using Frontend.Models
+@using Frontend.Models.Common
+@using MudBlazor
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<div class="comments-container">
+    @if (isLoading)
+    {
+        <div class="d-flex flex-column">
+            @for (int i = 0; i < 5; i++)
+            {
+                <MudPaper Class="pa-4 mb-4">
+                    <div class="d-flex">
+                        <MudSkeleton SkeletonType="SkeletonType.Circle" Height="40px" Width="40px" Class="mr-3"/>
+                        <div style="flex-grow: 1;">
+                            <MudSkeleton SkeletonType="SkeletonType.Text" Width="30%" Height="20px" />
+                            <MudSkeleton SkeletonType="SkeletonType.Text" Width="90%" Class="mt-2" />
+                            <MudSkeleton SkeletonType="SkeletonType.Text" Width="90%" />
+                        </div>
+                    </div>
+                </MudPaper>
+            }
+        </div>
+    }
+    else if (comments?.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" Class="mt-4">Aucun commentaire trouvé</MudAlert>
+    }
+    else
+    {
+        <MudList T="string" Clickable="true" Class="pa-0">
+            @foreach (var comment in comments!)
+            {
+                <MudListItem T="string" Class="pa-0 mb-4">
+                    <MudPaper Elevation="2" Class="pa-4 rounded-lg comment-item">
+                        <div class="d-flex">
+                            <MudAvatar Class="mr-3" Style="background-color: var(--mud-palette-primary-darken);">
+                                @comment.ModName.FirstOrDefault().ToString().ToUpper()
+                            </MudAvatar>
+                            <div style="flex-grow: 1;">
+                                <div class="d-flex justify-space-between align-center">
+                                    <MudLink Href="@($"/mods/{comment.ModId}")" Underline="Underline.None">
+                                        <MudText Typo="Typo.subtitle1"><strong>@comment.ModName</strong></MudText>
+                                    </MudLink>
+                                    <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                                        @comment.FormattedDate
+                                    </MudText>
+                                </div>
+                                
+                                <MudText Class="mt-2">@comment.Content</MudText>
+                                
+                                <div class="d-flex align-center mt-2">
+                                    <MudRating ReadOnly="true" SelectedValue="@comment.Rating" Max="5" Size="Size.Small" />
+                                    <MudSpacer />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Reply" 
+                                                 Size="Size.Small"
+                                                 OnClick="@(() => NavigateToComment(comment))"
+                                                 Color="Color.Primary" />
+                                </div>
+                            </div>
+                        </div>
+                    </MudPaper>
+                </MudListItem>
+            }
+        </MudList>
+        
+        <div class="d-flex justify-center mt-6">
+            <MudPagination Count="@totalPages" Selected="@currentPage" 
+                          SelectedChanged="@PageChanged" Class="pa-4" Color="Color.Primary" />
+        </div>
+    }
+</div>
+
+<style>
+    .comment-item {
+        transition: transform 0.2s ease;
+        border-left: 3px solid var(--mud-palette-primary);
+    }
+    
+    .comment-item:hover {
+        transform: translateX(4px);
+    }
+</style>
+
+@code {
+    [Parameter]
+    public string? UserId { get; set; }
+    
+    private List<CommentDTO>? comments;
+    private bool isLoading = true;
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalPages = 1;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadComments();
+    }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(UserId))
+        {
+            await LoadComments();
+        }
+    }
+    
+    private async Task LoadComments()
+    {
+        isLoading = true;
+        
+        try
+        {
+            // In a real implementation, fetch comments from API
+            // var response = await Http.GetFromJsonAsync<PagedResult<CommentDTO>>($"/api/users/{UserId}/comments?page={currentPage}&pageSize={pageSize}");
+            // comments = response.Items;
+            // totalPages = response.TotalPages;
+            
+            // For demo, create mock data
+            await Task.Delay(600); // Simulate API delay for lazy loading
+            
+            var random = new Random();
+            comments = new List<CommentDTO>();
+            
+            for (int i = 0; i < (currentPage == 1 ? pageSize : random.Next(5, pageSize)); i++)
+            {
+                var daysAgo = random.Next(1, 60);
+                var rating = random.Next(1, 6);
+                
+                var comment = new CommentDTO
+                {
+                    Id = $"comment-{i}",
+                    UserId = UserId ?? "user123",
+                    ModId = $"mod-{random.Next(1, 100)}",
+                    ModName = GetRandomModName(random),
+                    Content = GetRandomCommentText(random, rating),
+                    Rating = rating,
+                    CreatedAt = DateTime.Now.AddDays(-daysAgo)
+                };
+                
+                comments.Add(comment);
+            }
+            
+            totalPages = 3; // Mock 3 pages of comments
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des commentaires : {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+    
+    private string GetRandomModName(Random random)
+    {
+        var prefixes = new[] { "Epic", "Ultra", "Advanced", "Enhanced", "Supreme", "Realistic", "Immersive" };
+        var types = new[] { "Weapons", "Graphics", "Overhaul", "Combat", "UI", "Textures", "Environment" };
+        
+        return $"{prefixes[random.Next(prefixes.Length)]} {types[random.Next(types.Length)]}";
+    }
+    
+    private string GetRandomCommentText(Random random, int rating)
+    {
+        if (rating >= 4)
+        {
+            var goodComments = new[]
+            {
+                "Excellent mod ! Fonctionne parfaitement avec ma config.",
+                "Vraiment impressionnant, merci pour ce travail **incroyable** !",
+                "Ce mod change complètement mon expérience de jeu. Je recommande à 100% !",
+                "Probablement le meilleur mod que j'ai installé cette année. Merci !",
+                "Installation simple et résultats fantastiques. `5/5` étoiles !"
+            };
+            return goodComments[random.Next(goodComments.Length)];
+        }
+        else if (rating >= 3)
+        {
+            var averageComments = new[]
+            {
+                "Bon mod, mais quelques bugs mineurs à corriger.",
+                "L'idée est très bonne mais l'exécution pourrait être améliorée.",
+                "Fonctionne comme prévu, mais consomme beaucoup de ressources.",
+                "Pas mal, j'espère voir des améliorations dans les prochaines versions."
+            };
+            return averageComments[random.Next(averageComments.Length)];
+        }
+        else
+        {
+            var badComments = new[]
+            {
+                "Ne fonctionne pas avec la dernière version du jeu.",
+                "Trop de bugs, impossible à utiliser pour le moment.",
+                "Le mod provoque des crashes fréquents sur mon système.",
+                "L'idée est bonne mais l'implémentation laisse à désirer."
+            };
+            return badComments[random.Next(badComments.Length)];
+        }
+    }
+    
+    private async Task PageChanged(int page)
+    {
+        currentPage = page;
+        await LoadComments();
+    }
+    
+    private void NavigateToComment(CommentDTO comment)
+    {
+        Snackbar.Add($"Navigation vers le commentaire sur {comment.ModName}", Severity.Normal);
+    }
+    
+    public class CommentDTO
+    {
+        public string Id { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty;
+        public string ModId { get; set; } = string.Empty;
+        public string ModName { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
+        public int Rating { get; set; }
+        public DateTime CreatedAt { get; set; }
+        
+        public string FormattedDate => CreatedAt.ToString("dd/MM/yyyy HH:mm");
+    }
+}

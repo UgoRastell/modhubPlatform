@@ -28,15 +28,18 @@ public class AuthService : IAuthService
     private readonly HttpClient _httpClient;
     private readonly ILocalStorageService _localStorage;
     private readonly AuthenticationStateProvider _authStateProvider;
+    private readonly IEmailService _emailService;
 
     public AuthService(
         HttpClient httpClient, 
         ILocalStorageService localStorage,
-        AuthenticationStateProvider authStateProvider)
+        AuthenticationStateProvider authStateProvider,
+        IEmailService emailService)
     {
         _httpClient = httpClient;
         _localStorage = localStorage;
         _authStateProvider = authStateProvider;
+        _emailService = emailService;
     }
 
     /// <summary>
@@ -193,12 +196,44 @@ public class AuthService : IAuthService
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/auth/forgot-password", new { Email = email });
+            // Appel à l'API pour vérifier que l'email existe
+            var response = await _httpClient.PostAsJsonAsync("api/passwordreset/request", new { Email = email });
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
-                return result ?? new ApiResponse<bool> { Success = true, Data = true, Message = "Demande de réinitialisation envoyée" };
+                // Génération d'un token de réinitialisation (dans une application réelle, ce token
+                // serait généré côté serveur et stocké en base de données)
+                var resetToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+                
+                // Dans une vraie application, stocker ce token en base avec une date d'expiration
+                var resetLink = $"https://modhub.com/reset-password?email={Uri.EscapeDataString(email)}&token={resetToken}";
+                
+                // Construction du contenu du mail
+                var subject = "Réinitialisation de votre mot de passe ModHub";
+                var htmlMessage = $@"<html>
+                    <body style=""font-family: Arial, sans-serif; line-height: 1.6;"">
+                        <div style=""max-width: 600px; margin: 0 auto; padding: 20px;"">
+                            <h2 style=""color: #00aaff;"">Réinitialisation de mot de passe</h2>
+                            <p>Bonjour,</p>
+                            <p>Vous avez demandé la réinitialisation de votre mot de passe sur la plateforme ModHub.</p>
+                            <p>Veuillez cliquer sur le lien ci-dessous pour définir un nouveau mot de passe:</p>
+                            <p style=""text-align: center;"">
+                                <a href=""{resetLink}"" style=""display: inline-block; background-color: #00aaff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;"">Réinitialiser mon mot de passe</a>
+                            </p>
+                            <p>Ce lien expire dans 24 heures. Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet email.</p>
+                            <p>Cordialement,<br>L'équipe ModHub</p>
+                        </div>
+                    </body>
+                </html>";
+                
+                // Envoi de l'email via notre service d'email
+                var emailSent = await _emailService.SendEmailAsync(email, subject, htmlMessage);
+                
+                if (emailSent)
+                {
+                    return new ApiResponse<bool> { Success = true, Data = true, Message = "Instructions de réinitialisation envoyées par email" };
+                }
+                return new ApiResponse<bool> { Success = false, Data = false, Message = "Impossible d'envoyer l'email de réinitialisation" };
             }
             
             string errorMessage = "Échec de la demande de réinitialisation";
@@ -226,7 +261,7 @@ public class AuthService : IAuthService
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/auth/reset-password", model);
+            var response = await _httpClient.PostAsJsonAsync("api/passwordreset/reset", model);
 
             if (response.IsSuccessStatusCode)
             {

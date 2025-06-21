@@ -1,0 +1,68 @@
+@using MudBlazor
+@inject IDialogService DialogService
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Error" Class="mr-2" />
+            Supprimer le compte
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Class="mb-4">
+            Cette action est irréversible et supprimera définitivement votre compte et toutes vos données.
+        </MudText>
+        
+        <MudText Typo="Typo.body2" Class="mb-2">
+            Pour confirmer, veuillez saisir <strong>SUPPRIMER</strong> ci-dessous:
+        </MudText>
+        
+        <MudTextField T="string" 
+                     @bind-Value="confirmationText"
+                     Immediate="true"
+                     Placeholder="SUPPRIMER" 
+                     Variant="Variant.Outlined" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annuler</MudButton>
+        <MudButton Color="Color.Error" 
+                  Variant="Variant.Filled"
+                  OnClick="DeleteAccount"
+                  Disabled="@(!IsConfirmationValid() || isDeleting)">
+            @if (isDeleting)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Suppression...</MudText>
+            }
+            else
+            {
+                <MudText>Supprimer définitivement</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    
+    private string confirmationText = "";
+    private const string CONFIRMATION_PHRASE = "SUPPRIMER";
+    private bool isDeleting = false;
+    
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+    
+    private async Task DeleteAccount()
+    {
+        isDeleting = true;
+        
+        // In real app, we'd call the API to delete account
+        await Task.Delay(2000);
+        
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+    
+    private bool IsConfirmationValid() => confirmationText.ToUpper() == CONFIRMATION_PHRASE;
+}

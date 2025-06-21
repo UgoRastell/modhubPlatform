@@ -109,7 +109,7 @@
     @if (_subscriptionTiers.Count > 0)
     {
         <div class="d-flex justify-center mt-6 mb-4">
-            <MudToggleGroup T="string" SelectedValue="@_selectedBillingCycle" SelectedValueChanged="@OnBillingCycleChanged"
+            <MudToggleGroup T="string" SelectedValue="@_selectedBillingCycle" SelectedValueChanged="@((string value) => OnBillingCycleChanged(value))"
                           Color="Color.Primary" Rounded="true">
                 <MudToggleItem Value="@("monthly")">Facturation mensuelle</MudToggleItem>
                 <MudToggleItem Value="@("yearly")">Facturation annuelle <MudChip T="string" Size="Size.Small" Color="Color.Success">Économisez 20%</MudChip></MudToggleItem>
