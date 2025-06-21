@@ -2,9 +2,9 @@
 
 # Variables à personnaliser
 $VPS_ADDRESS = "vps-f63d8d2b.vps.ovh.net"
-$VPS_USER = "root"
+$VPS_USER = "debian"
 $LOCAL_PATH = "."
-$REMOTE_PATH = "/opt/modhub"
+$REMOTE_PATH = "/home/ugora/modhubPlatform"
 
 # Fonction pour afficher les messages avec couleur
 function Write-ColorOutput($ForegroundColor) {
@@ -16,7 +16,7 @@ function Write-ColorOutput($ForegroundColor) {
     else {
         $input | Write-Output
     }
-    $host.UI.RawUI.ForegroundColor = $fc
+    $host.UI.RawUI.ForegroundColor = $fcpw
 }
 
 # Vérification de l'installation de SSH
