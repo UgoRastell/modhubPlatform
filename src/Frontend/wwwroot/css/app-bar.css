@@ -1,0 +1,99 @@
+.appbar-blur {
+    background: linear-gradient(to right, #1b1f27, #232634) !important;
+    opacity: 0.92;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 2px 4px #00000040;
+    transition: box-shadow 0.3s ease, opacity 0.3s ease;
+}
+
+.appbar-blur.mud-elevation-4 {
+    opacity: 0.95;
+    box-shadow: 0 3px 5px -1px rgba(0,0,0,.2), 0 6px 10px 0 rgba(0,0,0,.14), 0 1px 18px 0 rgba(0,0,0,.12);
+}
+
+.logo-text {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: #f5f7fa;
+    margin-left: 8px;
+}
+
+.search-input {
+    width: 280px;
+    border-radius: 8px;
+    transition: width 0.3s ease;
+}
+
+.search-input:focus {
+    width: 320px;
+}
+
+.nav-link {
+    position: relative;
+    color: #f5f7fa !important;
+    font-weight: 500 !important;
+    transition: color 0.2s ease;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #00aaff;
+    box-shadow: 0 0 8px #00aaff;
+    transition: width 0.2s ease;
+}
+
+.nav-link.active::after,
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.uploader-button {
+    background-color: #00aaff !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease;
+}
+
+.uploader-button:hover {
+    background-color: #25e398 !important;
+    box-shadow: 0 0 12px rgba(37, 227, 152, 0.6) !important;
+}
+
+.theme-switch {
+    transition: transform 0.3s ease;
+}
+
+.theme-switch:hover {
+    transform: rotate(30deg);
+}
+
+/* Badge styling */
+.mud-badge-content {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    min-width: 18px;
+    height: 18px;
+    background-color: #ff3b3b !important;
+}
+
+/* Responsive styles */
+@media (max-width: 959px) {
+    .mud-appbar {
+        height: 56px !important;
+    }
+}
+
+@media (min-width: 960px) {
+    .mud-appbar {
+        height: 64px !important;
+    }
+}

@@ -1,0 +1,234 @@
+@using Frontend.Models
+@using Frontend.Models.Common
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+@if (isLoading)
+{
+    <MudGrid>
+        @for (int i = 0; i < 8; i++)
+        {
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="220px" Animation="Animation.Wave" Class="rounded-lg" />
+            </MudItem>
+        }
+    </MudGrid>
+}
+else if (favorites?.Items == null || !favorites.Items.Any())
+{
+    <MudAlert Severity="Severity.Info" Class="mt-4">
+        <div class="d-flex flex-column align-center pa-4">
+            <MudIcon Icon="@Icons.Material.Outlined.FavoriteBorder" Size="Size.Large" Class="mb-4" />
+            <MudText Align="Align.Center">Vous n'avez pas encore de favoris</MudText>
+            <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">
+                Explorez le catalogue et ajoutez des mods à vos favoris pour les retrouver ici
+            </MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" 
+                       Href="/mods">Explorer les mods</MudButton>
+        </div>
+    </MudAlert>
+}
+else
+{
+    <MudGrid>
+        @foreach (var mod in favorites.Items)
+        {
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudCard Elevation="2" Class="favorite-card h-100">
+                    <MudCardMedia Image="@(string.IsNullOrEmpty(mod.CoverImageUrl) ? "/images/placeholder-mod.jpg" : mod.CoverImageUrl)" 
+                                 Height="160" />
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6" Class="mud-text-ellipsis">@mod.Title</MudText>
+                            <MudText Typo="Typo.subtitle2" Class="mud-text-secondary">
+                                par @mod.AuthorName
+                            </MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <MudIconButton Icon="@Icons.Material.Filled.Favorite" 
+                                         Color="Color.Error"
+                                         OnClick="@(() => RemoveFromFavorites(mod.Id))" />
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent Class="pb-0">
+                        <div class="d-flex flex-wrap gap-1 mb-2">
+                            @foreach (var tag in mod.Tags.Take(3))
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">@tag</MudChip>
+                            }
+                        </div>
+                        <div class="d-flex justify-space-between align-center">
+                            <div class="d-flex align-center">
+                                <MudRating ReadOnly="true" SelectedValue="@((int)mod.Rating)" Max="5" Size="Size.Small" />
+                                <MudText Typo="Typo.caption" Class="ml-1">(@mod.RatingCount)</MudText>
+                            </div>
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.CloudDownload" Size="Size.Small" Class="mr-1" />
+                                <MudText Typo="Typo.body2">@mod.FormattedDownloads</MudText>
+                            </div>
+                        </div>
+                    </MudCardContent>
+                    <MudCardActions Class="pt-0">
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" 
+                                  OnClick="@(() => NavigateToMod(mod.Id))">Voir</MudButton>
+                        <MudSpacer />
+                        <MudTooltip Text="Date d'ajout aux favoris">
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                                @mod.AddedToFavoritesDate.ToString("dd/MM/yyyy")
+                            </MudText>
+                        </MudTooltip>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+    
+    <div class="d-flex justify-center mt-8">
+        <MudPagination Count="@favorites.TotalPages" Selected="@favorites.PageNumber" 
+                      SelectedChanged="@PageChanged" Class="pa-4" Color="Color.Primary" />
+    </div>
+}
+
+<style>
+    .favorite-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .favorite-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+</style>
+
+@code {
+    private Frontend.Models.Common.PagedResult<FavoriteModDTO>? favorites;
+    private bool isLoading = true;
+    private int pageSize = 12; // Default page size
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFavorites();
+    }
+    
+    private async Task LoadFavorites()
+    {
+        isLoading = true;
+        
+        try
+        {
+            // In a real implementation, fetch favorites from API
+            // favorites = await Http.GetFromJsonAsync<PagedResult<FavoriteModDTO>>($"/api/users/me/favorites?page={favorites?.PageNumber ?? 1}&pageSize={favorites?.PageSize ?? 12}");
+            
+            // For demo purposes, create mock data
+            await Task.Delay(800); // Simulate API delay for lazy loading
+            
+            var random = new Random();
+            var mockFavorites = new List<FavoriteModDTO>();
+            
+            // Randomize if we want to show an empty favorites list
+            var hasFavorites = random.Next(100) < 90;
+            
+            if (hasFavorites)
+            {
+                for (int i = 0; i < random.Next(7, 12); i++)
+                {
+                    var mockMod = new FavoriteModDTO
+                    {
+                        Id = $"mod-{i}",
+                        Title = $"Amazing Mod {i+1}",
+                        CoverImageUrl = "",
+                        AuthorName = $"Creator{random.Next(1, 20)}",
+                        Tags = GetRandomTags(random),
+                        Rating = Math.Round(3 + random.NextDouble() * 2, 1),
+                        RatingCount = random.Next(5, 500),
+                        DownloadCount = random.Next(50, 15000),
+                        AddedToFavoritesDate = DateTime.Now.AddDays(-random.Next(1, 180))
+                    };
+                    
+                    mockFavorites.Add(mockMod);
+                }
+            }
+            
+            favorites = new Frontend.Models.Common.PagedResult<FavoriteModDTO>
+            {
+                Items = mockFavorites,
+                TotalCount = mockFavorites.Count + (random.Next(0, 1) * 12),
+                PageSize = 12,
+                PageNumber = favorites?.PageNumber ?? 1
+            };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des favoris : {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+    
+    private List<string> GetRandomTags(Random random)
+    {
+        var allTags = new List<string> 
+        { 
+            "Environment", "Gameplay", "Graphics", "UI", "Combat", "Weapons", 
+            "Armor", "Quests", "NPCs", "Audio", "Performance", "Bugfix" 
+        };
+        
+        return allTags
+            .OrderBy(x => random.Next())
+            .Take(random.Next(1, 4))
+            .ToList();
+    }
+    
+    private async Task PageChanged(int page)
+    {
+        if (favorites != null)
+            favorites.PageNumber = page;
+        await LoadFavorites();
+    }
+    
+    private void NavigateToMod(string modId)
+    {
+        // In a real implementation, navigate to the mod details page
+        Snackbar.Add($"Navigation vers le mod {modId}", Severity.Normal);
+    }
+    
+    private async Task RemoveFromFavorites(string modId)
+    {
+        // In a real implementation, call API to remove mod from favorites
+        // await Http.DeleteAsync($"/api/users/me/favorites/{modId}");
+        
+        Snackbar.Add("Mod retiré des favoris", Severity.Success);
+        
+        // For demo, just remove it from the local list
+        if (favorites?.Items != null)
+        {
+            var modToRemove = favorites.Items.FirstOrDefault(m => m.Id == modId);
+            if (modToRemove != null)
+            {
+                var newList = favorites.Items.ToList();
+                newList.Remove(modToRemove);
+                favorites.Items = newList;
+                
+                if (favorites.Items.Count == 0 && favorites.TotalCount > favorites.PageSize)
+                {
+                    // If we removed the last item on this page and there are more pages,
+                    // go to the previous page
+                    await PageChanged(Math.Max(1, favorites.PageNumber - 1));
+                }
+                else
+                {
+                    StateHasChanged();
+                }
+            }
+        }
+    }
+    
+    public class FavoriteModDTO : ModCardDTO
+    {
+        public DateTime AddedToFavoritesDate { get; set; }
+    }
+}

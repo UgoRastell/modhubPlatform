@@ -7,6 +7,15 @@
     <title>ModsGamingPlatform</title>
     <base href="/" />
     
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; 
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://*.stripe.com https://*.stripe.network; 
+        connect-src 'self' https://*.stripe.com https://*.stripe.network; 
+        frame-src 'self' https://*.stripe.com https://*.stripe.network; 
+        img-src 'self' data: https://*.stripe.com; 
+        style-src 'self' 'unsafe-inline' https://*.stripe.com https://rsms.me; 
+        font-src 'self' https://rsms.me;" />
+    
     <!-- MudBlazor Styles -->
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
     
@@ -47,6 +56,8 @@
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/app-bar.js"></script>
+    <script src="js/stripe.js"></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
 </body>
 

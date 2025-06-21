@@ -10,10 +10,10 @@
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
-<PageTitle>Connexion - ModsGamingPlatform</PageTitle>
+<PageTitle>Connexion - ModHub</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8 py-8">
-    <MudCard Elevation="25" Class="rounded-lg">
+    <MudCard Elevation="3" Class="rounded-xl" Style="background-color: #232634;">
         <MudCardHeader>
             <MudText Typo="Typo.h4" Align="Align.Center" Class="w-100">Connexion</MudText>
         </MudCardHeader>
@@ -64,7 +64,8 @@
                           Color="Color.Primary" 
                           Size="Size.Large" 
                           FullWidth="true" 
-                          Class="mt-4"
+                          Class="mt-4 login-button"
+                          Style="transition: all 0.2s ease-in-out; border-radius: 8px;"
                           Disabled="@isLoading">
                     @if (isLoading)
                     {
@@ -77,9 +78,37 @@
                     }
                 </MudButton>
             </EditForm>
+            
+            <MudDivider Class="my-6" />
+            
+            <MudText Align="Align.Center" Class="mb-4">Ou connectez-vous avec</MudText>
+            
+            <MudButton Variant="Variant.Outlined" 
+                      StartIcon="@Icons.Custom.Brands.Google"
+                      Color="Color.Error"
+                      FullWidth="true"
+                      OnClick="HandleGoogleSignIn">
+                Google
+            </MudButton>
         </MudCardContent>
     </MudCard>
 </MudContainer>
+
+<style>
+    /* Styles spécifiques à la page Login */
+    ::deep .mud-input-control.mud-input-focused:not(.mud-input-error) .mud-input-border::after {
+        border-color: #00aaff !important;
+    }
+    
+    ::deep .mud-input-control.mud-input-focused:not(.mud-input-error) .mud-input-label.mud-input-label-inputcontrol {
+        color: #00aaff !important;
+    }
+    
+    .login-button:hover {
+        box-shadow: 0 0 12px #00aaff80;
+        transform: translateY(-2px);
+    }
+</style>
 
 @code {
     [Parameter]
@@ -155,6 +184,39 @@
         finally
         {
             isLoading = false;
+        }
+    }
+    
+    private void HandleGoogleSignIn()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+        
+        try
+        {
+            // Redirection vers l'authentification Google OAuth
+            var redirectUri = NavigationManager.BaseUri + "signin-google";
+            var authorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
+            
+            var queryParams = new Dictionary<string, string>
+            {
+                { "client_id", "809448317022-j15ftsa8viduc70o0e02b7u90tfrtscv.apps.googleusercontent.com" },
+                { "redirect_uri", redirectUri },
+                { "response_type", "code" },
+                { "scope", "openid email profile" },
+                { "access_type", "offline" },
+                { "state", Guid.NewGuid().ToString() }
+            };
+            
+            var queryString = string.Join("&", queryParams.Select(p => $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value)}"));
+            var authorizationRequest = $"{authorizationEndpoint}?{queryString}";
+            
+            NavigationManager.NavigateTo(authorizationRequest, true);
+        }
+        catch (Exception ex)
+        {
+            isLoading = false;
+            errorMessage = $"Erreur: {ex.Message}";
         }
     }
 }

@@ -39,13 +39,25 @@ namespace ModsService.Models
         public string PreviousVersionId { get; set; } = string.Empty;
         
         /// <summary>
-        /// Liste des versions avec lesquelles cette version est compatible
+        /// Liste des compatibilités avec d'autres mods
         /// </summary>
+        public List<ModCompatibility> Compatibilities { get; set; } = new List<ModCompatibility>();
+        
+        /// <summary>
+        /// Liste des dépendances requises pour cette version
+        /// </summary>
+        public List<ModDependency> Dependencies { get; set; } = new List<ModDependency>();
+        
+        /// <summary>
+        /// Liste des versions avec lesquelles cette version est compatible (déprécié, utiliser Compatibilities)
+        /// </summary>
+        [Obsolete("Utiliser Compatibilities pour une gestion plus précise")]
         public List<string> CompatibleVersions { get; set; } = new List<string>();
         
         /// <summary>
-        /// Liste des versions avec lesquelles cette version est incompatible
+        /// Liste des versions avec lesquelles cette version est incompatible (déprécié, utiliser Compatibilities)
         /// </summary>
+        [Obsolete("Utiliser Compatibilities pour une gestion plus précise")]
         public List<string> IncompatibleVersions { get; set; } = new List<string>();
         
         /// <summary>

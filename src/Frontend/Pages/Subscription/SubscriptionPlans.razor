@@ -1,0 +1,306 @@
+@page "/subscription-plans"
+@using Frontend.Services.Subscription
+@using Frontend.Models.Subscription
+@using System.Threading
+@using MudBlazor
+@inject ISubscriptionService SubscriptionService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Plans d'abonnement - ModsGamingPlatform</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+    <MudText Typo="Typo.h3" Class="mb-4 text-center">Choisissez votre plan d'abonnement</MudText>
+    <MudText Typo="Typo.body1" Class="mb-8 text-center">
+        Accédez à des fonctionnalités premium et améliorez votre expérience avec nos plans d'abonnement.
+    </MudText>
+
+    <MudGrid Justify="Justify.Center" Spacing="4">
+        @if (_loading)
+        {
+            <MudItem xs="12" Class="d-flex justify-center">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </MudItem>
+        }
+        else if (_subscriptionTiers.Count == 0)
+        {
+            <MudItem xs="12" Class="text-center">
+                <MudAlert Severity="Severity.Info" Class="my-4">
+                    Aucun plan d'abonnement n'est disponible pour le moment. Veuillez réessayer plus tard.
+                </MudAlert>
+            </MudItem>
+        }
+        else
+        {
+            var monthlyBilling = _selectedBillingCycle == "monthly";
+            
+            @foreach (var tier in _subscriptionTiers.OrderBy(t => t.DisplayOrder))
+            {
+                var currentPrice = monthlyBilling ? tier.MonthlyPrice : tier.YearlyPrice;
+                var priceLabel = monthlyBilling ? "/ mois" : "/ an";
+                
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Class="subscription-tier-card h-100" Outlined="@(!tier.IsRecommended)" 
+                           Style="@($"border: {(tier.IsRecommended ? "2px" : "1px")} solid {tier.ThemeColor}; position: relative;")">
+                        
+                        @if (tier.IsRecommended)
+                        {
+                            <div class="recommended-badge" style="@($"background-color: {tier.ThemeColor};")">
+                                <MudText Typo="Typo.caption" Class="my-0 py-1">RECOMMANDÉ</MudText>
+                            </div>
+                        }
+                        
+                        <MudCardHeader>
+                            <ChildContent>
+                                <MudText Typo="Typo.h5" Style="@($"color: {tier.ThemeColor};")" Class="mb-0">@tier.Name</MudText>
+                                @if (!string.IsNullOrEmpty(tier.ImageUrl))
+                                {
+                                    <MudAvatar Square="true" Size="Size.Medium" Image="@tier.ImageUrl" />
+                                }
+                            </ChildContent>
+                        </MudCardHeader>
+                        
+                        <MudCardContent>
+                            <MudText Typo="Typo.body2" Class="mb-4">@tier.Description</MudText>
+                            
+                            <MudText Typo="Typo.h4" Class="d-flex align-center mb-2">
+                                <span class="mr-1">@currentPrice.ToString("0.##")</span>
+                                <MudText Typo="Typo.caption" Class="mud-text-secondary">@priceLabel</MudText>
+                            </MudText>
+                            
+                            @if (tier.TrialPeriodDays > 0)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success" Class="mb-3">
+                                    Essai gratuit de @tier.TrialPeriodDays jours
+                                </MudChip>
+                            }
+                            
+                            <MudDivider Class="my-3" />
+                            
+                            <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">Ce plan inclut:</MudText>
+                            
+                            @foreach (var benefit in tier.Benefits)
+                            {
+                                <div class="d-flex align-center mb-2">
+                                    <MudIcon Icon="fas fa-check" 
+                                            Color="Color.Success"
+                                            Size="Size.Small" Class="mr-2" />
+                                    <MudText Typo="Typo.body2">
+                                        @benefit
+                                    </MudText>
+                                </div>
+                            }
+                        </MudCardContent>
+                        
+                        <MudCardActions Class="d-flex justify-center pb-4">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                                      Style="@($"background-color: {tier.ThemeColor};")"
+                                      OnClick="@(() => SelectSubscription(tier.Id))"
+                                      FullWidth="true">
+                                S'abonner maintenant
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        }
+    </MudGrid>
+    
+    @if (_subscriptionTiers.Count > 0)
+    {
+        <div class="d-flex justify-center mt-6 mb-4">
+            <MudToggleGroup T="string" SelectedValue="@_selectedBillingCycle" SelectedValueChanged="@((string value) => OnBillingCycleChanged(value))"
+                          Color="Color.Primary" Rounded="true">
+                <MudToggleItem Value="@("monthly")">Facturation mensuelle</MudToggleItem>
+                <MudToggleItem Value="@("yearly")">Facturation annuelle <MudChip T="string" Size="Size.Small" Color="Color.Success">Économisez 20%</MudChip></MudToggleItem>
+            </MudToggleGroup>
+        </div>
+    }
+    
+    <MudExpansionPanels Class="mt-6">
+        <MudExpansionPanel Text="Comparer les plans">
+            <MudTable Items="@_comparisonItems" Dense="true" Hover="true" Striped="true" Breakpoint="Breakpoint.Md">
+                <HeaderContent>
+                    <MudTh>Fonctionnalité</MudTh>
+                    @foreach (var tier in _subscriptionTiers.OrderBy(t => t.DisplayOrder))
+                    {
+                        <MudTh>
+                            <span style="@($"color: {tier.ThemeColor};")">@tier.Name</span>
+                        </MudTh>
+                    }
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>
+                        <MudText Typo="Typo.body2" Class="@(context.IsKeyFeature ? "font-weight-bold" : "")">
+                            @context.FeatureName
+                        </MudText>
+                    </MudTd>
+                    @foreach (var tier in _subscriptionTiers.OrderBy(t => t.DisplayOrder))
+                    {
+                        var tierValue = context.TierValues.ContainsKey(tier.Id) ? context.TierValues[tier.Id] : "—";
+                        
+                        <MudTd>
+                            @if (tierValue == "true" || tierValue == "Inclus" || tierValue == "✓")
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success" Size="Size.Small" />
+                            }
+                            else if (tierValue == "false" || tierValue == "Non inclus" || tierValue == "✗")
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small" />
+                            }
+                            else
+                            {
+                                <span>@tierValue</span>
+                            }
+                        </MudTd>
+                    }
+                </RowTemplate>
+            </MudTable>
+        </MudExpansionPanel>
+        
+        <MudExpansionPanel Text="Questions fréquentes" Class="mt-2">
+            <MudList T="string" Clickable="false">
+                @foreach (var faq in _frequentlyAskedQuestions)
+                {
+                    <MudListItem T="string">
+                        <MudText Typo="Typo.subtitle1">@faq.Question</MudText>
+                        <MudText Typo="Typo.body2" Class="mt-1">@faq.Answer</MudText>
+                    </MudListItem>
+                }
+            </MudList>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+</MudContainer>
+
+<style>
+    .subscription-tier-card {
+        transition: transform 0.3s ease;
+    }
+    
+    .subscription-tier-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .recommended-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        color: white;
+        text-align: center;
+    }
+</style>
+
+@code {
+    private List<SubscriptionTierViewModel> _subscriptionTiers = new();
+    private List<ComparisonItem> _comparisonItems = new();
+    private List<FaqItem> _frequentlyAskedQuestions = new();
+    private bool _loading = true;
+    private string _selectedBillingCycle = "monthly";
+    private CancellationTokenSource _cts = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadSubscriptionTiers();
+            await LoadComparisonData();
+            LoadFaqItems();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+    
+    private async Task LoadSubscriptionTiers()
+    {
+        try
+        {
+            _subscriptionTiers = await SubscriptionService.GetAllSubscriptionTiersAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Impossible de charger les plans d'abonnement: {ex.Message}", Severity.Error);
+            _subscriptionTiers = new List<SubscriptionTierViewModel>();
+        }
+    }
+    
+    private async Task LoadComparisonData()
+    {
+        if (_subscriptionTiers.Count == 0)
+        {
+            return;
+        }
+        
+        try
+        {
+            var tierIds = _subscriptionTiers.Select(t => t.Id).ToList();
+            _comparisonItems = await SubscriptionService.CompareTiersAsync(tierIds);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Impossible de charger les données de comparaison: {ex.Message}", Severity.Error);
+            _comparisonItems = new List<ComparisonItem>();
+        }
+    }
+    
+    private void LoadFaqItems()
+    {
+        _frequentlyAskedQuestions = new List<FaqItem>
+        {
+            new FaqItem 
+            {
+                Question = "Puis-je changer de plan à tout moment ?",
+                Answer = "Oui, vous pouvez passer à un plan supérieur à tout moment. Si vous souhaitez rétrograder, le changement sera effectif à la fin de votre période de facturation en cours."
+            },
+            new FaqItem 
+            {
+                Question = "Comment fonctionne l'essai gratuit ?",
+                Answer = "Certains plans incluent une période d'essai gratuite. Pendant cette période, vous aurez accès à toutes les fonctionnalités du plan sans frais. Vous pouvez annuler à tout moment pendant la période d'essai sans être facturé."
+            },
+            new FaqItem 
+            {
+                Question = "Quelles méthodes de paiement acceptez-vous ?",
+                Answer = "Nous acceptons les cartes de crédit (Visa, Mastercard, American Express), PayPal et les virements bancaires pour les abonnements annuels."
+            },
+            new FaqItem 
+            {
+                Question = "Comment annuler mon abonnement ?",
+                Answer = "Vous pouvez annuler votre abonnement à tout moment depuis votre profil. Votre abonnement restera actif jusqu'à la fin de la période de facturation en cours."
+            },
+            new FaqItem 
+            {
+                Question = "Y a-t-il des frais cachés ?",
+                Answer = "Non, le prix affiché est le prix final que vous paierez. Il n'y a pas de frais supplémentaires cachés."
+            }
+        };
+    }
+    
+    private Task OnBillingCycleChanged(string value)
+    {
+        _selectedBillingCycle = value;
+        return Task.CompletedTask;
+    }
+    
+    private void SelectSubscription(string tierId)
+    {
+        NavigationManager.NavigateTo($"/checkout/{tierId}?cycle={_selectedBillingCycle}");
+    }
+    
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+    
+    public class FaqItem
+    {
+        public string Question { get; set; } = string.Empty;
+        public string Answer { get; set; } = string.Empty;
+    }
+}

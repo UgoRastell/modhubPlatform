@@ -1,0 +1,89 @@
+@page "/signin-google"
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Text.Json
+@using Frontend.Models
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+@inject IAuthService AuthService
+@inject ILocalStorageService LocalStorageService
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Authentification Google - ModHub</PageTitle>
+
+<MudContainer Class="d-flex flex-column align-center justify-center" Style="height: 70vh;">
+    <MudText Typo="Typo.h5" Class="mb-4">Authentification en cours...</MudText>
+    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+</MudContainer>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var queryParams = QueryHelpers.ParseQuery(uri.Query);
+        
+        if (queryParams.TryGetValue("code", out var code) && !string.IsNullOrEmpty(code))
+        {
+            try 
+            {
+                // Préparer la requête pour échanger le code contre un token
+                var tokenRequest = new GoogleAuthCodeRequest
+                {
+                    Code = code,
+                    RedirectUri = $"{NavigationManager.BaseUri.TrimEnd('/')}/signin-google",
+                    ClientId = "809448317022-j15ftsa8viduc70o0e02b7u90tfrtscv.apps.googleusercontent.com"
+                };
+                
+                // Appeler le backend pour échanger le code contre un token JWT
+                var response = await HttpClient.PostAsJsonAsync("api/OAuth/google-callback", tokenRequest);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
+                    
+                    if (tokenResponse != null && !string.IsNullOrEmpty(tokenResponse.Token))
+                    {
+                        // Stocker le token JWT 
+                        await LocalStorageService.SetItemAsync("authToken", tokenResponse.Token);
+                        
+                        // Mettre à jour le header d'authentification pour les futures requêtes
+                        HttpClient.DefaultRequestHeaders.Authorization = 
+                            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenResponse.Token);
+                        
+                        // Notifier le changement d'état d'authentification
+                        ((JwtAuthenticationStateProvider)AuthStateProvider)
+                            .MarkUserAsAuthenticated(tokenResponse.Token);
+                        
+                        // Afficher un message de succès
+                        Snackbar.Add("Connexion avec Google réussie", Severity.Success);
+                        
+                        // Rediriger vers la page d'accueil
+                        NavigationManager.NavigateTo("/");
+                        return;
+                    }
+                }
+                
+                // En cas d'échec de la réponse du serveur
+                Snackbar.Add("Erreur lors de l'authentification avec Google", Severity.Error);
+                NavigationManager.NavigateTo("/login?error=auth_failed");
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+                NavigationManager.NavigateTo("/login?error=exception");
+            }
+        }
+        else if (queryParams.TryGetValue("error", out var error))
+        {
+            // Utilisateur a annulé ou autre erreur côté Google
+            Snackbar.Add($"Authentification Google annulée ou échouée: {error}", Severity.Warning);
+            NavigationManager.NavigateTo("/login?error=" + Uri.EscapeDataString(error));
+        }
+        else
+        {
+            // Pas de code dans l'URL
+            Snackbar.Add("Erreur: Paramètres d'authentification manquants", Severity.Error);
+            NavigationManager.NavigateTo("/login?error=no_code");
+        }
+    }
+}

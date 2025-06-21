@@ -1,0 +1,352 @@
+@page "/account/profile/{username?}"
+@using Frontend.Models
+@using System.ComponentModel.DataAnnotations
+@using Frontend.Models.Common
+@using Frontend.Components.Profile
+@using MudBlazor.Extensions
+@using MudBlazor
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+
+<PageTitle>@(currentUser?.Username ?? "Profil") - ModHub</PageTitle>
+
+<!-- AppBar avec Back/Home + Avatar miniature + Dropdown actions -->
+<MudAppBar Elevation="1" Dense="true" Class="profile-appbar" Color="Color.Dark">
+    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Inherit" Edge="Edge.Start" OnClick="NavigateBack" />
+    <MudSpacer />
+    <MudBadge Bordered="true" Overlap="true" Color="Color.Secondary" Dot="isOwner">
+        <MudAvatar Size="Size.Small">
+            @(currentUser?.Username.FirstOrDefault().ToString().ToUpper() ?? "?")
+        </MudAvatar>
+    </MudBadge>
+    <MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End">
+        <MudMenuItem Icon="@Icons.Material.Filled.Home" OnClick="@(() => NavigationManager.NavigateTo("/"))">Accueil</MudMenuItem>
+        @if (isOwner)
+        {
+            <MudMenuItem Icon="@Icons.Material.Filled.Visibility" OnClick="@(() => NavigationManager.NavigateTo($"/profile/preview/{currentUser?.Slug}"))">
+                Prévisualiser en public
+            </MudMenuItem>
+        }
+        @if (isModerator)
+        {
+            <MudMenuItem Icon="@Icons.Material.Filled.Block" OnClick="OpenSuspendDialog">
+                Suspendre utilisateur
+            </MudMenuItem>
+        }
+        <MudDivider />
+        <MudMenuItem Icon="@Icons.Material.Filled.Report" OnClick="OpenReportDialog">Signaler</MudMenuItem>
+    </MudMenu>
+</MudAppBar>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
+    <!-- HeaderZone -->
+    <MudPaper Elevation="0" Class="pa-6 mb-4 profile-header rounded-lg">
+        <MudGrid>
+            <MudItem xs="12" sm="3" md="2" Class="d-flex justify-center align-center">
+                <!-- AvatarUploader -->
+                <div class="avatar-container">
+                    @if (isOwner)
+                    {
+                        <MudMenu AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                            <ActivatorContent>
+                                <MudAvatar Size="Size.Large" Class="avatar-upload" Style="height:120px; width:120px; cursor:pointer;">
+                                    @if (!string.IsNullOrEmpty(currentUser?.AvatarUrl))
+                                    {
+                                        <MudImage Src="@currentUser.AvatarUrl" Alt="Avatar" />
+                                    }
+                                    else
+                                    {
+                                        @(currentUser?.Username.FirstOrDefault().ToString().ToUpper() ?? "?")
+                                    }
+                                    <div class="avatar-overlay d-flex align-center justify-center">
+                                        <MudIcon Icon="@Icons.Material.Filled.PhotoCamera" />
+                                    </div>
+                                </MudAvatar>
+                            </ActivatorContent>
+                            <ChildContent>
+                                <MudMenuItem OnClick="@UploadAvatar" Icon="@Icons.Material.Filled.AddAPhoto">Changer</MudMenuItem>
+                                <MudMenuItem OnClick="@DeleteAvatar" Icon="@Icons.Material.Filled.Delete">Supprimer</MudMenuItem>
+                            </ChildContent>
+                        </MudMenu>
+                    }
+                    else
+                    {
+                        <MudAvatar Size="Size.Large" Style="height:120px; width:120px;">
+                            @if (!string.IsNullOrEmpty(currentUser?.AvatarUrl))
+                            {
+                                <MudImage Src="@currentUser.AvatarUrl" Alt="Avatar" />
+                            }
+                            else
+                            {
+                                @(currentUser?.Username.FirstOrDefault().ToString().ToUpper() ?? "?")
+                            }
+                        </MudAvatar>
+                    }
+                </div>
+            </MudItem>
+            <MudItem xs="12" sm="9" md="10">
+                <div class="d-flex flex-column h-100">
+                    <!-- DisplayName -->
+                    <MudText Typo="Typo.h3" Class="mb-2 font-weight-bold">@currentUser?.Username</MudText>
+                    
+                    <!-- ShortBio -->
+                    <MudText Class="mb-3 mud-text-secondary" Typo="Typo.body1">@currentUser?.ShortBio</MudText>
+                    
+                    <!-- ExternalLinks -->
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        @if (currentUser?.ExternalLinks != null)
+                        {
+                            foreach (var link in currentUser.ExternalLinks)
+                            {
+                                <MudTooltip Text="@link.Type">
+                                    <MudIconButton Icon="@link.Icon" Color="Color.Primary" Variant="Variant.Filled" 
+                                                 Size="Size.Small" Link="@link.Url" Target="_blank" />
+                                </MudTooltip>
+                            }
+                        }
+                    </div>
+                    
+                    <!-- QuickStats -->
+                    <MudPaper Elevation="0" Class="pa-2 quick-stats d-flex flex-wrap justify-start align-center gap-4">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.Extension" Size="Size.Small" Class="mr-2" />
+                            <MudText><strong>@currentUser?.ModsCount</strong> mods</MudText>
+                        </div>
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.CloudDownload" Size="Size.Small" Class="mr-2" />
+                            <MudText><strong>@currentUser?.DownloadsCount</strong> téléchargements</MudText>
+                        </div>
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Small" Class="mr-2" />
+                            <MudText><strong>@currentUser?.FollowersCount</strong> abonnés</MudText>
+                        </div>
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Class="mr-2" />
+                            <MudText><strong>@currentUser?.ReputationScore</strong> réputation</MudText>
+                        </div>
+                    </MudPaper>
+                </div>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- TabHost -->
+    <MudTabs Rounded="true" Elevation="2" Color="Color.Primary" Class="mt-4 mb-8">
+        <MudTabPanel Text="Mods" Icon="@Icons.Material.Filled.Extension">
+            <Frontend.Components.Profile.ModsTab UserId="@currentUser?.Id" />
+        </MudTabPanel>
+        
+        <MudTabPanel Text="Commentaires" Icon="@Icons.Material.Filled.Comment">
+            <Frontend.Components.Profile.CommentsTab UserId="@currentUser?.Id" />
+        </MudTabPanel>
+        
+        @if (isOwner)
+        {
+            <MudTabPanel Text="Favoris" Icon="@Icons.Material.Filled.Favorite">
+                <Frontend.Components.Profile.FavoritesTab />
+            </MudTabPanel>
+        }
+        
+        <MudTabPanel Text="Activité" Icon="@Icons.Material.Filled.Insights">
+            <Frontend.Components.Profile.ActivityTab UserId="@currentUser?.Id" />
+        </MudTabPanel>
+        
+        @if (isOwner)
+        {
+            <MudTabPanel Text="Paramètres" Icon="@Icons.Material.Filled.Settings">
+                <Frontend.Components.Profile.SettingsTab UserProfile="currentUser" OnProfileUpdated="HandleProfileUpdated" />
+            </MudTabPanel>
+        }
+    </MudTabs>
+
+    <!-- Footer with CTA and RGPD links -->
+    <MudPaper Elevation="0" Class="pa-4 d-flex flex-wrap justify-space-between align-center footer-cta">
+        @if (isOwner)
+        {
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       StartIcon="@Icons.Material.Filled.Upload" 
+                       Size="Size.Large"
+                       OnClick="@(() => NavigationManager.NavigateTo("/mods/upload"))">
+                Uploader un nouveau mod
+            </MudButton>
+        }
+        <div class="d-flex flex-wrap gap-2">
+            <MudLink Href="/privacy" Underline="Underline.None" Class="mud-text-secondary">Politique de confidentialité</MudLink>
+            <MudDivider Vertical="true" FlexItem="true" />
+            <MudLink Href="/terms" Underline="Underline.None" Class="mud-text-secondary">CGU</MudLink>
+            <MudDivider Vertical="true" FlexItem="true" />
+            <MudLink Href="/rgpd" Underline="Underline.None" Class="mud-text-secondary">RGPD</MudLink>
+        </div>
+    </MudPaper>
+</MudContainer>
+
+<style>
+    .profile-appbar {
+        position: sticky;
+        top: 0;
+        z-index: 1100;
+    }
+    
+    .profile-header {
+        background-color: var(--mud-palette-dark);
+    }
+    
+    .quick-stats {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+    }
+    
+    .avatar-container {
+        position: relative;
+    }
+    
+    .avatar-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .avatar-upload:hover .avatar-overlay {
+        opacity: 1;
+    }
+    
+    .footer-cta {
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        background-color: var(--mud-palette-dark);
+    }
+    
+    /* Responsive styles */
+    @@media (max-width: 576px) {
+        .quick-stats {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+@code {
+    [Parameter]
+    public string? Username { get; set; }
+    
+    private UserProfile? currentUser;
+    private bool isLoading = false;
+    private bool isOwner = false;
+    private bool isModerator = false;
+    private string errorMessage = string.Empty;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserProfile();
+    }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Username != null)
+        {
+            await LoadUserProfile();
+        }
+    }
+    
+    private async Task LoadUserProfile()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+        
+        try
+        {
+            // In a real implementation, we would fetch the user profile from the API
+            // var response = await Http.GetFromJsonAsync<UserProfile>($"/api/users/{Username ?? "me"}");
+            
+            // For now, create a mock user profile
+            await Task.Delay(500); // Simulate API call
+            
+            // Set mock data
+            currentUser = new UserProfile
+            {
+                Id = "user123",
+                Username = Username ?? "GamerPro",
+                Email = "user@example.com",
+                ShortBio = "Passionné de jeux vidéo et de modding depuis 2005. Spécialiste **Skyrim** et `Fallout 4`. Créateur de mods d'environnement et de gameplay.",
+                AvatarUrl = "",
+                ExternalLinks = new List<ExternalLink>
+                {
+                    new ExternalLink { Type = "Discord", Url = "https://discord.gg/example", Icon = "fab fa-discord" },
+                    new ExternalLink { Type = "Twitch", Url = "https://twitch.tv/example", Icon = "fab fa-twitch" },
+                    new ExternalLink { Type = "YouTube", Url = "https://youtube.com/c/example", Icon = "fab fa-youtube" },
+                    new ExternalLink { Type = "Website", Url = "https://example.com", Icon = "fas fa-globe" }
+                },
+                ModsCount = 24,
+                DownloadsCount = 15620,
+                FollowersCount = 347,
+                ReputationScore = 98,
+                Roles = new[] { "User" },
+                CreatedAt = DateTime.Now.AddYears(-2),
+                IsActive = true
+            };
+            
+            // Check if the current user is the owner of the profile
+            isOwner = Username == null || Username == "me"; // In real app, compare with authenticated user
+            
+            // Check if the current user is a moderator
+            isModerator = false; // In real app, check user roles
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erreur lors du chargement du profil : {ex.Message}";
+            Snackbar.Add(errorMessage, Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+    
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+    
+    private void UploadAvatar()
+    {
+        // In a real implementation, this would open a file picker and upload the avatar
+        Snackbar.Add("La fonctionnalité d'upload d'avatar sera implémentée prochainement.", Severity.Info);
+    }
+    
+    private void DeleteAvatar()
+    {
+        // In a real implementation, this would delete the user's avatar
+        Snackbar.Add("Avatar supprimé", Severity.Success);
+        if (currentUser != null)
+        {
+            currentUser.AvatarUrl = "";
+        }
+    }
+    
+    private void OpenReportDialog()
+    {
+        // In a real implementation, this would open a dialog to report the user
+        Snackbar.Add("La fonctionnalité de signalement sera implémentée prochainement.", Severity.Info);
+    }
+    
+    private void OpenSuspendDialog()
+    {
+        // In a real implementation, this would open a dialog to suspend the user
+        Snackbar.Add("La fonctionnalité de suspension sera implémentée prochainement.", Severity.Info);
+    }
+    
+    private void HandleProfileUpdated(UserProfile updatedProfile)
+    {
+        currentUser = updatedProfile;
+        Snackbar.Add("Profil mis à jour avec succès", Severity.Success);
+    }
+}

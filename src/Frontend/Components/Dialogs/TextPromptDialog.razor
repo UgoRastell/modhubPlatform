@@ -1,0 +1,36 @@
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudText>@ContentText</MudText>
+        <MudTextField @bind-Value="userInput" 
+                     Label="@Placeholder"
+                     Variant="Variant.Outlined"
+                     Class="mt-3"
+                     Required="@Required" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@CancelText</MudButton>
+        <MudButton Color="@Color" 
+                  Variant="Variant.Filled" 
+                  OnClick="Submit" 
+                  Disabled="@(Required && string.IsNullOrEmpty(userInput))">@ButtonText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    
+    [Parameter] public string ContentText { get; set; }
+    [Parameter] public string ButtonText { get; set; } = "Confirmer";
+    [Parameter] public string CancelText { get; set; } = "Annuler";
+    [Parameter] public string Placeholder { get; set; } = "";
+    [Parameter] public bool Required { get; set; } = false;
+    [Parameter] public bool RequireInput { get; set; } = false;
+    [Parameter] public Color Color { get; set; } = Color.Primary;
+    
+    private string userInput = "";
+    
+    void Submit() => MudDialog.Close(DialogResult.Ok(userInput));
+    void Cancel() => MudDialog.Cancel();
+}

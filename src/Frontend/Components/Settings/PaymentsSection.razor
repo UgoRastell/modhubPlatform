@@ -1,0 +1,307 @@
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<MudCard Class="settings-card mb-4">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <div class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.CreditCard" Class="mr-2" />
+                <MudText Typo="Typo.h5">Paiements & Abonnements</MudText>
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+    
+    <MudCardContent>
+        <MudText Class="mb-4">Gérez vos moyens de paiement et accédez à l'historique de vos transactions.</MudText>
+        
+        <!-- Current Subscription -->
+        <MudPaper Elevation="0" Class="pa-4 mb-6 rounded-lg" Style="background-color: #2f3441;">
+            <MudText Typo="Typo.subtitle1" Class="mb-4">Abonnement actuel</MudText>
+            
+            @if (currentSubscription == null)
+            {
+                <div class="d-flex flex-column align-center pa-6">
+                    <MudIcon Icon="@Icons.Material.Outlined.WorkspacePremium" Size="Size.Large" Class="mb-3" />
+                    <MudText Align="Align.Center" Class="mb-2">Vous n'avez pas d'abonnement actif</MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Style="color: #a7b2c2;" Class="mb-4">
+                        Abonnez-vous pour accéder à des fonctionnalités premium comme l'hébergement illimité de mods,
+                        des statistiques avancées et un badge créateur premium.
+                    </MudText>
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               OnClick="NavigateToSubscriptions">
+                        Voir les offres
+                    </MudButton>
+                </div>
+            }
+            else
+            {
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudPaper Elevation="0" Class="pa-3 rounded-lg" Style="background-color: #3a3e50;">
+                            <div class="d-flex align-start">
+                                <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Color="Color.Warning" Class="mr-3 mt-1" />
+                                <div>
+                                    <MudText Typo="Typo.subtitle1" Class="mb-1">@currentSubscription.Name</MudText>
+                                    <MudText Typo="Typo.caption" Style="color: #a7b2c2;">@currentSubscription.Description</MudText>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Success">Actif</MudChip>
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Dark">@currentSubscription.RenewalDate.ToString("dd/MM/yyyy")</MudChip>
+                                    </div>
+                                </div>
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                    
+                    <MudItem xs="12" md="6" Class="d-flex justify-end align-center">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   OnClick="ManageSubscription">
+                            Gérer l'abonnement
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            }
+        </MudPaper>
+        
+        <!-- Payment Methods -->
+        <MudPaper Elevation="0" Class="pa-4 mb-6 rounded-lg" Style="background-color: #2f3441;">
+            <div class="d-flex justify-space-between mb-4">
+                <MudText Typo="Typo.subtitle1">Moyens de paiement</MudText>
+                <MudButton Variant="Variant.Text" 
+                           Color="Color.Primary" 
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="AddPaymentMethod">
+                    Ajouter
+                </MudButton>
+            </div>
+            
+            @if (paymentMethods.Count == 0)
+            {
+                <MudText Typo="Typo.body2" Style="color: #a7b2c2;" Class="my-4">
+                    Aucun moyen de paiement enregistré
+                </MudText>
+            }
+            else
+            {
+                foreach (var method in paymentMethods)
+                {
+                    <MudPaper Elevation="0" Class="pa-3 rounded-lg mb-3 d-flex justify-space-between align-center" Style="background-color: #3a3e50;">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@GetCardIcon(method.Type)" Class="mr-3" />
+                            <div>
+                                <MudText>@method.Name</MudText>
+                                <MudText Typo="Typo.caption" Style="color: #a7b2c2;">@method.LastFour • Exp. @method.ExpirationDate</MudText>
+                            </div>
+                        </div>
+                        <div>
+                            @if (method.IsDefault)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Class="mr-2">Par défaut</MudChip>
+                            }
+                            <MudMenu Icon="@Icons.Material.Filled.MoreVert" Size="Size.Small" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                                <MudMenuItem OnClick="@(() => SetDefaultPaymentMethod(method.Id))">Définir par défaut</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => RemovePaymentMethod(method.Id))">Supprimer</MudMenuItem>
+                            </MudMenu>
+                        </div>
+                    </MudPaper>
+                }
+            }
+        </MudPaper>
+        
+        <!-- Transaction History -->
+        <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background-color: #2f3441;">
+            <div class="d-flex justify-space-between mb-4">
+                <MudText Typo="Typo.subtitle1">Historique des transactions</MudText>
+                <MudButton Variant="Variant.Text" 
+                           Color="Color.Primary" 
+                           StartIcon="@Icons.Material.Filled.Download"
+                           OnClick="DownloadTransactionHistory">
+                    Exporter
+                </MudButton>
+            </div>
+            
+            <MudTable Items="@transactions" 
+                     Hover="true" 
+                     Breakpoint="Breakpoint.Sm" 
+                     LoadingProgressColor="Color.Info">
+                <HeaderContent>
+                    <MudTh>Date</MudTh>
+                    <MudTh>Description</MudTh>
+                    <MudTh>Montant</MudTh>
+                    <MudTh>Statut</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Date">@context.Date.ToString("dd/MM/yyyy")</MudTd>
+                    <MudTd DataLabel="Description">@context.Description</MudTd>
+                    <MudTd DataLabel="Montant">@(context.Amount.ToString("C", new System.Globalization.CultureInfo("fr-FR")))</MudTd>
+                    <MudTd DataLabel="Statut">
+                        @switch (context.Status)
+                        {
+                            case "completed":
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">Complété</MudChip>
+                                break;
+                            case "pending":
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning">En attente</MudChip>
+                                break;
+                            case "failed":
+                                <MudChip T="string" Size="Size.Small" Color="Color.Error">Échoué</MudChip>
+                                break;
+                            case "refunded":
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info">Remboursé</MudChip>
+                                break;
+                            default:
+                                <MudChip T="string" Size="Size.Small" Color="Color.Dark">@context.Status</MudChip>
+                                break;
+                        }
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+            
+            @if (transactions.Count > 0)
+            {
+                <div class="d-flex justify-center mt-4">
+                    <MudButton Variant="Variant.Text" 
+                              Color="Color.Primary" 
+                              OnClick="LoadMoreTransactions">
+                        Afficher plus
+                    </MudButton>
+                </div>
+            }
+            else
+            {
+                <MudText Typo="Typo.body2" Style="color: #a7b2c2;" Class="my-4">
+                    Aucune transaction à afficher
+                </MudText>
+            }
+        </MudPaper>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private Subscription currentSubscription = null;
+    private List<PaymentMethod> paymentMethods = new();
+    private List<Transaction> transactions = new();
+    
+    protected override void OnInitialized()
+    {
+        // Mock data
+        // currentSubscription = null; // Uncomment to test no subscription view
+        
+        currentSubscription = new Subscription 
+        { 
+            Id = "sub_123", 
+            Name = "Créateur Premium", 
+            Description = "Accès illimité aux fonctionnalités premium",
+            RenewalDate = DateTime.Now.AddMonths(1)
+        };
+        
+        paymentMethods = new List<PaymentMethod>
+        {
+            new PaymentMethod { Id = "pm_1", Name = "Visa", Type = "visa", LastFour = "4242", ExpirationDate = "12/24", IsDefault = true },
+            new PaymentMethod { Id = "pm_2", Name = "Mastercard", Type = "mastercard", LastFour = "8759", ExpirationDate = "03/25", IsDefault = false }
+        };
+        
+        transactions = new List<Transaction>
+        {
+            new Transaction { Id = "tx_1", Date = DateTime.Now.AddDays(-7), Description = "Abonnement Créateur Premium", Amount = 9.99m, Status = "completed" },
+            new Transaction { Id = "tx_2", Date = DateTime.Now.AddMonths(-1), Description = "Abonnement Créateur Premium", Amount = 9.99m, Status = "completed" },
+            new Transaction { Id = "tx_3", Date = DateTime.Now.AddMonths(-2), Description = "Abonnement Créateur Premium", Amount = 9.99m, Status = "completed" },
+            new Transaction { Id = "tx_4", Date = DateTime.Now.AddMonths(-3), Description = "Promotion Premium (3 mois)", Amount = 24.99m, Status = "completed" }
+        };
+    }
+    
+    private string GetCardIcon(string cardType)
+    {
+        return cardType.ToLower() switch
+        {
+            "visa" => Icons.Material.Filled.CreditCard,
+            "mastercard" => Icons.Material.Filled.CreditCard,
+            "amex" => Icons.Material.Filled.CreditCard,
+            "discover" => Icons.Material.Filled.CreditCard,
+            _ => Icons.Material.Filled.CreditCard
+        };
+    }
+    
+    private void NavigateToSubscriptions()
+    {
+        NavigationManager.NavigateTo("/subscriptions");
+    }
+    
+    private void ManageSubscription()
+    {
+        NavigationManager.NavigateTo("/account/subscription");
+    }
+    
+    private void AddPaymentMethod()
+    {
+        // In real app, we'd open a dialog or redirect to a payment method form
+        Snackbar.Add("Fonctionnalité d'ajout de moyen de paiement en cours d'implémentation", Severity.Info);
+    }
+    
+    private void SetDefaultPaymentMethod(string id)
+    {
+        foreach (var method in paymentMethods)
+        {
+            method.IsDefault = (method.Id == id);
+        }
+        
+        Snackbar.Add("Moyen de paiement par défaut modifié", Severity.Success);
+        StateHasChanged();
+    }
+    
+    private void RemovePaymentMethod(string id)
+    {
+        var method = paymentMethods.FirstOrDefault(m => m.Id == id);
+        if (method != null)
+        {
+            if (method.IsDefault && paymentMethods.Count > 1)
+            {
+                Snackbar.Add("Vous ne pouvez pas supprimer votre moyen de paiement par défaut", Severity.Warning);
+                return;
+            }
+            
+            paymentMethods.Remove(method);
+            Snackbar.Add("Moyen de paiement supprimé", Severity.Success);
+            StateHasChanged();
+        }
+    }
+    
+    private void DownloadTransactionHistory()
+    {
+        Snackbar.Add("Export des transactions en cours...", Severity.Info);
+    }
+    
+    private void LoadMoreTransactions()
+    {
+        // In real app, we'd load more transactions from API
+        Snackbar.Add("Chargement de transactions supplémentaires en cours d'implémentation", Severity.Info);
+    }
+    
+    public class Subscription
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public DateTime RenewalDate { get; set; }
+    }
+    
+    public class PaymentMethod
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public string LastFour { get; set; }
+        public string ExpirationDate { get; set; }
+        public bool IsDefault { get; set; }
+    }
+    
+    public class Transaction
+    {
+        public string Id { get; set; }
+        public DateTime Date { get; set; }
+        public string Description { get; set; }
+        public decimal Amount { get; set; }
+        public string Status { get; set; }
+    }
+}

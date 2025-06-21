@@ -1,44 +1,22 @@
 @inherits LayoutComponentBase
+@using Frontend.Theme
+@using Frontend.Components.Layout
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
 <div class="page">
+    <MudThemeProvider Theme="ModsGamingTheme.GetTheme()" />
+    <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Medium" CloseButton="true" DisableBackdropClick="true"
+                    CloseOnEscapeKey="true" Position="DialogPosition.Center" />
+    <MudSnackbarProvider />
+    
+    <!-- Import CSS for AppBar -->
+    <link href="css/app-bar.css" rel="stylesheet" />
+    
     <MudLayout>
-        <MudAppBar Elevation="1">
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" 
-                          OnClick="@((e) => DrawerToggle())" />
-            
-            <MudContainer MaxWidth="MaxWidth.Large" Class="d-flex justify-space-between align-center">
-                <MudLink Href="/" Underline="Underline.None">
-                    <MudText Typo="Typo.h5" Class="app-logo">ModsGamingPlatform</MudText>
-                </MudLink>
-                
-                <MudSpacer />
-                
-                <AuthorizeView>
-                    <Authorized>
-                        <MudMenu Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" Dense="true" Direction="Direction.Bottom" OffsetY="true">
-                            <MudMenuItem>
-                                <MudText>Aucune notification</MudText>
-                            </MudMenuItem>
-                        </MudMenu>
-                        
-                        <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" Dense="true" Direction="Direction.Bottom" OffsetY="true">
-                            <MudText Typo="Typo.body2" Class="px-4 py-2">@context.User.Identity?.Name</MudText>
-                            <MudDivider />
-                            <MudMenuItem Href="/account/profile">Mon profil</MudMenuItem>
-                            <MudMenuItem Href="/account/settings">Paramètres</MudMenuItem>
-                            <MudMenuItem OnClick="Logout">Déconnexion</MudMenuItem>
-                        </MudMenu>
-                    </Authorized>
-                    <NotAuthorized>
-                        <MudButton Href="/login" Variant="Variant.Text" Color="Color.Inherit">Connexion</MudButton>
-                        <MudButton Href="/register" Variant="Variant.Filled" Color="Color.Secondary" Class="ml-2">Inscription</MudButton>
-                    </NotAuthorized>
-                </AuthorizeView>
-            </MudContainer>
-        </MudAppBar>
+        <!-- Nouvelle AppBar customisée -->
+        <AppBar />
         
         <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="@DrawerVariant.Responsive">
             <MudDrawerHeader>

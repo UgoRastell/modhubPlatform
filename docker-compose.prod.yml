@@ -168,15 +168,20 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./docker/nginx.conf:/etc/nginx/nginx.conf
-      - ./docker/certs:/etc/nginx/certs
-      - ./docker/letsencrypt/www:/var/www/certbot
+      - ./docker/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/letsencrypt/live/modhub.fr:/etc/nginx/ssl:ro
+      - ./docker/letsencrypt/www:/var/www/certbot:rw
       - nginx_logs:/var/log/nginx
     depends_on:
       - frontend
       - gateway
     networks:
       - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # Prometheus pour la surveillance
   prometheus:

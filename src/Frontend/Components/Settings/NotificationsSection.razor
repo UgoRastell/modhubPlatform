@@ -1,0 +1,251 @@
+@inject ISnackbar Snackbar
+
+<MudCard Class="settings-card mb-4">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <div class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Notifications" Class="mr-2" />
+                <MudText Typo="Typo.h5">Notifications</MudText>
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+    
+    <MudCardContent>
+        <MudText Class="mb-4">Gérez vos préférences de notifications pour rester informé des activités importantes.</MudText>
+        
+        <MudPaper Elevation="0" Class="pa-4 mb-6 rounded-lg" Style="background-color: #2f3441;">
+            <MudText Typo="Typo.subtitle1" Class="mb-4">Notifications dans l'application</MudText>
+            
+            <MudList T="string" Clickable="false" Dense="true">
+                <MudListItem T="string">
+                    <div class="d-flex justify-space-between align-center" style="width: 100%;">
+                        <div>
+                            <MudText>Mise à jour de vos mods</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #a7b2c2;">Quand vos mods publiés sont mis à jour</MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Checked="inAppNotifications.ModUpdates" 
+                                  Color="@(inAppNotifications.ModUpdates ? Color.Info : Color.Dark)"
+                                  ThumbIcon="@Icons.Material.Filled.Notifications"
+                                  ThumbIconColor="@(inAppNotifications.ModUpdates ? Color.Info : Color.Default)" />
+                    </div>
+                </MudListItem>
+                
+                <MudDivider />
+                
+                <MudListItem T="string">
+                    <div class="d-flex justify-space-between align-center" style="width: 100%;">
+                        <div>
+                            <MudText>Commentaires sur vos mods</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #a7b2c2;">Quand vos mods reçoivent des commentaires</MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Checked="inAppNotifications.Comments" 
+                                  Color="@(inAppNotifications.Comments ? Color.Info : Color.Dark)"
+                                  ThumbIcon="@Icons.Material.Filled.Comment"
+                                  ThumbIconColor="@(inAppNotifications.Comments ? Color.Info : Color.Default)" />
+                    </div>
+                </MudListItem>
+                
+                <MudDivider />
+                
+                <MudListItem T="string">
+                    <div class="d-flex justify-space-between align-center" style="width: 100%;">
+                        <div>
+                            <MudText>Mentions</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #a7b2c2;">Quand quelqu'un vous mentionne dans un commentaire</MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Checked="inAppNotifications.Mentions" 
+                                  Color="@(inAppNotifications.Mentions ? Color.Info : Color.Dark)"
+                                  ThumbIcon="@Icons.Material.Filled.Email"
+                                  ThumbIconColor="@(inAppNotifications.Mentions ? Color.Info : Color.Default)" />
+                    </div>
+                </MudListItem>
+                
+                <MudDivider />
+                
+                <MudListItem T="string">
+                    <div class="d-flex justify-space-between align-center" style="width: 100%;">
+                        <div>
+                            <MudText>Mises à jour de jeux</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #a7b2c2;">Quand des jeux que vous suivez sont mis à jour</MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Checked="inAppNotifications.GameUpdates" 
+                                  Color="@(inAppNotifications.GameUpdates ? Color.Info : Color.Dark)"
+                                  ThumbIcon="@Icons.Material.Filled.SportsEsports"
+                                  ThumbIconColor="@(inAppNotifications.GameUpdates ? Color.Info : Color.Default)" />
+                    </div>
+                </MudListItem>
+            </MudList>
+        </MudPaper>
+        
+        <MudPaper Elevation="0" Class="pa-4 mb-6 rounded-lg" Style="background-color: #2f3441;">
+            <MudText Typo="Typo.subtitle1" Class="mb-4">Notifications par e-mail</MudText>
+            
+            <MudList T="string" Clickable="false" Dense="true">
+                <MudListItem T="string">
+                    <div class="d-flex justify-space-between align-center" style="width: 100%;">
+                        <div>
+                            <MudText>Mises à jour de sécurité</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #a7b2c2;">Alertes de connexion et mises à jour importantes concernant votre compte</MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Checked="emailNotifications.SecurityUpdates" 
+                                  Color="@(emailNotifications.SecurityUpdates ? Color.Success : Color.Dark)"
+                                  ThumbIcon="@Icons.Material.Filled.Security"
+                                  ThumbIconColor="@(emailNotifications.SecurityUpdates ? Color.Success : Color.Default)" />
+                    </div>
+                </MudListItem>
+                
+                <MudDivider />
+                
+                <MudListItem T="string">
+                    <div class="d-flex justify-space-between align-center" style="width: 100%;">
+                        <div>
+                            <MudText>Résumé d'activité</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #a7b2c2;">Résumé hebdomadaire des activités sur vos mods</MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Checked="emailNotifications.ActivitySummary" 
+                                  Color="@(emailNotifications.ActivitySummary ? Color.Success : Color.Dark)"
+                                  ThumbIcon="@Icons.Material.Filled.Mail"
+                                  ThumbIconColor="@(emailNotifications.ActivitySummary ? Color.Success : Color.Default)" />
+                    </div>
+                </MudListItem>
+                
+                <MudDivider />
+                
+                <MudListItem T="string">
+                    <div class="d-flex justify-space-between align-center" style="width: 100%;">
+                        <div>
+                            <MudText>Messages privés</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #a7b2c2;">Notifications quand vous recevez un message privé</MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Checked="emailNotifications.PrivateMessages" 
+                                  Color="@(emailNotifications.PrivateMessages ? Color.Success : Color.Dark)"
+                                  ThumbIcon="@Icons.Material.Filled.Mail"
+                                  ThumbIconColor="@(emailNotifications.PrivateMessages ? Color.Success : Color.Default)" />
+                    </div>
+                </MudListItem>
+                
+                <MudDivider />
+                
+                <MudListItem T="string">
+                    <div class="d-flex justify-space-between align-center" style="width: 100%;">
+                        <div>
+                            <MudText>Newsletter</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #a7b2c2;">Nouveautés et mises à jour de la plateforme ModHub (mensuel)</MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Checked="emailNotifications.Newsletter" 
+                                  Color="@(emailNotifications.Newsletter ? Color.Success : Color.Dark)"
+                                  ThumbIcon="@Icons.Material.Filled.Campaign"
+                                  ThumbIconColor="@(emailNotifications.Newsletter ? Color.Success : Color.Default)" />
+                    </div>
+                </MudListItem>
+            </MudList>
+        </MudPaper>
+        
+        <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background-color: #2f3441;">
+            <MudText Typo="Typo.subtitle1" Class="mb-2">Fréquence des notifications</MudText>
+            <MudText Typo="Typo.caption" Class="mb-4" Style="color: #a7b2c2;">Déterminez la fréquence à laquelle vous souhaitez recevoir des notifications</MudText>
+            
+            <div class="d-flex flex-column">
+                <div class="py-2">
+                    <MudText>@GetNotificationFrequencyLabel(notificationFrequency)</MudText>
+                    <MudSlider @bind-Value="notificationFrequency" 
+                              Min="0" Max="3" Step="1" 
+                              Color="Color.Info"
+                              Class="py-3">
+                        <ValueLabelContent>
+                            @GetNotificationFrequencyLabel((int)notificationFrequency)
+                        </ValueLabelContent>
+                    </MudSlider>
+                </div>
+                
+                <div class="d-flex justify-end mt-4">
+                    <MudButton Variant="Variant.Filled"
+                              Color="Color.Primary"
+                              OnClick="SaveNotificationPreferences"
+                              Disabled="@isSaving">
+                        @if (isSaving)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                            <MudText Class="ms-2">Enregistrement...</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Enregistrer les préférences</MudText>
+                        }
+                    </MudButton>
+                </div>
+            </div>
+        </MudPaper>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private bool isSaving = false;
+    private double notificationFrequency = 2;
+    
+    private InAppNotifications inAppNotifications = new()
+    {
+        ModUpdates = true,
+        Comments = true,
+        Mentions = true,
+        GameUpdates = false
+    };
+    
+    private EmailNotifications emailNotifications = new()
+    {
+        SecurityUpdates = true,
+        ActivitySummary = true,
+        PrivateMessages = false,
+        Newsletter = true
+    };
+    
+    private string GetNotificationFrequencyLabel(double value)
+    {
+        return ((int)value) switch
+        {
+            0 => "Aucune",
+            1 => "Faible",
+            2 => "Moyenne",
+            3 => "Élevée",
+            _ => "Moyenne"
+        };
+    }
+    
+    private async Task SaveNotificationPreferences()
+    {
+        isSaving = true;
+        
+        try
+        {
+            // In real app, we'd call the API to save preferences
+            await Task.Delay(1000);
+            
+            Snackbar.Add("Préférences de notification enregistrées avec succès", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+    
+    public class InAppNotifications
+    {
+        public bool ModUpdates { get; set; }
+        public bool Comments { get; set; }
+        public bool Mentions { get; set; }
+        public bool GameUpdates { get; set; }
+    }
+    
+    public class EmailNotifications
+    {
+        public bool SecurityUpdates { get; set; }
+        public bool ActivitySummary { get; set; }
+        public bool PrivateMessages { get; set; }
+        public bool Newsletter { get; set; }
+    }
+}

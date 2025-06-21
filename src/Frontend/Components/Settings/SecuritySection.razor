@@ -1,0 +1,288 @@
+@inject ISnackbar Snackbar
+
+<MudCard Class="settings-card mb-4">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <div class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Security" Class="mr-2" />
+                <MudText Typo="Typo.h5">Sécurité</MudText>
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+    
+    <MudCardContent>
+        <MudText Class="mb-4">Gérez ici la sécurité de votre compte ModHub.</MudText>
+        
+        <!-- Change password section -->
+        <MudPaper Elevation="0" Class="pa-4 mb-6 rounded-lg" Style="background-color: #2f3441;">
+            <MudText Typo="Typo.subtitle1" Class="mb-4">Changer le mot de passe</MudText>
+            
+            <EditForm Model="@passwordModel" OnValidSubmit="ChangePassword">
+                <DataAnnotationsValidator />
+                <MudGrid>
+                    <MudItem xs="12" md="4">
+                        <MudTextField @bind-Value="passwordModel.CurrentPassword"
+                                    Label="Mot de passe actuel"
+                                    Variant="Variant.Outlined"
+                                    InputType="@(isCurrentPasswordVisible ? InputType.Text : InputType.Password)"
+                                    Adornment="Adornment.End"
+                                    AdornmentIcon="@(isCurrentPasswordVisible ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                    OnAdornmentClick="() => isCurrentPasswordVisible = !isCurrentPasswordVisible" />
+                        <ValidationMessage For="@(() => passwordModel.CurrentPassword)" />
+                    </MudItem>
+                    
+                    <MudItem xs="12" md="4">
+                        <MudTextField @bind-Value="passwordModel.NewPassword"
+                                    Label="Nouveau mot de passe"
+                                    Variant="Variant.Outlined"
+                                    InputType="@(isNewPasswordVisible ? InputType.Text : InputType.Password)"
+                                    Adornment="Adornment.End"
+                                    AdornmentIcon="@(isNewPasswordVisible ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                    OnAdornmentClick="() => isNewPasswordVisible = !isNewPasswordVisible" />
+                        <ValidationMessage For="@(() => passwordModel.NewPassword)" />
+                    </MudItem>
+                    
+                    <MudItem xs="12" md="4">
+                        <MudTextField @bind-Value="passwordModel.ConfirmPassword"
+                                    Label="Confirmer le mot de passe"
+                                    Variant="Variant.Outlined"
+                                    InputType="@(isConfirmPasswordVisible ? InputType.Text : InputType.Password)"
+                                    Adornment="Adornment.End"
+                                    AdornmentIcon="@(isConfirmPasswordVisible ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                    OnAdornmentClick="() => isConfirmPasswordVisible = !isConfirmPasswordVisible" />
+                        <ValidationMessage For="@(() => passwordModel.ConfirmPassword)" />
+                    </MudItem>
+                    
+                    <MudItem xs="12" Class="d-flex justify-end">
+                        <MudButton ButtonType="ButtonType.Submit"
+                                  Variant="Variant.Filled"
+                                  Color="Color.Primary"
+                                  Size="Size.Medium"
+                                  Disabled="@isChangingPassword">
+                            @if (isChangingPassword)
+                            {
+                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                <MudText Class="ms-2">Enregistrement...</MudText>
+                            }
+                            else
+                            {
+                                <MudText>Changer le mot de passe</MudText>
+                            }
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        </MudPaper>
+        
+        <!-- 2FA Section -->
+        <MudPaper Elevation="0" Class="pa-4 mb-6 rounded-lg" Style="background-color: #2f3441;">
+            <div class="d-flex justify-space-between align-center mb-4">
+                <div>
+                    <MudText Typo="Typo.subtitle1">Authentification à deux facteurs (2FA)</MudText>
+                    <MudText Typo="Typo.body2" Class="mt-1">Ajoutez une couche de sécurité supplémentaire à votre compte.</MudText>
+                </div>
+                <div class="d-flex align-center">
+                    @if (is2FAEnabled)
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Class="mr-2">Activé</MudChip>
+                    }
+                    <MudSwitch T="bool" @bind-Checked="is2FAEnabled" 
+                              Color="Color.Primary"
+                              UnCheckedColor="Color.Dark"
+                              ThumbIcon="@(is2FAEnabled ? Icons.Material.Filled.Lock : Icons.Material.Filled.LockOpen)"
+                              ThumbIconColor="@(is2FAEnabled ? Color.Success : Color.Error)"
+                              OnChange="Toggle2FA" />
+                </div>
+            </div>
+            
+            @if (is2FAEnabled && showQRCode)
+            {
+                <div class="d-flex flex-column align-center mb-4">
+                    <MudText Class="mb-2">Scannez ce QR code avec votre application d'authentification</MudText>
+                    <MudImage Src="/images/mock-2fa-qr.png" Alt="QR Code" Width="200" Height="200" Class="mb-3" ObjectFit="ObjectFit.Cover" />
+                    
+                    <MudTextField @bind-Value="verificationCode"
+                                Label="Code de vérification"
+                                Variant="Variant.Outlined"
+                                Counter="6"
+                                Immediate="true"
+                                MaxLength="6"
+                                Class="mb-3 mt-3 mx-auto"
+                                Style="max-width: 200px;" />
+                    
+                    <MudButton Variant="Variant.Filled"
+                              Color="Color.Primary"
+                              OnClick="Verify2FA"
+                              Disabled="verificationCode.Length != 6">
+                        Vérifier & Activer
+                    </MudButton>
+                </div>
+            }
+        </MudPaper>
+        
+        <!-- Login History -->
+        <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background-color: #2f3441;">
+            <MudText Typo="Typo.subtitle1" Class="mb-4">Historique des connexions</MudText>
+            
+            <MudTable Items="@loginHistory" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
+                <HeaderContent>
+                    <MudTh>Date</MudTh>
+                    <MudTh>Adresse IP</MudTh>
+                    <MudTh>Appareil</MudTh>
+                    <MudTh>Statut</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Date">@context.Date.ToString("dd/MM/yyyy HH:mm")</MudTd>
+                    <MudTd DataLabel="Adresse IP">@context.IPAddress</MudTd>
+                    <MudTd DataLabel="Appareil">@context.Device</MudTd>
+                    <MudTd DataLabel="Statut">
+                        @if (context.Success)
+                        {
+                            <MudChip T="string" Color="Color.Success" Size="Size.Small">Réussi</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Color="Color.Error" Size="Size.Small">Échoué</MudChip>
+                        }
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+            
+            <div class="d-flex justify-end mt-4">
+                <MudButton Variant="Variant.Text" 
+                          Color="Color.Primary"
+                          StartIcon="@Icons.Material.Filled.Logout"
+                          OnClick="DeactivateAllSessions">
+                    Déconnecter tous les appareils
+                </MudButton>
+            </div>
+        </MudPaper>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private PasswordChangeModel passwordModel = new();
+    private bool isCurrentPasswordVisible = false;
+    private bool isNewPasswordVisible = false;
+    private bool isConfirmPasswordVisible = false;
+    private bool isChangingPassword = false;
+    
+    private bool is2FAEnabled = false;
+    private bool showQRCode = false;
+    private string verificationCode = "";
+    
+    private List<LoginHistoryItem> loginHistory = new();
+
+    protected override void OnInitialized()
+    {
+        // Mock data for login history
+        loginHistory = new List<LoginHistoryItem>
+        {
+            new LoginHistoryItem { Date = DateTime.Now.AddDays(-1), IPAddress = "192.168.1.1", Device = "Chrome / Windows", Success = true },
+            new LoginHistoryItem { Date = DateTime.Now.AddDays(-3), IPAddress = "192.168.1.1", Device = "Firefox / Windows", Success = true },
+            new LoginHistoryItem { Date = DateTime.Now.AddDays(-5), IPAddress = "89.123.45.67", Device = "Safari / macOS", Success = false },
+            new LoginHistoryItem { Date = DateTime.Now.AddDays(-8), IPAddress = "192.168.1.1", Device = "Chrome / Android", Success = true }
+        };
+    }
+
+    private async Task ChangePassword()
+    {
+        isChangingPassword = true;
+        
+        try
+        {
+            // Simulate API call
+            await Task.Delay(1500);
+            
+            if (passwordModel.CurrentPassword == "incorrect")
+            {
+                Snackbar.Add("Le mot de passe actuel est incorrect", Severity.Error);
+                return;
+            }
+            
+            Snackbar.Add("Mot de passe changé avec succès", Severity.Success);
+            
+            // Reset form
+            passwordModel = new PasswordChangeModel();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isChangingPassword = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task Toggle2FA(bool enabled)
+    {
+        if (enabled)
+        {
+            // In real app we'd call the API to start 2FA setup
+            await Task.Delay(500);
+            showQRCode = true;
+        }
+        else
+        {
+            // In real app we'd call API to disable 2FA
+            var result = await Task.FromResult(true);
+            if (result)
+            {
+                Snackbar.Add("Authentification à deux facteurs désactivée", Severity.Info);
+                showQRCode = false;
+            }
+            else
+            {
+                is2FAEnabled = true;
+                Snackbar.Add("Impossible de désactiver l'authentification à deux facteurs", Severity.Error);
+            }
+        }
+    }
+
+    private async Task Verify2FA()
+    {
+        // In real app we'd call API to verify the code
+        await Task.Delay(1000);
+        
+        if (verificationCode == "123456")
+        {
+            Snackbar.Add("Authentification à deux facteurs activée avec succès", Severity.Success);
+            showQRCode = false;
+        }
+        else
+        {
+            Snackbar.Add("Code de vérification invalide", Severity.Error);
+        }
+    }
+
+    private async Task DeactivateAllSessions()
+    {
+        // In real app we'd call API to log out all sessions
+        await Task.Delay(1000);
+        Snackbar.Add("Toutes les sessions actives ont été déconnectées", Severity.Success);
+    }
+
+    public class PasswordChangeModel
+    {
+        [Required(ErrorMessage = "Le mot de passe actuel est requis")]
+        public string CurrentPassword { get; set; }
+        
+        [Required(ErrorMessage = "Le nouveau mot de passe est requis")]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "Le mot de passe doit contenir au moins 8 caractères")]
+        public string NewPassword { get; set; }
+        
+        [Required(ErrorMessage = "La confirmation du mot de passe est requise")]
+        [Compare("NewPassword", ErrorMessage = "Les mots de passe ne correspondent pas")]
+        public string ConfirmPassword { get; set; }
+    }
+
+    public class LoginHistoryItem
+    {
+        public DateTime Date { get; set; }
+        public string IPAddress { get; set; }
+        public string Device { get; set; }
+        public bool Success { get; set; }
+    }
+}
