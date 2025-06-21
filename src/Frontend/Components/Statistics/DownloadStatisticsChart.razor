@@ -1,0 +1,205 @@
+@using Frontend.Models
+@using Frontend.Services
+@using System.Globalization
+@using Frontend.Models
+@using Frontend.Services
+@using System.Globalization
+@using System.Drawing
+
+@inject IModService ModService
+
+<div class="download-statistics-chart @(Compact ? "compact" : "")" style="@(Width != null ? $"width: {Width};" : "")">
+    <div class="chart-header">
+        <h3 class="chart-title">@Title</h3>
+        <div class="chart-actions">
+            <div class="btn-group">
+                <button class="@GetTimeRangeButtonClass("7d")" @onclick="() => ChangeTimeRange(7)">7j</button>
+                <button class="@GetTimeRangeButtonClass("30d")" @onclick="() => ChangeTimeRange(30)">30j</button>
+                <button class="@GetTimeRangeButtonClass("90d")" @onclick="() => ChangeTimeRange(90)">3m</button>
+                <button class="@GetTimeRangeButtonClass("365d")" @onclick="() => ChangeTimeRange(365)">1a</button>
+            </div>
+        </div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="loading-container">
+            <div class="spinner">
+                <div class="double-bounce1"></div>
+                <div class="double-bounce2"></div>
+            </div>
+            <span>Chargement des données...</span>
+        </div>
+    }
+    else if (Error != null)
+    {
+        <div class="chart-error">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>@Error</p>
+            <button class="btn btn-sm btn-outline-primary" @onclick="LoadData">Réessayer</button>
+        </div>
+    }
+    else if (NoData)
+    {
+        <div class="no-data">
+            <i class="fas fa-chart-area"></i>
+            <p>Aucune donnée disponible pour cette période</p>
+        </div>
+    }
+    else
+    {
+        <div class="chart-container">
+            <div id="chart-@Id" class="chart-placeholder"></div>
+        </div>
+
+        @if (ShowVersionBreakdown && VersionData.Any())
+        {
+            <div class="version-breakdown">
+                <h4>Téléchargements par version</h4>
+                <table class="version-table">
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>Téléchargements</th>
+                            <th>Pourcentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var version in VersionData.OrderByDescending(v => v.Value))
+                        {
+                            var percentage = (version.Value / (double)TotalDownloads * 100);
+                            <tr>
+                                <td>@version.Key</td>
+                                <td class="font-tabular">@version.Value</td>
+                                <td>
+                                    <div class="version-bar">
+                                        <div class="version-bar-fill" style="width: @(percentage)%"></div>
+                                        <span>@percentage.ToString("F1")%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>Total</td>
+                            <td class="font-tabular">@TotalDownloads</td>
+                            <td>100%</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string ModId { get; set; }
+    
+    [Parameter]
+    public string Title { get; set; } = "STATISTIQUES DE TÉLÉCHARGEMENT";
+    
+    [Parameter]
+    public bool Compact { get; set; } = false;
+    
+    [Parameter]
+    public string Width { get; set; }
+    
+    [Parameter]
+    public string Height { get; set; } = "300px";
+    
+    [Parameter]
+    public bool ShowVersionBreakdown { get; set; } = true;
+    
+    [Parameter]
+    public EventCallback<Dictionary<string, int>> OnDataLoaded { get; set; }
+    
+    private string Id { get; set; } = Guid.NewGuid().ToString();
+    private bool IsLoading = true;
+    private string Error;
+    private bool NoData => DailyData.Count == 0;
+    private Dictionary<DateTime, int> DailyData = new Dictionary<DateTime, int>();
+    private Dictionary<string, int> VersionData = new Dictionary<string, int>();
+    private int TotalDownloads = 0;
+    private int SelectedDays = 30;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    // La configuration du graphique sera gérée via JS Interop dans une implementation réelle
+
+    private async Task LoadData()
+    {
+        try
+        {
+            IsLoading = true;
+            Error = null;
+            DailyData.Clear();
+            VersionData.Clear();
+            
+            // Mise à jour du graphique
+            await InvokeAsync(StateHasChanged);
+            
+            var endDate = DateTime.Now;
+            var startDate = endDate.AddDays(-SelectedDays);
+            
+            // Note: Nous n'avons pas de surcharge avec dates de début/fin, donc on utilise la version simple
+            var response = await ModService.GetModDownloadStatisticsAsync(ModId);
+            
+            if (response.Success && response.Data != null)
+            {
+                DailyData = response.Data.DailyDownloads;
+                VersionData = response.Data.VersionDownloads;
+                TotalDownloads = response.Data.TotalDownloads;
+                
+                UpdateChart();
+                
+                await OnDataLoaded.InvokeAsync(VersionData);
+            }
+            else
+            {
+                Error = response.Message ?? "Une erreur est survenue lors du chargement des statistiques";
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = $"Erreur: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void UpdateChart()
+    {
+        // Dans une implémentation réelle, nous utiliserions JS Interop pour mettre à jour le graphique
+        // avec les données de DailyData
+    }
+
+    private async Task ChangeTimeRange(int days)
+    {
+        if (SelectedDays != days)
+        {
+            SelectedDays = days;
+            await LoadData();
+        }
+    }
+    
+    private string GetTimeRangeButtonClass(string range)
+    {
+        string baseClass = "btn btn-sm ";
+        
+        return baseClass + (
+            (range == "7d" && SelectedDays == 7) || 
+            (range == "30d" && SelectedDays == 30) || 
+            (range == "90d" && SelectedDays == 90) || 
+            (range == "365d" && SelectedDays == 365)
+            ? "btn-primary" : "btn-outline-secondary"
+        );
+    }
+}

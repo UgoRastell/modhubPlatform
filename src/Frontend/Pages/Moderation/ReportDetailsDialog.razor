@@ -1,0 +1,152 @@
+@using Frontend.Models.Moderation
+@using MudBlazor
+@inject NavigationManager NavigationManager
+
+<MudDialog>
+    <DialogContent>
+        <MudCard Elevation="0">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Détails du signalement</MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(Report.Status)">
+                        @Report.Status.ToString()
+                    </MudChip>
+                    <MudChip T="string" Size="Size.Small" Color="@GetPriorityColor(Report.Priority)">
+                        @Report.Priority.ToString()
+                    </MudChip>
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudText Typo="Typo.subtitle2">ID du signalement</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-2">@Report.Id</MudText>
+                        
+                        <MudText Typo="Typo.subtitle2">Type de contenu</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-2">@Report.ContentType.ToString()</MudText>
+                        
+                        <MudText Typo="Typo.subtitle2">ID du contenu</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-2">@Report.ContentId</MudText>
+                        
+                        <MudText Typo="Typo.subtitle2">Raison du signalement</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-2">@Report.Reason.ToString()</MudText>
+                    </MudItem>
+                    
+                    <MudItem xs="12" md="6">
+                        <MudText Typo="Typo.subtitle2">Date de création</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-2">@Report.CreatedAt.ToString("dd/MM/yyyy HH:mm")</MudText>
+                        
+                        <MudText Typo="Typo.subtitle2">Signalé par</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-2">@Report.ReportedByUsername</MudText>
+                        
+                        <MudText Typo="Typo.subtitle2">Créateur du contenu</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-2">@Report.ContentCreatorUsername</MudText>
+                        
+                        @if (!string.IsNullOrEmpty(Report.ModeratorUsername))
+                        {
+                            <MudText Typo="Typo.subtitle2">Dernière action par</MudText>
+                            <MudText Typo="Typo.body2" Class="mb-2">@Report.ModeratorUsername (@Report.StatusUpdatedAt?.ToString("dd/MM/yyyy HH:mm"))</MudText>
+                        }
+                    </MudItem>
+                    
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.subtitle2">Description du signalement</MudText>
+                        <MudPaper Elevation="0" Class="pa-2 my-2" Style="background-color: var(--mud-palette-surface-darken);">
+                            <MudText Typo="Typo.body2">@Report.Description</MudText>
+                        </MudPaper>
+                        
+                        <MudText Typo="Typo.subtitle2" Class="mt-3">Extrait du contenu signalé</MudText>
+                        <MudPaper Elevation="0" Class="pa-2 my-2" Style="background-color: var(--mud-palette-surface-darken);">
+                            <MudText Typo="Typo.body2">@(string.IsNullOrEmpty(Report.ContentSnippet) ? "Non disponible" : Report.ContentSnippet)</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    
+                    @if (!string.IsNullOrEmpty(Report.ModeratorNotes))
+                    {
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle2" Class="mt-3">Notes du modérateur</MudText>
+                            <MudPaper Elevation="0" Class="pa-2 my-2" Style="background-color: var(--mud-palette-surface-darken);">
+                                <MudText Typo="Typo.body2">@Report.ModeratorNotes</MudText>
+                            </MudPaper>
+                        </MudItem>
+                    }
+                    
+                    @if (Report.Action.HasValue)
+                    {
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle2" Class="mt-3">Action prise</MudText>
+                            <MudChip T="string" Color="Color.Warning" Size="Size.Small" Class="mt-2">
+                                @Report.Action.Value.ToString()
+                            </MudChip>
+                        </MudItem>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(Report.ContentUrl))
+                    {
+                        <MudItem xs="12">
+                            <MudButton Variant="Variant.Outlined" 
+                                     Color="Color.Primary" 
+                                     StartIcon="@Icons.Material.Filled.OpenInNew"
+                                     OnClick="ViewContent"
+                                     Class="mt-3">
+                                Voir le contenu signalé
+                            </MudButton>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Close()">Fermer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public ContentReport Report { get; set; } = new();
+    
+    private Color GetStatusColor(ReportStatus status)
+    {
+        return status switch
+        {
+            ReportStatus.Pending => Color.Warning,
+            ReportStatus.InReview => Color.Info,
+            ReportStatus.Resolved => Color.Success,
+            ReportStatus.Rejected => Color.Error,
+            ReportStatus.Duplicate => Color.Default,
+            _ => Color.Default
+        };
+    }
+    
+    private Color GetPriorityColor(ReportPriority priority)
+    {
+        return priority switch
+        {
+            ReportPriority.Critical => Color.Error,
+            ReportPriority.High => Color.Warning,
+            ReportPriority.Medium => Color.Info,
+            ReportPriority.Low => Color.Success,
+            _ => Color.Default
+        };
+    }
+    
+    private void ViewContent()
+    {
+        if (!string.IsNullOrEmpty(Report.ContentUrl))
+        {
+            // Si c'est une URL interne
+            if (!Report.ContentUrl.StartsWith("http"))
+            {
+                NavigationManager.NavigateTo(Report.ContentUrl);
+            }
+            else
+            {
+                // URL externe
+                NavigationManager.NavigateTo(Report.ContentUrl, true);
+            }
+        }
+    }
+}

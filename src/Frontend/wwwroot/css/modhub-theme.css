@@ -1,0 +1,380 @@
+:root {
+    /* Palette de couleurs principale */
+    --main-bg-color: #1b1f27;
+    --secondary-bg-color: #232634;
+    --primary-accent: #00aaff;
+    --secondary-accent: #25e398;
+    --error-color: #ff3b3b;
+    --warning-color: #ffc857;
+    --primary-text: #f5f7fa;
+    --secondary-text: #a7b2c2;
+    --border-color: #2f3441;
+    
+    /* Variables MudBlazor custom */
+    --mud-palette-black: #000000;
+    --mud-palette-white: #ffffff;
+    --mud-palette-primary: var(--primary-accent);
+    --mud-palette-primary-hover: var(--secondary-accent);
+    --mud-palette-primary-text: var(--primary-text);
+    --mud-palette-secondary: var(--secondary-accent);
+    --mud-palette-secondary-hover: #1fc587;
+    --mud-palette-secondary-text: var(--primary-text);
+    --mud-palette-tertiary: #7d6eff;
+    --mud-palette-tertiary-hover: #6857e0;
+    --mud-palette-tertiary-text: var(--primary-text);
+    
+    /* Couleurs de surface */
+    --mud-palette-surface: var(--secondary-bg-color);
+    --mud-palette-background: var(--main-bg-color);
+    --mud-palette-drawer-background: var(--secondary-bg-color);
+    --mud-palette-app-bar-background: var(--main-bg-color);
+    
+    /* Couleurs de texte */
+    --mud-palette-text-primary: var(--primary-text);
+    --mud-palette-text-secondary: var(--secondary-text);
+    
+    /* Couleurs d'erreur et d'alerte */
+    --mud-palette-error: var(--error-color);
+    --mud-palette-warning: var(--warning-color);
+    --mud-palette-success: var(--secondary-accent);
+    --mud-palette-info: var(--primary-accent);
+    
+    /* Police */
+    --mud-typography-default-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
+    --mud-typography-default-size: 1rem;
+    --mud-typography-default-weight: 400;
+    
+    /* Elevations */
+    --mud-elevation-0: none;
+    --mud-elevation-1: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14);
+    --mud-elevation-4: 0px 4px 8px -2px rgba(0, 0, 0, 0.2), 0px 6px 12px 2px rgba(0, 0, 0, 0.14);
+    --mud-elevation-8: 0px 8px 16px -4px rgba(0, 0, 0, 0.2), 0px 12px 20px 4px rgba(0, 0, 0, 0.14);
+    
+    /* Arrondis */
+    --mud-default-borderradius: 8px;
+    --mud-card-border-radius: 16px;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
+    background-color: var(--main-bg-color);
+    color: var(--primary-text);
+    margin: 0;
+    padding: 0;
+}
+
+/* Style global pour tous les éléments MudBlazor */
+.mud-typography-root {
+    font-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
+}
+
+/* Style des boutons */
+.mud-button {
+    border-radius: 8px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.mud-button-filled.mud-button-filled-primary {
+    background-color: var(--primary-accent);
+    color: white;
+}
+
+.mud-button-filled.mud-button-filled-primary:hover {
+    background-color: var(--secondary-accent);
+    box-shadow: 0 4px 16px rgba(0, 170, 255, 0.4);
+}
+
+.mud-button-outlined.mud-button-outlined-primary {
+    color: var(--primary-accent);
+    border-color: var(--primary-accent);
+}
+
+.mud-button-outlined.mud-button-outlined-primary:hover {
+    background-color: rgba(0, 170, 255, 0.1);
+}
+
+/* Style des cartes */
+.mud-card {
+    background-color: var(--secondary-bg-color);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.mud-card-header {
+    padding: 1.5rem 1.5rem 0.5rem;
+}
+
+.mud-card-content {
+    padding: 0.5rem 1.5rem 1rem;
+}
+
+.mud-card-actions {
+    padding: 0.5rem 1.5rem 1.5rem;
+}
+
+/* Style des inputs */
+.mud-input {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.mud-input-outlined-border {
+    border-color: var(--border-color);
+}
+
+.mud-input:focus-within .mud-input-outlined-border {
+    border-color: var(--primary-accent);
+}
+
+.mud-input-error .mud-input-outlined-border {
+    border-color: var(--error-color) !important;
+}
+
+/* Style des appbars et drawers */
+.mud-appbar {
+    background-color: var(--main-bg-color);
+}
+
+.mud-drawer {
+    background-color: var(--secondary-bg-color);
+    color: var(--primary-text);
+}
+
+.mud-drawer-item {
+    color: var(--secondary-text);
+}
+
+.mud-drawer-item.mud-drawer-item-active {
+    background-color: rgba(0, 170, 255, 0.1);
+    color: var(--primary-accent);
+}
+
+.mud-drawer-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Style du tableau */
+.mud-table {
+    background-color: var(--secondary-bg-color);
+    color: var(--primary-text);
+}
+
+.mud-table-container {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.mud-table-head {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.mud-table-cell {
+    color: var(--primary-text);
+}
+
+/* Style des badges */
+.mud-badge-dot {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+}
+
+/* Style spécifique pour les composants de mod */
+.mod-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.mod-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 170, 255, 0.2);
+}
+
+/* Style de la pagination */
+.mud-pagination {
+    margin-top: 2rem;
+}
+
+.mud-pagination-item.mud-pagination-item-selected {
+    background-color: var(--primary-accent);
+    color: white;
+}
+
+/* Style du feedback utilisateur */
+.mud-alert {
+    border-radius: 12px;
+}
+
+.mud-alert-severity-success {
+    background-color: rgba(37, 227, 152, 0.15);
+}
+
+.mud-alert-severity-error {
+    background-color: rgba(255, 59, 59, 0.15);
+}
+
+.mud-alert-severity-warning {
+    background-color: rgba(255, 200, 87, 0.15);
+}
+
+.mud-alert-severity-info {
+    background-color: rgba(0, 170, 255, 0.15);
+}
+
+/* Style des écrans de chargement */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    background-color: var(--main-bg-color);
+}
+
+.loading-logo {
+    margin-bottom: 2rem;
+}
+
+.loading-logo img {
+    max-width: 200px;
+}
+
+.loading-progress {
+    width: 300px;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.loading-progress-bar {
+    height: 100%;
+    width: 30%;
+    background-color: var(--primary-accent);
+    border-radius: 2px;
+    animation: loading 1.5s infinite ease-in-out;
+}
+
+.loading-text {
+    color: var(--secondary-text);
+    font-size: 1rem;
+}
+
+@keyframes loading {
+    0% {
+        width: 0%;
+        margin-left: 0;
+    }
+    50% {
+        width: 30%;
+        margin-left: 70%;
+    }
+    100% {
+        width: 0%;
+        margin-left: 0;
+    }
+}
+
+/* Messages d'erreurs Blazor */
+#blazor-error-ui {
+    background-color: var(--error-color);
+    color: white;
+    bottom: 0;
+    box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 1rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+    text-align: center;
+}
+
+#blazor-error-ui a {
+    color: white;
+    text-decoration: underline;
+    margin: 0 0.5rem;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    margin-left: 1rem;
+}
+
+/* Style spécifique pour le menu de navigation */
+.mud-drawer {
+    background-color: var(--secondary-bg-color);
+    border-right: 1px solid var(--border-color);
+}
+
+.mud-drawer .mud-navmenu.mud-navmenu-bordered {
+    border: none;
+}
+
+.mud-drawer .mud-navmenu {
+    color: var(--primary-text);
+}
+
+.mud-nav-link {
+    border-radius: 8px;
+    margin: 0 0.5rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.mud-nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.mud-nav-link.active {
+    background-color: rgba(0, 170, 255, 0.1);
+    color: var(--primary-accent);
+    font-weight: 500;
+}
+
+.mud-nav-link.active .mud-nav-link-icon {
+    color: var(--primary-accent);
+}
+
+.mud-nav-group > .mud-nav-link {
+    font-weight: 500;
+}
+
+/* Style pour l'AppBar */
+.mud-appbar {
+    background-color: var(--secondary-bg-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.mud-appbar-dense {
+    height: 60px;
+}
+
+/* Styles pour les avatars */
+.mud-avatar {
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.mud-avatar:hover {
+    border-color: var(--primary-accent);
+}
+
+.mud-drawer .mud-avatar {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Style pour le contenu principal */
+.mud-main-content {
+    background-color: var(--main-bg-color);
+    min-height: calc(100vh - 60px);
+    padding-top: 60px;
+}
+
+.mud-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}

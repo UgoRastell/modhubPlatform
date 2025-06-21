@@ -1,0 +1,65 @@
+@inherits LayoutComponentBase
+@using Frontend.Theme
+@using Frontend.Components.Layout
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<div class="page">
+    <MudThemeProvider Theme="ModsGamingTheme.GetTheme()" />
+    <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Medium" CloseButton="true" DisableBackdropClick="true"
+                    CloseOnEscapeKey="true" Position="DialogPosition.Center" />
+    <MudSnackbarProvider />
+    
+    <!-- Import CSS for AppBar -->
+    <link href="css/app-bar.css" rel="stylesheet" />
+    
+    <MudLayout>
+        <!-- Nouvelle AppBar customisée -->
+        <AppBar />
+        
+        <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="@DrawerVariant.Responsive">
+            <MudDrawerHeader>
+                <MudText Typo="Typo.h6">ModsGamingPlatform</MudText>
+            </MudDrawerHeader>
+            
+            <Frontend.Layout.MainNavMenu />
+        </MudDrawer>
+        
+        <MudMainContent Class="pt-16">
+            <MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+                @Body
+            </MudContainer>
+            
+            <MudAppBar Bottom="true" Elevation="1" Dense="true" Style="z-index: 0;">
+                <MudContainer MaxWidth="MaxWidth.Large">
+                    <div class="d-flex justify-space-between align-center">
+                        <MudText Typo="Typo.caption">
+                            @DateTime.Now.Year ModsGamingPlatform - Tous droits réservés
+                        </MudText>
+                        <div>
+                            <MudLink Href="/privacy-policy" Typo="Typo.caption" Class="mx-2">Politique de confidentialité</MudLink>
+                            <MudLink Href="/terms" Typo="Typo.caption" Class="mx-2">Conditions d'utilisation</MudLink>
+                            <MudLink Href="/contact" Typo="Typo.caption" Class="mx-2">Contact</MudLink>
+                        </div>
+                    </div>
+                </MudContainer>
+            </MudAppBar>
+        </MudMainContent>
+    </MudLayout>
+</div>
+
+@code {
+    private bool _drawerOpen = true;
+    
+    private void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+    
+    private async Task Logout()
+    {
+        await AuthService.Logout();
+        NavigationManager.NavigateTo("/");
+    }
+}

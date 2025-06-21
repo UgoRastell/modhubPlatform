@@ -1,0 +1,240 @@
+{
+  "GlobalConfiguration": {
+    "BaseUrl": "https://localhost:5000",
+    "RequestIdKey": "RequestId",
+    "DownstreamScheme": "http",
+    "RateLimitOptions": {
+      "DisableRateLimitHeaders": false,
+      "QuotaExceededMessage": "Rate limit exceeded. Please try again later.",
+      "HttpStatusCode": 429
+    },
+    "QoSOptions": {
+      "ExceptionsAllowedBeforeBreaking": 3,
+      "DurationOfBreak": 10000,
+      "TimeoutValue": 5000
+    },
+    "Caching": {
+      "TtlSeconds": 15
+    }
+  },
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "usersservice",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/auth/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 10
+      },
+      "FileCacheOptions": {
+        "TtlSeconds": 0
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/passwordreset/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "usersservice",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/passwordreset/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT" ],
+      "FileCacheOptions": {
+        "TtlSeconds": 0
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/users/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "profileservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/users/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 5
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/mods/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "modservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/mods/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 10
+      },
+      "FileCacheOptions": {
+        "TtlSeconds": 30
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/files/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "fileservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/files/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "FileCacheOptions": {
+        "TtlSeconds": 0
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/comments/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "commentservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/comments/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/payments/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "paymentservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/payments/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "FileCacheOptions": {
+        "TtlSeconds": 0
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/webhooks/stripe/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "paymentservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/webhooks/stripe/{everything}",
+      "UpstreamHttpMethod": [ "POST" ],
+      "FileCacheOptions": {
+        "TtlSeconds": 0
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/notifications/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "notificationservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/notifications/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/admin/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "adminservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/admin/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [ "admin" ]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/search",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "searchservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/search",
+      "UpstreamHttpMethod": [ "GET" ],
+      "FileCacheOptions": {
+        "TtlSeconds": 15
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/metrics",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyticsservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/metrics",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [ "admin" ]
+      }
+    }
+  ]
+}

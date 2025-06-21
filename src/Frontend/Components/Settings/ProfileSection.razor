@@ -1,0 +1,207 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@using MudBlazor
+@inject ISnackbar Snackbar
+
+<MudCard Class="settings-card mb-4">
+    <EditForm Model="@profile" OnValidSubmit="SaveProfileChanges">
+        <DataAnnotationsValidator />
+        <MudCardHeader>
+            <MudText Typo="Typo.h5">Profil</MudText>
+        </MudCardHeader>
+        
+        <MudCardContent>
+            <MudGrid>
+                <MudItem xs="12" md="4" Class="d-flex justify-center align-center flex-column">
+                    <MudAvatar Style="height: 96px; width: 96px; font-size: 42px;" Class="mb-3">
+                        @if (string.IsNullOrEmpty(profile.AvatarUrl))
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Person" />
+                        }
+                        else
+                        {
+                            <MudImage Src="@profile.AvatarUrl" Alt="Avatar" />
+                        }
+                    </MudAvatar>
+                    
+                    <InputFile id="fileInput" OnChange="UploadAvatar" accept=".jpg,.jpeg,.png" style="display:none" />
+                    <MudButton HtmlTag="label"
+                              Variant="Variant.Outlined"
+                              Color="Color.Primary"
+                              StartIcon="@Icons.Material.Filled.CloudUpload"
+                              for="fileInput">
+                        Changer l'avatar
+                    </MudButton>
+
+                    <MudText Typo="Typo.caption" Class="mt-1">JPG ou PNG, max 2MB</MudText>
+                </MudItem>
+                
+                <MudItem xs="12" md="8">
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="profile.Username" 
+                                         Label="Pseudo" 
+                                         Variant="Variant.Outlined"
+                                         Required="true"
+                                         Counter="32"
+                                         HelperText="Entre 3 et 32 caractères, doit être unique" />
+                            <ValidationMessage For="@(() => profile.Username)" />
+                        </MudItem>
+                        
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="profile.Bio" 
+                                         Label="Biographie" 
+                                         Variant="Variant.Outlined"
+                                         Counter="280"
+                                         Placeholder="Parlez de vous en quelques mots..."
+                                         Lines="3"
+                                         HelperText="Markdown limité autorisé (**, _, ``, liens)" />
+                            <ValidationMessage For="@(() => profile.Bio)" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="profile.SocialLinks.Discord" 
+                                         Label="Discord" 
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start" 
+                                         AdornmentIcon="@Icons.Material.Filled.Chat"
+                                         Placeholder="Nom_utilisateur#0000" />
+                        </MudItem>
+                        
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="profile.SocialLinks.Youtube" 
+                                         Label="YouTube" 
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start" 
+                                         AdornmentIcon="@Icons.Material.Filled.VideoLibrary"
+                                         Placeholder="votre chaîne" />
+                        </MudItem>
+                                                
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="profile.SocialLinks.Twitch" 
+                                         Label="Twitch" 
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start" 
+                                         AdornmentIcon="@Icons.Material.Filled.Videocam"
+                                         Placeholder="votre pseudo" />
+                        </MudItem>
+                        
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="profile.SocialLinks.Website" 
+                                         Label="Site web" 
+                                         Variant="Variant.Outlined"
+                                         Adornment="Adornment.Start" 
+                                         AdornmentIcon="@Icons.Material.Filled.Language"
+                                         Placeholder="https://..." />
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+        
+        <MudCardActions Class="pb-4 px-4 d-flex justify-end">
+            <MudButton ButtonType="ButtonType.Submit"
+                      Variant="Variant.Filled"
+                      Color="Color.Primary"
+                      Size="Size.Medium"
+                      Class="px-6"
+                      Disabled="@isSaving">
+                @if (isSaving)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Enregistrement...</MudText>
+                }
+                else
+                {
+                    <MudText>Enregistrer</MudText>
+                }
+            </MudButton>
+        </MudCardActions>
+    </EditForm>
+</MudCard>
+
+@code {
+    private ProfileModel profile = new();
+    private bool isSaving = false;
+
+    protected override void OnInitialized()
+    {
+        // Here we would typically load the profile data from the API
+        // For demonstration, let's populate with mock data
+        profile = new ProfileModel
+        {
+            Username = "ModSuperUser",
+            Bio = "Amateur de jeux indépendants et créateur de mods depuis 2018. Spécialisé dans les mods de graphismes et d'UI.",
+            AvatarUrl = "",
+            SocialLinks = new SocialLinks
+            {
+                Discord = "ModSuper#1234",
+                Youtube = "ModSuperChannel",
+                Twitch = "modsuperstreamer",
+                Website = "https://modsupersite.com"
+            }
+        };
+    }
+
+    private async Task UploadAvatar(InputFileChangeEventArgs e)
+    {
+        if (e.File != null)
+        {
+            // Here we would typically upload the file to an API
+            // For demonstration purposes, we'll just simulate a successful upload
+            
+            // Simulate upload processing
+            await Task.Delay(1000);
+            
+            // Update the avatar URL (would come from the API response in real implementation)
+            profile.AvatarUrl = "https://example.com/avatar.jpg"; // Mock URL
+            
+            Snackbar.Add("Avatar mis à jour avec succès", Severity.Success);
+        }
+    }
+
+    private async Task SaveProfileChanges()
+    {
+        isSaving = true;
+        
+        try
+        {
+            // Here we would typically save the profile to an API
+            // Simulate API call
+            await Task.Delay(1000);
+            
+            Snackbar.Add("Profil mis à jour avec succès", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    public class ProfileModel
+    {
+        [Required(ErrorMessage = "Le pseudo est requis")]
+        [StringLength(32, MinimumLength = 3, ErrorMessage = "Le pseudo doit contenir entre 3 et 32 caractères")]
+        public string Username { get; set; }
+        
+        [StringLength(280, ErrorMessage = "La biographie ne peut pas dépasser 280 caractères")]
+        public string Bio { get; set; }
+        
+        public string AvatarUrl { get; set; }
+        
+        public SocialLinks SocialLinks { get; set; } = new SocialLinks();
+    }
+
+    public class SocialLinks
+    {
+        public string Discord { get; set; }
+        public string Youtube { get; set; }
+        public string Twitch { get; set; }
+        public string Website { get; set; }
+    }
+}

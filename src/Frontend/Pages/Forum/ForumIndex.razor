@@ -1,0 +1,259 @@
+@page "/forum"
+@using Frontend.Services.Forum
+@using Frontend.Models.Forum
+@using System.Threading
+@inject IForumService ForumService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Forum - ModsGamingPlatform</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
+    <MudGrid>
+        <MudItem xs="12">
+            <div class="d-flex justify-space-between align-center mb-4">
+                <div>
+                    <MudText Typo="Typo.h4">Forum ModsGamingPlatform</MudText>
+                    <MudText Typo="Typo.body2" Class="mt-1">
+                        Discutez des mods, partagez vos expériences et découvrez les dernières nouvelles de la communauté
+                    </MudText>
+                </div>
+                <div>
+                    <MudButton StartIcon="@Icons.Material.Filled.Add" 
+                              Variant="Variant.Filled" 
+                              Color="Color.Primary"
+                              Href="/forum/new-topic"
+                              Class="ml-2">
+                        Nouveau sujet
+                    </MudButton>
+                </div>
+            </div>
+            
+            @if (_loading)
+            {
+                <div class="d-flex justify-center my-8">
+                    <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else
+            {
+                <MudPaper Elevation="3" Class="pa-4 mb-4">
+                    <div class="d-flex mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-3" />
+                        <MudTextField @bind-Value="_searchQuery" 
+                                    Placeholder="Rechercher dans le forum..." 
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.End" 
+                                    AdornmentIcon="@Icons.Material.Filled.Search"
+                                    AdornmentColor="Color.Primary" 
+                                    OnAdornmentClick="HandleSearch"
+                                    OnKeyDown="@(e => { if(e.Key == "Enter") { HandleSearch(); }})"
+                                    Class="flex-grow-1" />
+                    </div>
+                    
+                    <div class="d-flex flex-wrap">
+                        @foreach (var tag in _popularTags)
+                        {
+                            <MudChip T="string" Color="Color.Primary" 
+                                   Size="Size.Small" 
+                                   Label="true" 
+                                   OnClick="@(() => HandleTagSearch(tag))"
+                                   Class="ma-1">
+                                @tag
+                            </MudChip>
+                        }
+                    </div>
+                </MudPaper>
+
+                @if (_categories.Count == 0)
+                {
+                    <MudAlert Severity="Severity.Info" Class="my-4">
+                        Aucune catégorie de forum n'a été créée pour le moment.
+                    </MudAlert>
+                }
+                else
+                {
+                    @foreach (var category in _categories.OrderBy(c => c.Name))
+                    {
+                        <MudCard Elevation="2" Class="mb-4">
+                            <MudCardHeader>
+                                <CardHeaderAvatar>
+                                    @if (!string.IsNullOrEmpty(category.IconName))
+                                    {
+                                        <MudIcon Icon="@category.IconName" Color="Color.Primary" />
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.Forum" Color="Color.Primary" />
+                                    }
+                                </CardHeaderAvatar>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudLink Href="@($"/forum/category/{category.Id}")">@category.Name</MudLink>
+                                    </MudText>
+                                    <MudText Typo="Typo.body2">@category.Description</MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@category.TopicsCount sujets</MudChip>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@category.PostsCount messages</MudChip>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            
+                            @if (category.Topics.Any())
+                            {
+                                <MudDivider />
+                                <MudCardContent>
+                                    <MudText Typo="Typo.subtitle2" Class="mb-2">Sujets récents</MudText>
+                                    <div class="d-flex flex-column">
+                                        @foreach (var topic in category.Topics.Take(3))
+                                        {
+                                            <div class="d-flex align-start mb-2">
+                                                <MudAvatar Size="Size.Small" Class="mr-2 mt-1" Color="Color.Secondary">
+                                                    @(topic.AuthorName?.FirstOrDefault() ?? 'U')
+                                                </MudAvatar>
+                                                <div>
+                                                    <MudText Typo="Typo.body1">
+                                                        <MudLink Href="@($"/forum/topics/{topic.Id}")">
+                                                            @topic.Title
+                                                            @if (topic.IsPinned)
+                                                            {
+                                                                <MudIcon Icon="@Icons.Material.Filled.PushPin" Size="Size.Small" Class="mud-text-primary ml-1" />
+                                                            }
+                                                            @if (topic.IsLocked)
+                                                            {
+                                                                <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" Class="mud-text-secondary ml-1" />
+                                                            }
+                                                        </MudLink>
+                                                    </MudText>
+                                                    <MudText Typo="Typo.caption">
+                                                        Par <MudLink Href="@($"/profile/{topic.AuthorId}")">@topic.AuthorName</MudLink>
+                                                        • @topic.PostCount réponses • Dernière activité @FormatTimeAgo(topic.LastActivityAt)
+                                                    </MudText>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                    
+                                    @if (category.TopicsCount > 3)
+                                    {
+                                        <div class="d-flex justify-end mt-2">
+                                            <MudButton Variant="Variant.Text" 
+                                                     Color="Color.Primary"
+                                                     Href="@($"/forum/category/{category.Id}")">
+                                                Voir tous les @category.TopicsCount sujets
+                                            </MudButton>
+                                        </div>
+                                    }
+                                </MudCardContent>
+                            }
+                        </MudCard>
+                    }
+                }
+                
+                <MudPaper Elevation="2" Class="pa-4 mt-6">
+                    <MudText Typo="Typo.h6" Class="mb-3">Statistiques du forum</MudText>
+                    <MudGrid>
+                        <MudItem xs="12" md="4">
+                            <MudText Typo="Typo.subtitle1">@_forumStats.TotalCategories catégories</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudText Typo="Typo.subtitle1">@_forumStats.TotalTopics sujets</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudText Typo="Typo.subtitle1">@_forumStats.TotalPosts messages</MudText>
+                        </MudItem>
+                    </MudGrid>
+                    
+                    <MudDivider Class="my-3" />
+                    
+                    <div class="d-flex justify-space-between">
+                        <MudText Typo="Typo.body2">
+                            Membre le plus récent : <MudLink Href="@($"/profile/{_forumStats.NewestMemberId}")">@_forumStats.NewestMemberName</MudLink>
+                        </MudText>
+                        <MudText Typo="Typo.body2">
+                            En ligne : @_forumStats.OnlineUserCount utilisateurs et @_forumStats.OnlineGuestCount invités
+                        </MudText>
+                    </div>
+                </MudPaper>
+            }
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private List<ForumCategoryViewModel> _categories = new();
+    private List<string> _popularTags = new();
+    private ForumStatistics _forumStats = new ForumStatistics
+    {
+        MostActiveCategory = "Loading...",
+        MostActiveCategoryId = string.Empty,
+        MostActiveTopic = "Loading...",
+        MostActiveTopicId = string.Empty,
+        MostActiveUser = "Loading...",
+        MostActiveUserId = string.Empty,
+        NewestMemberId = string.Empty,
+        NewestMemberName = "Loading..."
+    };
+    private bool _loading = true;
+    private string _searchQuery = string.Empty;
+    private CancellationTokenSource _cts = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadForumData();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur de chargement du forum: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+    
+    private async Task LoadForumData()
+    {
+        _categories = await ForumService.GetAllCategoriesAsync();
+        _popularTags = await ForumService.GetPopularTagsAsync();
+        _forumStats = await ForumService.GetForumStatisticsAsync();
+    }
+    
+    private void HandleSearch()
+    {
+        if (!string.IsNullOrWhiteSpace(_searchQuery))
+        {
+            NavigationManager.NavigateTo($"/forum/search?q={Uri.EscapeDataString(_searchQuery)}");
+        }
+    }
+    
+    private void HandleTagSearch(string tag)
+    {
+        NavigationManager.NavigateTo($"/forum/search?tag={Uri.EscapeDataString(tag)}");
+    }
+    
+    private string FormatTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.UtcNow - dateTime;
+
+        if (timeSpan.TotalMinutes < 1)
+            return "à l'instant";
+        if (timeSpan.TotalMinutes < 60)
+            return $"il y a {(int)timeSpan.TotalMinutes} min";
+        if (timeSpan.TotalHours < 24)
+            return $"il y a {(int)timeSpan.TotalHours} h";
+        if (timeSpan.TotalDays < 7)
+            return $"il y a {(int)timeSpan.TotalDays} j";
+            
+        return dateTime.ToString("dd/MM/yyyy");
+    }
+    
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+}

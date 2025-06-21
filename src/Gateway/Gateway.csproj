@@ -7,7 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+    <PackageReference Include="Ocelot" Version="20.0.0" />
+    <PackageReference Include="Ocelot.Cache.CacheManager" Version="20.0.0" />
+    <PackageReference Include="Ocelot.Provider.Polly" Version="20.0.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.0" />
+    <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
+    <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="9.0.3" />
   </ItemGroup>
 
 </Project>

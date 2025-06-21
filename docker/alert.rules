@@ -1,0 +1,82 @@
+groups:
+- name: ModhubAlerts
+  rules:
+  # Alerte si un service tombe
+  - alert: ServiceDown
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Service {{ $labels.job }} est down"
+      description: "Le service {{ $labels.job }} est injoignable depuis plus de 1 minute."
+
+  # Alerte sur utilisation élevée de CPU
+  - alert: HighCPUUsage
+    expr: rate(process_cpu_seconds_total[5m]) * 100 > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Utilisation CPU élevée sur {{ $labels.job }}"
+      description: "{{ $labels.job }} utilise plus de 80% du CPU depuis 5 minutes."
+
+  # Alerte sur utilisation élevée de la mémoire
+  - alert: HighMemoryUsage
+    expr: process_resident_memory_bytes / 1024 / 1024 / 1024 > 1.5
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Utilisation mémoire élevée sur {{ $labels.job }}"
+      description: "{{ $labels.job }} utilise plus de 1.5 GB de mémoire depuis 5 minutes."
+
+  # Alerte sur taux d'erreurs HTTP
+  - alert: HighErrorRate
+    expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) by (job) / sum(rate(http_server_requests_seconds_count[5m])) by (job) > 0.05
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Taux d'erreur HTTP élevé sur {{ $labels.job }}"
+      description: "{{ $labels.job }} a un taux d'erreur HTTP 5xx supérieur à 5% depuis 2 minutes."
+
+  # Alerte sur latence HTTP élevée
+  - alert: HighLatency
+    expr: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (job, le)) > 1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Latence élevée sur {{ $labels.job }}"
+      description: "{{ $labels.job }} a une latence HTTP p95 supérieure à 1 seconde depuis 5 minutes."
+
+  # Alerte sur espace disque
+  - alert: LowDiskSpace
+    expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} * 100 < 10
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Espace disque faible sur {{ $labels.instance }}"
+      description: "{{ $labels.instance }} a moins de 10% d'espace disque disponible."
+
+  # Alerte sur connexions MongoDB
+  - alert: HighMongoDBConnections
+    expr: mongodb_connections{state="current"} > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Nombre de connexions MongoDB élevé"
+      description: "MongoDB a plus de 80 connexions actives depuis 5 minutes."
+
+  # Alerte sur utilisation élevée de Redis
+  - alert: RedisMemoryHigh
+    expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Utilisation mémoire Redis élevée"
+      description: "Redis utilise plus de 80% de la mémoire maximale allouée depuis 5 minutes."

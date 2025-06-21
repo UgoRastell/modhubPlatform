@@ -1,0 +1,335 @@
+@page "/catalog"
+@using Frontend.Models
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<PageTitle>Catalogue de mods - ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Catalogue de mods</MudText>
+    
+    <MudGrid>
+        <!-- Filtres (colonne de gauche) -->
+        <MudItem xs="12" md="3" Class="mb-4">
+            <MudPaper Class="pa-4 rounded-xl" Elevation="3" Style="background-color: #232634;">
+                <MudText Typo="Typo.h6" Class="mb-3">Filtres</MudText>
+                
+                <MudTextField @bind-Value="filter.SearchText" 
+                              Label="Rechercher" 
+                              Variant="Variant.Outlined" 
+                              Adornment="Adornment.End" 
+                              AdornmentIcon="@Icons.Material.Filled.Search" 
+                              Class="mb-4" />
+                
+                <MudText Typo="Typo.subtitle2" Class="mb-2">Jeux</MudText>
+                <MudSelect T="string" MultiSelection="true" Label="Sélectionnez un jeu" 
+                           Variant="Variant.Outlined" Class="mb-4"
+                           SelectedValues="selectedGames"
+                           SelectedValuesChanged="@((IEnumerable<string> values) => HandleGamesSelectionChanged(values))">
+                    @foreach (var game in games)
+                    {
+                        <MudSelectItem Value="@game.Id">@game.Name</MudSelectItem>
+                    }
+                </MudSelect>
+                
+                <MudText Typo="Typo.subtitle2" Class="mb-2">Tags</MudText>
+                <div class="d-flex flex-wrap gap-1 mb-4">
+                    @foreach (var tag in popularTags)
+                    {
+                        <MudChip T="string" Color="@(selectedTags.Contains(tag.Id) ? Color.Primary : Color.Default)" 
+                                OnClick="@(() => ToggleTag(tag.Id))" 
+                                Size="Size.Small" 
+                                Class="mb-1">
+                            @tag.Name (@tag.ModCount)
+                        </MudChip>
+                    }
+                </div>
+                
+                <MudDivider Class="my-4" />
+                
+                <MudText Typo="Typo.subtitle2" Class="mb-2">Options</MudText>
+                <MudCheckBox T="bool" @bind-Checked="filter.ShowPremiumOnly" 
+                             Color="Color.Secondary" 
+                             Label="Mods premium uniquement" 
+                             Class="mb-2" />
+                <MudCheckBox T="bool" @bind-Checked="filter.ShowNewOnly" 
+                             Color="Color.Info" 
+                             Label="Nouveautés uniquement" 
+                             Class="mb-2" />
+                <MudCheckBox T="bool" @bind-Checked="filter.ShowPopularOnly" 
+                             Color="Color.Success" 
+                             Label="Populaires uniquement" 
+                             Class="mb-2" />
+                <MudCheckBox T="bool" @bind-Checked="filter.FavoritesOnly" 
+                             Color="Color.Error" 
+                             Label="Mes favoris uniquement" 
+                             Class="mb-2" />
+                
+                <MudDivider Class="my-4" />
+                
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           FullWidth="true" 
+                           OnClick="ApplyFilters"
+                           Class="filter-button mt-2">
+                    Appliquer les filtres
+                </MudButton>
+                
+                <MudButton Variant="Variant.Text" 
+                           Color="Color.Secondary" 
+                           FullWidth="true" 
+                           OnClick="ResetFilters"
+                           Class="mt-2">
+                    Réinitialiser
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+        
+        <!-- Contenu principal (colonne de droite) -->
+        <MudItem xs="12" md="9">
+            <!-- Barre d'outils (Tri, Vue grille/liste) -->
+            <MudPaper Class="pa-3 d-flex flex-column flex-sm-row gap-2 align-center rounded-xl mb-4" 
+                     Elevation="3"
+                     Style="background-color: #232634;">
+                <MudSelect T="SortOption" 
+                          @bind-Value="filter.SortBy"
+                          Label="Trier par" 
+                          AnchorOrigin="Origin.BottomCenter" 
+                          Dense="true"
+                          Class="flex-grow-1">
+                    <MudSelectItem Value="@(SortOption.Popularity)">Popularité</MudSelectItem>
+                    <MudSelectItem Value="@(SortOption.RecentlyUpdated)">Récemment mis à jour</MudSelectItem>
+                    <MudSelectItem Value="@(SortOption.NewReleases)">Nouveautés</MudSelectItem>
+                    <MudSelectItem Value="@(SortOption.TopRated)">Les mieux notés</MudSelectItem>
+                    <MudSelectItem Value="@(SortOption.MostDownloaded)">Les plus téléchargés</MudSelectItem>
+                    <MudSelectItem Value="@(SortOption.AlphabeticalAZ)">A-Z</MudSelectItem>
+                    <MudSelectItem Value="@(SortOption.AlphabeticalZA)">Z-A</MudSelectItem>
+                </MudSelect>
+                
+                <div class="d-flex gap-2 align-center">
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary d-none d-sm-block">Vue:</MudText>
+                    <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">
+                        <MudButton OnClick="@(() => viewMode = ViewMode.Grid)" 
+                                  Variant="@(viewMode == ViewMode.Grid ? Variant.Filled : Variant.Outlined)">
+                            <MudIcon Icon="@Icons.Material.Filled.GridView" Size="Size.Small" />
+                        </MudButton>
+                        <MudButton OnClick="@(() => viewMode = ViewMode.List)" 
+                                  Variant="@(viewMode == ViewMode.List ? Variant.Filled : Variant.Outlined)">
+                            <MudIcon Icon="@Icons.Material.Filled.ViewList" Size="Size.Small" />
+                        </MudButton>
+                    </MudButtonGroup>
+                </div>
+            </MudPaper>
+            
+            @if (isLoading)
+            {
+                <div class="d-flex justify-center my-8">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else if (mods.Count == 0)
+            {
+                <MudPaper Class="pa-6 text-center rounded-xl" Elevation="3" Style="background-color: #232634;">
+                    <MudIcon Icon="@Icons.Material.Filled.SentimentDissatisfied" Size="Size.Large" Class="mb-4" />
+                    <MudText Typo="Typo.h6">Aucun mod trouvé</MudText>
+                    <MudText Typo="Typo.body2" Class="mt-2">Essayez de modifier vos filtres ou d'effectuer une recherche différente.</MudText>
+                    <MudButton Variant="Variant.Text" 
+                               Color="Color.Primary"
+                               OnClick="ResetFilters"
+                               Class="mt-4">
+                        Réinitialiser les filtres
+                    </MudButton>
+                </MudPaper>
+            }
+            else
+            {
+                <!-- À compléter dans la partie 2 -->
+            }
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    /* Styles spécifiques pour la page catalogue */
+    ::deep .mud-input-control.mud-input-focused:not(.mud-input-error) .mud-input-border::after {
+        border-color: #00aaff !important;
+    }
+    
+    ::deep .mud-input-control.mud-input-focused:not(.mud-input-error) .mud-input-label.mud-input-label-inputcontrol {
+        color: #00aaff !important;
+    }
+    
+    .filter-button:hover {
+        box-shadow: 0 0 12px #00aaff80;
+        transform: translateY(-2px);
+    }
+    
+    .mod-card {
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .mod-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .premium-badge {
+        background: linear-gradient(45deg, #FFD700, #FFA500);
+        color: #000;
+    }
+    
+    .new-badge {
+        background: linear-gradient(45deg, #00aaff, #0077ff);
+    }
+    
+    .popular-badge {
+        background: linear-gradient(45deg, #25e398, #00cc66);
+    }
+</style>
+
+@code {
+    // Filtre et état de la page
+    private CatalogFilter filter = new() { SearchText = string.Empty };
+    private bool isLoading = false;
+    private HashSet<string> selectedGames = new();
+    private HashSet<string> selectedTags = new();
+    private List<ModItem> mods = new();
+    private ViewMode viewMode = ViewMode.Grid;
+    
+    // Options pour les sélecteurs
+    private List<GameOption> games = new()
+    {
+        new GameOption { Id = "game1", Name = "Minecraft" },
+        new GameOption { Id = "game2", Name = "Skyrim" },
+        new GameOption { Id = "game3", Name = "Fallout 4" },
+        new GameOption { Id = "game4", Name = "Stardew Valley" },
+        new GameOption { Id = "game5", Name = "The Sims 4" }
+    };
+    
+    private List<TagOption> popularTags = new()
+    {
+        new TagOption { Id = "tag1", Name = "Graphismes", ModCount = 125 },
+        new TagOption { Id = "tag2", Name = "Interface", ModCount = 87 },
+        new TagOption { Id = "tag3", Name = "Gameplay", ModCount = 204 },
+        new TagOption { Id = "tag4", Name = "Audio", ModCount = 56 },
+        new TagOption { Id = "tag5", Name = "Armes", ModCount = 98 },
+        new TagOption { Id = "tag6", Name = "Armures", ModCount = 76 },
+        new TagOption { Id = "tag7", Name = "Quêtes", ModCount = 42 },
+        new TagOption { Id = "tag8", Name = "Personnages", ModCount = 63 }
+    };
+    
+    // Méthodes de gestion des filtres
+    private void HandleGamesSelectionChanged(IEnumerable<string> values)
+    {
+        selectedGames.Clear();
+        foreach (var value in values)
+        {
+            selectedGames.Add(value);
+        }
+    }
+    
+    private void ToggleTag(string tagId)
+    {
+        if (selectedTags.Contains(tagId))
+            selectedTags.Remove(tagId);
+        else
+            selectedTags.Add(tagId);
+    }
+    
+    private void ApplyFilters()
+    {
+        isLoading = true;
+        // Simuler un chargement
+        // Dans une implémentation réelle, cela ferait un appel API
+        // LoadModsAsync(filter, selectedGames, selectedTags);
+        
+        // Pour la démonstration, on ajoute des mods factices après un délai
+        Task.Delay(500).ContinueWith(_ => 
+        {
+            LoadMockMods();
+            isLoading = false;
+            StateHasChanged();
+        });
+    }
+    
+    private void ResetFilters()
+    {
+        filter = new CatalogFilter() { SearchText = string.Empty };
+        selectedGames.Clear();
+        selectedTags.Clear();
+        ApplyFilters();
+    }
+    
+    private void LoadMockMods()
+    {
+        // Data de démonstration
+        mods = new List<ModItem>
+        {
+            new ModItem
+            {
+                Id = "mod1",
+                Name = "HD Texture Pack",
+                Description = "Pack de textures haute définition pour une expérience visuelle améliorée",
+                ThumbnailUrl = "images/mods/texture-pack.jpg",
+                Author = "ModCreator",
+                AuthorId = "user1",
+                DownloadCount = 15420,
+                Rating = 4.7,
+                IsPremium = true,
+                IsNew = false,
+                IsPopular = true,
+                GameName = "Skyrim",
+                GameId = "game2",
+                Tags = new List<string> { "tag1", "tag5" }
+            },
+            new ModItem
+            {
+                Id = "mod2",
+                Name = "Advanced Farming",
+                Description = "Ajoute des mécaniques de farming avancées et de nouveaux légumes",
+                ThumbnailUrl = "images/mods/farming-mod.jpg",
+                Author = "FarmSimLover",
+                AuthorId = "user2",
+                DownloadCount = 8750,
+                Rating = 4.9,
+                IsPremium = false,
+                IsNew = true,
+                IsPopular = true,
+                GameName = "Stardew Valley",
+                GameId = "game4",
+                Tags = new List<string> { "tag3" }
+            },
+            new ModItem
+            {
+                Id = "mod3",
+                Name = "Immersive Audio Overhaul",
+                Description = "Refonte complète des effets sonores et des musiques pour une immersion totale",
+                ThumbnailUrl = "images/mods/audio-mod.jpg",
+                Author = "SoundDesigner",
+                AuthorId = "user3",
+                DownloadCount = 6240,
+                Rating = 4.5,
+                IsPremium = false,
+                IsNew = false,
+                IsPopular = false,
+                GameName = "Fallout 4",
+                GameId = "game3",
+                Tags = new List<string> { "tag4" }
+            },
+        };
+    }
+    
+    protected override void OnInitialized()
+    {
+        // Charger les données initiales
+        LoadMockMods();
+    }
+    
+    // Utilisation de l'énumération SortOption définie dans CatalogModels.cs
+    
+    public enum ViewMode
+    {
+        Grid,
+        List
+    }
+}

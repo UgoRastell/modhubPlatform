@@ -1,0 +1,233 @@
+@inject ISnackbar Snackbar
+@inject MudTheme Theme
+
+<MudCard Class="settings-card mb-4">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <div class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Palette" Class="mr-2" />
+                <MudText Typo="Typo.h5">Interface</MudText>
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+    
+    <MudCardContent>
+        <MudText Class="mb-4">Personnalisez l'apparence de ModHub selon vos préférences.</MudText>
+        
+        <MudGrid>
+            <!-- Preview Card -->
+            <MudItem xs="12" md="5">
+                <MudPaper Elevation="0" Class="pa-4 rounded-lg mb-4" Style="background-color: #2f3441; min-height: 300px;">
+                    <MudText Typo="Typo.subtitle1" Class="mb-4">Aperçu</MudText>
+                    
+                    <div class="d-flex flex-column" style="gap: 16px;">
+                        <!-- Theme preview card -->
+                        <MudPaper Elevation="1" Class="pa-3 rounded-lg" Style="@GetThemePreviewStyle()">
+                            <MudText Typo="Typo.subtitle2" Style="@GetTextColorStyle()">Titre de la carte</MudText>
+                            <MudText Typo="Typo.body2" Style="@GetTextColorStyle()">
+                                Ceci est un aperçu du thème sélectionné avec la taille de police définie.
+                            </MudText>
+                            <div class="d-flex justify-space-between align-center mt-2">
+                                <MudChip T="string" Color="Color.Primary" Size="Size.Small" Style="@($"font-size: {fontSizeBase + 2}px;")">Étiquette</MudChip>
+                                <MudButton Variant="Variant.Filled" 
+                                          Color="Color.Primary" 
+                                          Size="Size.Small" 
+                                          Style="@($"font-size: {fontSizeBase - 2}px;")">
+                                    Action
+                                </MudButton>
+                            </div>
+                        </MudPaper>
+                        
+                        <!-- Navigation preview -->
+                        <MudNavMenu Style="@GetThemePreviewStyle()">
+                            <MudNavLink Icon="@Icons.Material.Filled.Home" Style="@GetTextColorStyle()">Accueil</MudNavLink>
+                            <MudNavLink Icon="@Icons.Material.Filled.Explore" Style="@GetTextColorStyle()">Explorer</MudNavLink>
+                            <MudNavLink Icon="@Icons.Material.Filled.Settings" Style="@GetTextColorStyle()">Paramètres</MudNavLink>
+                        </MudNavMenu>
+                    </div>
+                </MudPaper>
+            </MudItem>
+            
+            <!-- Settings -->
+            <MudItem xs="12" md="7">
+                <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background-color: #2f3441;">
+                    <MudText Typo="Typo.subtitle1" Class="mb-4">Thème</MudText>
+                    
+                    <div class="d-flex mb-6 flex-wrap" style="gap: 12px;">
+                        @{
+                            string lightTheme = "light";
+                        }
+                        <MudTooltip Text="Mode clair">
+                            <MudPaper Elevation="@(selectedTheme == "light" ? 3 : 1)" 
+                                     Class="pa-2 d-flex justify-center align-center" 
+                                     Style="@GetThemeButtonStyle(lightTheme)"
+                                     @onclick="() => SetTheme(lightTheme)">
+                                <MudIcon Icon="@Icons.Material.Filled.LightMode" />
+                            </MudPaper>
+                        </MudTooltip>
+                        
+                        @{
+                            string darkTheme = "dark";
+                        }
+                        <MudTooltip Text="Mode sombre">
+                            <MudPaper Elevation="@(selectedTheme == "dark" ? 3 : 1)" 
+                                     Class="pa-2 d-flex justify-center align-center" 
+                                     Style="@GetThemeButtonStyle(darkTheme)"
+                                     @onclick="() => SetTheme(darkTheme)">
+                                <MudIcon Icon="@Icons.Material.Filled.DarkMode" />
+                            </MudPaper>
+                        </MudTooltip>
+                        
+                        @{
+                            string systemTheme = "system";
+                        }
+                        <MudTooltip Text="Système">
+                            <MudPaper Elevation="@(selectedTheme == "system" ? 3 : 1)" 
+                                     Class="pa-2 d-flex justify-center align-center" 
+                                     Style="@GetThemeButtonStyle(systemTheme)"
+                                     @onclick="() => SetTheme(systemTheme)">
+                                <MudIcon Icon="@Icons.Material.Filled.SettingsBrightness" />
+                            </MudPaper>
+                        </MudTooltip>
+                    </div>
+                    
+                    <MudDivider Class="my-4" />
+                    
+                    <MudText Typo="Typo.subtitle1" Class="my-4">Langue</MudText>
+                    
+                    <MudSelect T="string" 
+                              @bind-Value="selectedLanguage"
+                              Label="Langue de l'interface" 
+                              Variant="Variant.Outlined" 
+                              AnchorOrigin="Origin.BottomCenter"
+                              Class="mb-6">
+                        <MudSelectItem Value="@("fr")">Français</MudSelectItem>
+                        <MudSelectItem Value="@("en")">English</MudSelectItem>
+                        <MudSelectItem Value="@("es")">Español</MudSelectItem>
+                        <MudSelectItem Value="@("de")">Deutsch</MudSelectItem>
+                    </MudSelect>
+                    
+                    <MudDivider Class="my-4" />
+                    
+                    <div class="my-4">
+                        <div class="d-flex justify-space-between align-center mb-2">
+                            <MudText Typo="Typo.subtitle1">Taille du texte</MudText>
+                            <MudText Typo="Typo.body2">@fontSizeBase px</MudText>
+                        </div>
+                        
+                        <MudSlider @bind-Value="fontSizeBase"
+                                  Min="12" Max="20" Step="1"
+                                  Color="Color.Primary">
+                            <ValueLabelContent>
+                                @($"{context}px")
+                            </ValueLabelContent>
+                        </MudSlider>
+                        
+                        <div class="d-flex justify-space-between mt-1">
+                            <MudText Typo="Typo.caption">A</MudText>
+                            <MudText Typo="Typo.h6">A</MudText>
+                        </div>
+                    </div>
+                    
+                    <MudDivider Class="my-4" />
+                    
+                    <div class="d-flex justify-space-between align-center my-4">
+                        <div>
+                            <MudText Typo="Typo.subtitle1">Animations réduites</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #a7b2c2;">Désactiver les animations pour améliorer l'accessibilité</MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Checked="reducedMotion" Color="Color.Primary" />
+                    </div>
+                    
+                    <MudDivider Class="my-4" />
+                    
+                    <div class="d-flex justify-end mt-4">
+                        <MudButton Variant="Variant.Filled"
+                                  Color="Color.Primary"
+                                  OnClick="SaveInterfaceSettings"
+                                  Disabled="@isSaving">
+                            @if (isSaving)
+                            {
+                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                <MudText Class="ms-2">Enregistrement...</MudText>
+                            }
+                            else
+                            {
+                                <MudText>Appliquer les changements</MudText>
+                            }
+                        </MudButton>
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private bool isSaving = false;
+    private string selectedTheme = "dark";
+    private string selectedLanguage = "fr";
+    private double fontSizeBase = 16;
+    private bool reducedMotion = false;
+    
+    private string GetThemePreviewStyle()
+    {
+        return selectedTheme switch
+        {
+            "light" => "background-color: #f5f5f5; border: 1px solid #e0e0e0;",
+            "dark" => "background-color: #232634; border: 1px solid #2f3441;",
+            _ => "background-color: #232634; border: 1px solid #2f3441;" // Default to dark
+        };
+    }
+    
+    private string GetTextColorStyle()
+    {
+        return selectedTheme switch
+        {
+            "light" => $"color: #1b1f27; font-size: {fontSizeBase}px;",
+            "dark" => $"color: #f5f7fa; font-size: {fontSizeBase}px;",
+            _ => $"color: #f5f7fa; font-size: {fontSizeBase}px;" // Default to dark
+        };
+    }
+    
+    private string GetThemeButtonStyle(string theme)
+    {
+        string baseStyle = "width: 48px; height: 48px; cursor: pointer; transition: all 0.2s ease;";
+        
+        if (theme == selectedTheme)
+        {
+            return $"{baseStyle} border: 2px solid #00aaff;";
+        }
+        
+        return $"{baseStyle} border: 1px solid #2f3441;";
+    }
+    
+    private void SetTheme(string theme)
+    {
+        selectedTheme = theme;
+    }
+    
+    private async Task SaveInterfaceSettings()
+    {
+        isSaving = true;
+        
+        try
+        {
+            // In real app we'd call API to save interface settings
+            await Task.Delay(1000);
+            
+            // In real app we'd apply theme changes here
+            
+            Snackbar.Add("Paramètres d'interface appliqués avec succès", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+}

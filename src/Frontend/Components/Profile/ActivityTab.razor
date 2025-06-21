@@ -1,0 +1,329 @@
+@using Frontend.Models
+@using System.Globalization
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudPaper Class="pa-4" Elevation="0">
+    @if (isLoading)
+    {
+        <div class="d-flex flex-column">
+            @for (int i = 0; i < 10; i++)
+            {
+                <div class="d-flex mb-4">
+                    <MudSkeleton SkeletonType="SkeletonType.Circle" Height="40px" Width="40px" Class="mr-3"/>
+                    <div style="flex-grow: 1;">
+                        <MudSkeleton SkeletonType="SkeletonType.Text" Width="60%" Height="20px" />
+                        <MudSkeleton SkeletonType="SkeletonType.Text" Width="40%" Class="mt-1" />
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else if (activities?.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info">Aucune activité récente à afficher</MudAlert>
+    }
+    else
+    {
+        <MudTimeline TimelinePosition="TimelinePosition.Start" TimelineOrientation="TimelineOrientation.Vertical">
+            @{
+                DateTime? lastDate = null;
+            }
+            
+            @foreach (var activity in activities!)
+            {
+                if (lastDate == null || !DateEqual(lastDate.Value, activity.Timestamp))
+                {
+                    <MudTimelineItem Color="Color.Dark" Size="Size.Small">
+                        <ItemDot>
+                            <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" />
+                        </ItemDot>
+                        <ItemContent>
+                            <MudText Typo="Typo.subtitle1" Class="mud-text-secondary">
+                                @FormatDateHeader(activity.Timestamp)
+                            </MudText>
+                        </ItemContent>
+                    </MudTimelineItem>
+                    
+                    lastDate = activity.Timestamp.Date;
+                }
+                
+                <MudTimelineItem Color="@activity.ColorClass" Size="Size.Medium" TimelineAlign="TimelineAlign.Start">
+                    <ItemDot>
+                        <MudIcon Icon="@activity.Icon" Size="Size.Small" />
+                    </ItemDot>
+                    <ItemContent>
+                        <MudText Typo="Typo.body1">@activity.Description</MudText>
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                            @activity.Timestamp.ToString("HH:mm")
+                        </MudText>
+                        
+                        @if (!string.IsNullOrEmpty(activity.RelatedItemUrl))
+                        {
+                            <MudLink Href="@activity.RelatedItemUrl" Underline="Underline.Always">
+                                @activity.RelatedItemName
+                            </MudLink>
+                        }
+                    </ItemContent>
+                </MudTimelineItem>
+            }
+            
+            @if (hasMoreActivities)
+            {
+                <MudTimelineItem Color="Color.Dark" Size="Size.Small">
+                    <ItemContent>
+                        <MudButton Variant="Variant.Text" 
+                                  Color="Color.Primary" 
+                                  OnClick="LoadMoreActivities" 
+                                  Disabled="isLoadingMore">
+                            @if (isLoadingMore)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <MudText>Chargement...</MudText>
+                            }
+                            else
+                            {
+                                <MudText>Charger plus</MudText>
+                            }
+                        </MudButton>
+                    </ItemContent>
+                </MudTimelineItem>
+            }
+        </MudTimeline>
+    }
+</MudPaper>
+
+@code {
+    [Parameter]
+    public string? UserId { get; set; }
+    
+    private List<ActivityItem>? activities;
+    private bool isLoading = true;
+    private bool isLoadingMore = false;
+    private bool hasMoreActivities = false;
+    private int currentPage = 1;
+    private int pageSize = 15;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadActivities();
+    }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(UserId))
+        {
+            await LoadActivities();
+        }
+    }
+    
+    private async Task LoadActivities()
+    {
+        isLoading = true;
+        
+        try
+        {
+            // In a real implementation, we would call an API endpoint
+            // var response = await Http.GetFromJsonAsync<List<ActivityItem>>($"/api/users/{UserId}/activities?page={currentPage}&pageSize={pageSize}");
+            
+            // For demo purposes, create mock activities
+            await Task.Delay(600); // Simulate network delay for lazy loading
+            
+            activities = GenerateMockActivities();
+            hasMoreActivities = activities.Count >= 10 && currentPage < 3; // Mock limitation to 3 pages
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des activités : {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+    
+    private async Task LoadMoreActivities()
+    {
+        if (isLoadingMore) return;
+        
+        isLoadingMore = true;
+        currentPage++;
+        
+        try
+        {
+            // In a real implementation, we would call an API endpoint
+            // var response = await Http.GetFromJsonAsync<List<ActivityItem>>($"/api/users/{UserId}/activities?page={currentPage}&pageSize={pageSize}");
+            
+            // For demo purposes, create mock activities
+            await Task.Delay(800); // Simulate network delay
+            
+            var moreActivities = GenerateMockActivities(olderActivities: true);
+            
+            // Add new activities to the existing list
+            activities!.AddRange(moreActivities);
+            
+            // Check if there might be more to load
+            hasMoreActivities = moreActivities.Count >= 10 && currentPage < 3; // Mock limitation to 3 pages
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des activités supplémentaires : {ex.Message}", Severity.Error);
+            currentPage--; // Revert page increase on error
+        }
+        finally
+        {
+            isLoadingMore = false;
+            StateHasChanged();
+        }
+    }
+    
+    private List<ActivityItem> GenerateMockActivities(bool olderActivities = false)
+    {
+        var random = new Random();
+        var result = new List<ActivityItem>();
+        
+        // Base date for activities - earlier if loading older activities
+        var baseDate = olderActivities 
+            ? DateTime.Now.AddDays(-14 * currentPage) 
+            : DateTime.Now.AddDays(-2);
+        
+        int count = random.Next(10, 16);
+        
+        for (int i = 0; i < count; i++)
+        {
+            // Generate a random activity in the last few days
+            var daysAgo = olderActivities 
+                ? random.Next(1, 14) 
+                : random.Next(0, 3);
+            
+            var hoursAgo = random.Next(1, 24);
+            var minutesAgo = random.Next(1, 60);
+            
+            var timestamp = baseDate
+                .AddDays(-daysAgo)
+                .AddHours(-hoursAgo)
+                .AddMinutes(-minutesAgo);
+            
+            // Randomize activity type
+            ActivityType activityType = (ActivityType)random.Next(0, Enum.GetValues(typeof(ActivityType)).Length);
+            
+            var activity = new ActivityItem
+            {
+                Id = $"activity-{Guid.NewGuid()}",
+                Type = activityType,
+                Timestamp = timestamp,
+                UserId = UserId ?? "user123"
+            };
+            
+            // Set additional properties based on activity type
+            switch (activityType)
+            {
+                case ActivityType.ModUploaded:
+                    activity.RelatedItemName = $"Super Mod {random.Next(1, 100)}";
+                    activity.RelatedItemUrl = $"/mods/mod-{random.Next(1, 1000)}";
+                    activity.Description = $"a publié un nouveau mod";
+                    activity.Icon = Icons.Material.Filled.Upload;
+                    activity.ColorClass = Color.Success;
+                    break;
+                    
+                case ActivityType.ModUpdated:
+                    activity.RelatedItemName = $"Amazing Mod {random.Next(1, 100)}";
+                    activity.RelatedItemUrl = $"/mods/mod-{random.Next(1, 1000)}";
+                    activity.Description = $"a mis à jour un mod";
+                    activity.Icon = Icons.Material.Filled.Update;
+                    activity.ColorClass = Color.Info;
+                    break;
+                    
+                case ActivityType.CommentAdded:
+                    activity.RelatedItemName = $"Cool Mod {random.Next(1, 100)}";
+                    activity.RelatedItemUrl = $"/mods/mod-{random.Next(1, 1000)}#comments";
+                    activity.Description = $"a commenté sur un mod";
+                    activity.Icon = Icons.Material.Filled.Comment;
+                    activity.ColorClass = Color.Primary;
+                    break;
+                    
+                case ActivityType.ProfileUpdated:
+                    activity.Description = $"a mis à jour son profil";
+                    activity.Icon = Icons.Material.Filled.AccountCircle;
+                    activity.ColorClass = Color.Warning;
+                    break;
+                    
+                case ActivityType.Achievement:
+                    var achievements = new[] {
+                        "Premier mod publié", 
+                        "100 téléchargements atteints", 
+                        "1000 téléchargements atteints",
+                        "Mod du mois",
+                        "5 étoiles"
+                    };
+                    activity.RelatedItemName = achievements[random.Next(0, achievements.Length)];
+                    activity.Description = $"a obtenu le succès {activity.RelatedItemName}";
+                    activity.Icon = Icons.Material.Filled.EmojiEvents;
+                    activity.ColorClass = Color.Warning;
+                    break;
+                    
+                case ActivityType.Followed:
+                    activity.RelatedItemName = $"User{random.Next(1, 999)}";
+                    activity.RelatedItemUrl = $"/profile/{activity.RelatedItemName.ToLower()}";
+                    activity.Description = $"s'est abonné à {activity.RelatedItemName}";
+                    activity.Icon = Icons.Material.Filled.PersonAdd;
+                    activity.ColorClass = Color.Info;
+                    break;
+            }
+            
+            result.Add(activity);
+        }
+        
+        // Sort by timestamp descending (most recent first)
+        return result.OrderByDescending(a => a.Timestamp).ToList();
+    }
+    
+    private bool DateEqual(DateTime date1, DateTime date2)
+    {
+        return date1.Year == date2.Year && date1.Month == date2.Month && date1.Day == date2.Day;
+    }
+    
+    private string FormatDateHeader(DateTime date)
+    {
+        if (DateEqual(date, DateTime.Today))
+        {
+            return "Aujourd'hui";
+        }
+        else if (DateEqual(date, DateTime.Today.AddDays(-1)))
+        {
+            return "Hier";
+        }
+        else if ((DateTime.Today - date).TotalDays < 7)
+        {
+            return date.ToString("dddd", new CultureInfo("fr-FR"));
+        }
+        else
+        {
+            return date.ToString("d MMMM yyyy", new CultureInfo("fr-FR"));
+        }
+    }
+    
+    public enum ActivityType
+    {
+        ModUploaded,
+        ModUpdated,
+        CommentAdded,
+        ProfileUpdated,
+        Achievement,
+        Followed
+    }
+    
+    public class ActivityItem
+    {
+        public string Id { get; set; } = string.Empty;
+        public ActivityType Type { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string RelatedItemName { get; set; } = string.Empty;
+        public string RelatedItemUrl { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public Color ColorClass { get; set; } = Color.Default;
+    }
+}

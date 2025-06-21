@@ -1,0 +1,104 @@
+@using Frontend.Models
+@using Frontend.Services
+@using System.Threading.Tasks
+@using MudBlazor
+@inject IDownloadQuotaService QuotaService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudCard>
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-2" />
+                Édition de quota
+            </MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudForm @ref="quotaForm" Model="@editedQuota">
+            <MudText>
+                <strong>Identifiant:</strong> @Quota.Identifier (@(Quota.Type == "UserId" ? "Utilisateur" : "IP"))
+            </MudText>
+            
+            <MudNumericField T="int" Label="Quota journalier"
+                           @bind-Value="editedQuota.DailyQuota"
+                           Required="true"
+                           Min="1" Max="1000"
+                           Validation="@(new Func<int, string>(ValidateQuota))"
+                           Class="mt-3" />
+            
+            <MudSwitch T="bool" Label="Prioritaire" 
+                     @bind-Checked="editedQuota.IsPriority"
+                     Color="Color.Primary"
+                     Class="mt-3" />
+        </MudForm>
+    </MudCardContent>
+    <MudCardActions>
+        <MudButton Variant="Variant.Text"
+                 Color="Color.Default"
+                 OnClick="Cancel">Annuler</MudButton>
+        <MudButton Variant="Variant.Filled"
+                 Color="Color.Primary"
+                 OnClick="SaveQuota">Enregistrer</MudButton>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter] public QuotaEntryDto Quota { get; set; } = null!;
+    [Parameter] public EventCallback<bool> OnClose { get; set; }
+    
+    private MudForm quotaForm = null!;
+    private QuotaEntryDto editedQuota = new();
+
+    protected override void OnInitialized()
+    {
+        if (Quota != null)
+        {
+            // Créer une copie pour l'édition
+            editedQuota = new QuotaEntryDto
+            {
+                Id = Quota.Id,
+                Identifier = Quota.Identifier,
+                Type = Quota.Type,
+                DailyQuota = Quota.DailyQuota,
+                CurrentCount = Quota.CurrentCount,
+                LastReset = Quota.LastReset,
+                IsPriority = Quota.IsPriority
+            };
+        }
+    }
+
+    private string ValidateQuota(int quota)
+    {
+        if (quota < 1)
+            return "Le quota doit être d'au moins 1";
+        
+        if (quota > 1000)
+            return "Le quota ne peut pas dépasser 1000";
+            
+        return string.Empty;
+    }
+
+    private async Task SaveQuota()
+    {
+        await quotaForm.Validate();
+        
+        if (quotaForm.IsValid)
+        {
+            var response = await QuotaService.UpdateQuotaAsync(editedQuota);
+            
+            if (response.Success)
+            {
+                Snackbar.Add("Quota mis à jour avec succès", Severity.Success);
+                await OnClose.InvokeAsync(true);
+            }
+            else
+            {
+                Snackbar.Add($"Erreur lors de la mise à jour: {response.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private async Task Cancel() => await OnClose.InvokeAsync(false);
+}

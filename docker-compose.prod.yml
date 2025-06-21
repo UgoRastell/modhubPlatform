@@ -1,0 +1,319 @@
+version: '3.8'
+
+services:
+  # Service de base de données MongoDB
+  mongodb:
+    image: mongo:latest
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis pour le cache
+  redis:
+    image: redis:alpine
+    restart: always
+    volumes:
+      - redis_data:/data
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Service d'authentification et gestion des utilisateurs
+  usersservice:
+    image: modhub/usersservice:latest
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__MongoDb=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017
+      - JWT__Secret=${JWT_SECRET}
+      - JWT__ExpiryMinutes=60
+      - JWT__Issuer=ModsGamingPlatform
+      - JWT__Audience=ModsGamingPlatformUsers
+      - REDIS__ConnectionString=redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Service de gestion des mods
+  modsservice:
+    image: modhub/modsservice:latest
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__MongoDb=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017
+      - Storage__AccountName=${AZURE_STORAGE_ACCOUNT}
+      - Storage__AccountKey=${AZURE_STORAGE_KEY}
+      - Storage__BlobContainerName=mods
+      - Storage__ModsImageContainer=mod-images
+      - REDIS__ConnectionString=redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - mod_files:/app/mod-files
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Service de paiements
+  paymentsservice:
+    image: modhub/paymentsservice:latest
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__MongoDb=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017
+      - Stripe__SecretKey=${STRIPE_SECRET_KEY}
+      - Stripe__WebhookSecret=${STRIPE_WEBHOOK_SECRET}
+    depends_on:
+      - mongodb
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Service de communauté
+  communityservice:
+    image: modhub/communityservice:latest
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__MongoDb=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017
+      - REDIS__ConnectionString=redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # API Gateway
+  gateway:
+    image: modhub/gateway:latest
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Services__UsersService=http://usersservice
+      - Services__ModsService=http://modsservice
+      - Services__PaymentsService=http://paymentsservice
+      - Services__CommunityService=http://communityservice
+      - JWT__Secret=${JWT_SECRET}
+      - REDIS__ConnectionString=redis:6379
+    depends_on:
+      - usersservice
+      - modsservice
+      - paymentsservice
+      - communityservice
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Frontend
+  frontend:
+    image: modhub/frontend:latest
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - BackendUrl=https://${DOMAIN_NAME}/api
+    depends_on:
+      - gateway
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Nginx comme proxy inverse
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/letsencrypt/live/modhub.fr:/etc/nginx/ssl:ro
+      - ./docker/letsencrypt/www:/var/www/certbot:rw
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - frontend
+      - gateway
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Prometheus pour la surveillance
+  prometheus:
+    image: prom/prometheus:latest
+    restart: always
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Grafana pour visualisation
+  grafana:
+    image: grafana/grafana:latest
+    restart: always
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - prometheus
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Elasticsearch pour les logs
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+  # Logstash pour collecte et traitement des logs
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.10.0
+    restart: always
+    volumes:
+      - ./docker/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./docker/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - nginx_logs:/var/log/nginx:ro
+    depends_on:
+      - elasticsearch
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Kibana pour visualisation des logs
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.0
+    restart: always
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Backup automatisé
+  backup:
+    image: alpine:latest
+    volumes:
+      - ./docker/backup.sh:/backup.sh
+      - ./docker/certs:/docker/certs:ro
+      - ./docker/letsencrypt/conf:/docker/letsencrypt/conf:ro
+      - ./docker/nginx.conf:/docker/nginx.conf:ro
+      - ./docker/prometheus.yml:/docker/prometheus.yml:ro
+      - ./docker/logstash:/docker/logstash:ro
+      - backups:/opt/modhub/backups
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "chmod +x /backup.sh && echo '0 2 * * * /backup.sh' > /var/spool/cron/crontabs/root && crond -f"
+    networks:
+      - modhub_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Définition des volumes
+volumes:
+  mongodb_data:
+  redis_data:
+  mod_files:
+  nginx_logs:
+  prometheus_data:
+  grafana_data:
+  elasticsearch_data:
+  backups:
+
+# Réseau pour tous les services
+networks:
+  modhub_network:
+    driver: bridge

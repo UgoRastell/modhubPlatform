@@ -1,0 +1,107 @@
+@using MudBlazor
+@using Frontend.Models.Affiliate
+@using Frontend.Models.Affiliate.Requests
+@using System.ComponentModel.DataAnnotations
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Demande de paiement</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form" Model="@_payoutRequest">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudText Class="mb-4">
+                        Vous avez @PendingAmount.ToString("C2") disponibles pour un retrait.
+                        Le montant minimum de retrait est de @MinimumAmount.ToString("C2").
+                    </MudText>
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudNumericField T="decimal" 
+                                     @bind-Value="_payoutRequest.Amount" 
+                                     Label="Montant à retirer" 
+                                     Min="@MinimumAmount"
+                                     Max="@PendingAmount"
+                                     Format="F2"
+                                     AdornmentIcon="@Icons.Material.Filled.Euro"
+                                     Adornment="Adornment.End" 
+                                     Required="true" 
+                                     RequiredError="Le montant est requis"
+                                     Class="mb-3" />
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudSelect T="string" 
+                               @bind-Value="_payoutRequest.PaymentMethod" 
+                               Label="Méthode de paiement" 
+                               Required="true"
+                               RequiredError="La méthode de paiement est requise"
+                               Class="mb-3">
+                        <MudSelectItem Value="@("PayPal")">PayPal</MudSelectItem>
+                        <MudSelectItem Value="@("BankTransfer")">Virement bancaire</MudSelectItem>
+                        <MudSelectItem Value="@("Stripe")">Stripe</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudTextField T="string" 
+                                 @bind-Value="_payoutRequest.PaymentDetails" 
+                                 Label="Détails de paiement" 
+                                 HelperText="Email PayPal, IBAN ou autre information selon la méthode de paiement"
+                                 Required="true"
+                                 RequiredError="Les détails de paiement sont requis"
+                                 Class="mb-3" />
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudTextField T="string" 
+                                 @bind-Value="_payoutRequest.Notes" 
+                                 Label="Notes (optionnel)" 
+                                 Lines="3"
+                                 Class="mb-3" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error" OnClick="Cancel">Annuler</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Variant="Variant.Filled">Envoyer la demande</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    public IMudDialogInstance MudDialog { get; set; } = default!;
+    
+    [Parameter] 
+    public decimal PendingAmount { get; set; }
+    
+    [Parameter] 
+    public decimal MinimumAmount { get; set; }
+    
+    private PayoutRequestData _payoutRequest = new()
+    {
+        Amount = 0,
+        PaymentMethod = "PayPal",
+        PaymentDetails = "",
+        Notes = ""
+    };
+    
+    private MudForm? _form;
+    
+    private async Task Submit()
+    {
+        await _form!.Validate();
+        
+        if (_form.IsValid)
+        {
+            MudDialog.Close(DialogResult.Ok(_payoutRequest));
+        }
+    }
+    
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

@@ -1,0 +1,403 @@
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@using MudBlazor
+@using Frontend.Components.Dialogs
+
+<MudCard Class="settings-card mb-4 settings-danger-card">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <div class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Error" Class="mr-2" />
+                <MudText Typo="Typo.h5" Color="Color.Error">Zone critique</MudText>
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+    
+    <MudCardContent>
+        <MudText Class="mb-4">Ces actions sont potentiellement dangereuses. Procédez avec prudence.</MudText>
+        
+        <!-- API Keys -->
+        <MudPaper Elevation="0" Class="pa-4 mb-6 rounded-lg" Style="background-color: #2f3441;">
+            <MudText Typo="Typo.subtitle1" Class="mb-2">Clés API</MudText>
+            <MudText Typo="Typo.body2" Class="mb-4" Style="color: #a7b2c2;">
+                Les clés API vous permettent d'accéder à l'API ModHub programmatiquement.
+                La réinitialisation invalidera toutes les clés existantes.
+            </MudText>
+            
+            @if (apiKeys.Count > 0)
+            {
+                <MudTable Items="@apiKeys" Hover="true" Class="mb-4">
+                    <HeaderContent>
+                        <MudTh>Nom</MudTh>
+                        <MudTh>Dernière utilisation</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Nom">@context.Name</MudTd>
+                        <MudTd DataLabel="Dernière utilisation">@context.LastUsed.ToString("dd/MM/yyyy HH:mm")</MudTd>
+                        <MudTd>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                          Size="Size.Small" 
+                                          Color="Color.Error"
+                                          OnClick="@(() => RevokeApiKey(context.Id))" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info" Class="mb-4">Aucune clé API active</MudAlert>
+            }
+            
+            <div class="d-flex gap-3">
+                <MudButton Variant="Variant.Outlined"
+                          Color="Color.Primary"
+                          StartIcon="@Icons.Material.Filled.Add"
+                          Size="Size.Small"
+                          OnClick="GenerateApiKey">
+                    Générer une clé
+                </MudButton>
+                
+                @if (apiKeys.Count > 0)
+                {
+                    <MudButton Variant="Variant.Outlined"
+                              Color="Color.Error"
+                              StartIcon="@Icons.Material.Filled.Refresh"
+                              Size="Size.Small"
+                              OnClick="ResetAllApiKeys">
+                        Réinitialiser toutes les clés
+                    </MudButton>
+                }
+            </div>
+        </MudPaper>
+        
+        <!-- Active Sessions -->
+        <MudPaper Elevation="0" Class="pa-4 mb-6 rounded-lg" Style="background-color: #2f3441;">
+            <MudText Typo="Typo.subtitle1" Class="mb-2">Appareils connectés</MudText>
+            <MudText Typo="Typo.body2" Class="mb-4" Style="color: #a7b2c2;">
+                Liste des appareils actuellement connectés à votre compte ModHub.
+                La déconnexion forcera tous les appareils à se reconnecter, y compris celui-ci.
+            </MudText>
+            
+            @if (activeSessions.Count > 0)
+            {
+                <div class="mb-4">
+                    @foreach (var session in activeSessions)
+                    {
+                        <MudPaper Elevation="0" Class="pa-3 d-flex justify-space-between align-center mb-2" Style="background-color: #3a3e50;">
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@GetDeviceIcon(session.DeviceType)" Class="mr-2" />
+                                <div>
+                                    <MudText>@session.DeviceName</MudText>
+                                    <MudText Typo="Typo.caption" Style="color: #a7b2c2;">@session.Location • @session.LastActive.ToString("dd/MM/yyyy HH:mm")</MudText>
+                                </div>
+                            </div>
+                            <div>
+                                @if (session.IsCurrent)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Class="mr-2">Actuel</MudChip>
+                                }
+                                <MudIconButton Icon="@Icons.Material.Filled.Close" 
+                                              Size="Size.Small" 
+                                              Color="Color.Error"
+                                              OnClick="@(() => DisconnectSession(session.Id))" />
+                            </div>
+                        </MudPaper>
+                    }
+                </div>
+                
+                <MudButton Variant="Variant.Outlined"
+                          Color="Color.Error"
+                          StartIcon="@Icons.Material.Filled.ExitToApp"
+                          Size="Size.Small"
+                          OnClick="DisconnectAllSessions">
+                    Déconnecter tous les appareils
+                </MudButton>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info">Aucun appareil connecté</MudAlert>
+            }
+        </MudPaper>
+        
+        <!-- Account Data -->
+        <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background-color: #2f3441; border: 1px solid rgba(255, 59, 59, 0.3);">
+            <MudText Typo="Typo.subtitle1" Color="Color.Error" Class="mb-2">Données du compte</MudText>
+            <MudText Typo="Typo.body2" Class="mb-4" Style="color: #a7b2c2;">
+                Ces actions affecteront définitivement les données associées à votre compte ModHub.
+            </MudText>
+            
+            <div class="d-flex flex-wrap gap-3">
+                <MudButton Variant="Variant.Outlined"
+                          Color="Color.Error"
+                          StartIcon="@Icons.Material.Filled.Delete"
+                          Size="Size.Small"
+                          OnClick="ClearAllData">
+                    Effacer toutes les données d'activité
+                </MudButton>
+                
+                <MudButton Variant="Variant.Outlined"
+                          Color="Color.Error"
+                          StartIcon="@Icons.Material.Filled.DeleteForever"
+                          Size="Size.Small"
+                          OnClick="ResetAccount">
+                    Réinitialiser le compte
+                </MudButton>
+            </div>
+        </MudPaper>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private List<ApiKey> apiKeys = new();
+    private List<ActiveSession> activeSessions = new();
+    
+    protected override void OnInitialized()
+    {
+        // Mock data
+        apiKeys = new List<ApiKey>
+        {
+            new ApiKey { Id = "key_1", Name = "ModHub CLI", LastUsed = DateTime.Now.AddDays(-1) },
+            new ApiKey { Id = "key_2", Name = "Dev Environment", LastUsed = DateTime.Now.AddHours(-3) }
+        };
+        
+        activeSessions = new List<ActiveSession>
+        {
+            new ActiveSession { Id = "sess_1", DeviceType = "desktop", DeviceName = "Chrome / Windows", Location = "Paris, France", LastActive = DateTime.Now, IsCurrent = true },
+            new ActiveSession { Id = "sess_2", DeviceType = "mobile", DeviceName = "Safari / iOS", Location = "Lyon, France", LastActive = DateTime.Now.AddHours(-2) },
+            new ActiveSession { Id = "sess_3", DeviceType = "tablet", DeviceName = "Chrome / Android", Location = "Marseille, France", LastActive = DateTime.Now.AddDays(-1) }
+        };
+    }
+    
+    private string GetDeviceIcon(string deviceType)
+    {
+        return deviceType.ToLower() switch
+        {
+            "mobile" => Icons.Material.Filled.Smartphone,
+            "tablet" => Icons.Material.Filled.Tablet,
+            "desktop" => Icons.Material.Filled.Computer,
+            _ => Icons.Material.Filled.Devices
+        };
+    }
+    
+    private async Task GenerateApiKey()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Title", "Nouvelle clé API" },
+            { "ContentText", "Donnez un nom à votre nouvelle clé API:" },
+            { "SubmitText", "Générer" },
+            { "CancelText", "Annuler" }
+        };
+        
+        var dialog = await DialogService.ShowAsync<TextPromptDialog>("", parameters);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled && result.Data != null)
+        {
+            string keyName = result.Data.ToString();
+            if (!string.IsNullOrWhiteSpace(keyName))
+            {
+                // In real app, we'd call API to generate a key
+                await Task.Delay(1000);
+                
+                // Add new key to list
+                var newKey = new ApiKey { Id = $"key_{Guid.NewGuid()}", Name = keyName, LastUsed = DateTime.Now };
+                apiKeys.Add(newKey);
+                
+                // Show success message with key value
+                var key = $"sk_{Guid.NewGuid()}_{Guid.NewGuid()}".Replace("-", "");
+                
+                Snackbar.Add($"Nouvelle clé générée avec succès. Copiez-la maintenant, elle ne sera plus affichée.", Severity.Warning, config =>
+                {
+                    config.Action = "Copier";
+                    config.ActionColor = MudBlazor.Color.Primary;
+                    config.OnClick = snackbar =>
+                    {
+                        // In real app, we'd copy to clipboard
+                        return Task.CompletedTask;
+                    };
+                });
+                
+                StateHasChanged();
+            }
+        }
+    }
+    
+    private async Task RevokeApiKey(string id)
+    {
+        var parameters = new DialogParameters
+        {
+            { "ContentText", "Êtes-vous sûr de vouloir révoquer cette clé API ? Cette action est irréversible." },
+            { "ButtonText", "Révoquer" },
+            { "Color", Color.Error }
+        };
+        
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+        var dialog = await DialogService.ShowAsync<SimpleDialog>("Révoquer la clé API", parameters, options);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            var key = apiKeys.FirstOrDefault(k => k.Id == id);
+            if (key != null)
+            {
+                apiKeys.Remove(key);
+                Snackbar.Add("Clé API révoquée avec succès", Severity.Success);
+                StateHasChanged();
+            }
+        }
+    }
+    
+    private async Task ResetAllApiKeys()
+    {
+        var parameters = new DialogParameters
+        {
+            { "ContentText", "Êtes-vous sûr de vouloir révoquer toutes les clés API ? Cette action est irréversible et invalidera toutes vos intégrations." },
+            { "ButtonText", "Réinitialiser toutes les clés" },
+            { "Color", Color.Error }
+        };
+        
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+        var dialog = await DialogService.ShowAsync<SimpleDialog>("Réinitialiser les clés API", parameters, options);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            apiKeys.Clear();
+            Snackbar.Add("Toutes les clés API ont été révoquées", Severity.Success);
+            StateHasChanged();
+        }
+    }
+    
+    private async Task DisconnectSession(string id)
+    {
+        var parameters = new DialogParameters
+        {
+            { "ContentText", "Êtes-vous sûr de vouloir déconnecter cet appareil ?" },
+            { "ButtonText", "Déconnecter" },
+            { "Color", Color.Warning }
+        };
+        
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+        var dialog = await DialogService.ShowAsync<SimpleDialog>("Déconnecter l'appareil", parameters, options);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            var session = activeSessions.FirstOrDefault(s => s.Id == id);
+            if (session != null)
+            {
+                if (session.IsCurrent)
+                {
+                    Snackbar.Add("Vous allez être déconnecté...", Severity.Warning);
+                    await Task.Delay(1500);
+                    // In real app, we'd redirect to login page
+                }
+                else
+                {
+                    activeSessions.Remove(session);
+                    Snackbar.Add("Appareil déconnecté avec succès", Severity.Success);
+                    StateHasChanged();
+                }
+            }
+        }
+    }
+    
+    private async Task DisconnectAllSessions()
+    {
+        var parameters = new DialogParameters
+        {
+            { "ContentText", "Êtes-vous sûr de vouloir déconnecter tous les appareils ? Vous devrez vous reconnecter sur chaque appareil." },
+            { "ButtonText", "Déconnecter tous les appareils" },
+            { "Color", Color.Error }
+        };
+        
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+        var dialog = await DialogService.ShowAsync<SimpleDialog>("Déconnecter tous les appareils", parameters, options);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            Snackbar.Add("Tous les appareils seront déconnectés. Vous allez être redirigé vers la page de connexion...", Severity.Warning);
+            await Task.Delay(1500);
+            // In real app, we'd log out and redirect to login page
+        }
+    }
+    
+    private async Task ClearAllData()
+    {
+        var parameters = new DialogParameters
+        {
+            { "ContentText", "Êtes-vous sûr de vouloir effacer toutes vos données d'activité ? Cette action supprimera votre historique de navigation, commentaires et interactions sur la plateforme." },
+            { "ButtonText", "Effacer toutes les données" },
+            { "Color", Color.Error }
+        };
+        
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+        var dialog = await DialogService.ShowAsync<SimpleDialog>("Effacer les données d'activité", parameters, options);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            // In real app, we'd call API to clear data
+            await Task.Delay(1500);
+            Snackbar.Add("Toutes les données d'activité ont été effacées", Severity.Success);
+        }
+    }
+    
+    private async Task ResetAccount()
+    {
+        var parameters = new DialogParameters
+        {
+            { "ContentText", "ATTENTION : Cette action réinitialisera votre compte à son état d'origine. Toutes vos données seront supprimées, y compris les mods, commentaires, et préférences. Vos abonnements actifs ne seront pas affectés. Cette action est irréversible. Êtes-vous absolument sûr ?" },
+            { "ButtonText", "Réinitialiser mon compte" },
+            { "Color", Color.Error }
+        };
+        
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Small };
+        var dialog = await DialogService.ShowAsync<SimpleDialog>("Réinitialiser le compte", parameters, options);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            // In real app, we'd show a confirmation dialog with password
+            var confirmParams = new DialogParameters
+            {
+                { "Title", "Confirmer la réinitialisation" },
+                { "ContentText", "Veuillez saisir votre mot de passe pour confirmer la réinitialisation de votre compte:" },
+                { "SubmitText", "Confirmer" },
+                { "CancelText", "Annuler" }
+            };
+            
+            var passwordDialog = await DialogService.ShowAsync<TextPromptDialog>("", confirmParams);
+            var passwordResult = await passwordDialog.Result;
+            
+            if (!passwordResult.Canceled && passwordResult.Data != null)
+            {
+                // In real app, we'd verify password and reset account
+                await Task.Delay(2000);
+                Snackbar.Add("Compte réinitialisé avec succès. Vous allez être redirigé vers la page d'accueil...", Severity.Warning);
+                await Task.Delay(1500);
+                // In real app, we'd redirect to home page
+            }
+        }
+    }
+    
+    public class ApiKey
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public DateTime LastUsed { get; set; }
+    }
+    
+    public class ActiveSession
+    {
+        public string Id { get; set; }
+        public string DeviceType { get; set; }
+        public string DeviceName { get; set; }
+        public string Location { get; set; }
+        public DateTime LastActive { get; set; }
+        public bool IsCurrent { get; set; }
+    }
+}

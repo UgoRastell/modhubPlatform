@@ -1,0 +1,143 @@
+@using Microsoft.AspNetCore.Components.Authorization
+
+<MudNavMenu Bordered="true" Class="mud-width-full py-3">
+    <div class="d-flex justify-center mb-4">
+        <MudIcon Icon="@Icons.Custom.Brands.MudBlazor" Size="Size.Large" Color="Color.Primary" />
+    </div>
+
+    <MudDivider Class="mb-4" />
+    
+    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="px-4 py-2 section-header">EXPLORER</MudText>
+    
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+        Accueil
+    </MudNavLink>
+    
+    <MudNavLink Href="/catalog" Icon="@Icons.Material.Filled.Extension">
+        Catalogue de mods
+    </MudNavLink>
+    
+    <MudNavLink Href="/games" Icon="@Icons.Material.Filled.SportsEsports">
+        Jeux supportés
+    </MudNavLink>
+    
+    <MudNavLink Href="/payment" Icon="@Icons.Material.Filled.Payment">
+        Premium
+    </MudNavLink>
+    
+    <MudNavGroup Title="Communauté" Icon="@Icons.Material.Filled.Groups" Expanded="false">
+        <MudNavLink Href="/forums" Icon="@Icons.Material.Filled.Forum">
+            Forums
+        </MudNavLink>
+        <MudNavLink Href="/tutorials" Icon="@Icons.Material.Filled.School">
+            Tutoriels
+        </MudNavLink>
+        <MudNavLink Href="/faq" Icon="@Icons.Material.Filled.QuestionAnswer">
+            FAQ
+        </MudNavLink>
+    </MudNavGroup>
+    
+    <AuthorizeView>
+        <Authorized>
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="px-4 py-2 section-header">MON ESPACE</MudText>
+            
+            <MudNavLink Href="/account/profile" Icon="@Icons.Material.Filled.Person">
+                Mon profil
+            </MudNavLink>
+            
+            <MudNavLink Href="/account/library" Icon="@Icons.Material.Filled.LibraryBooks">
+                Ma bibliothèque
+            </MudNavLink>
+            
+            <MudNavLink Href="/account/favorites" Icon="@Icons.Material.Filled.Favorite">
+                Favoris
+            </MudNavLink>
+            
+            <MudNavLink Href="/account/settings" Icon="@Icons.Material.Filled.Settings">
+                Paramètres
+            </MudNavLink>
+            
+            <AuthorizeView Roles="Creator">
+                <Authorized Context="creatorContext">
+                    <MudDivider Class="my-4" />
+                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="px-4 py-2 section-header">CRÉATEUR</MudText>
+                    
+                    <MudNavLink Href="/creator/dashboard" Icon="@Icons.Material.Filled.Dashboard">
+                        Tableau de bord
+                    </MudNavLink>
+                    
+                    <MudNavLink Href="/creator/mods" Icon="@Icons.Material.Filled.Build">
+                        Mes mods
+                    </MudNavLink>
+                    
+                    <MudNavLink Href="/creator/upload" Icon="@Icons.Material.Filled.Upload">
+                        Publier un mod
+                    </MudNavLink>
+                    
+                    <MudNavLink Href="/creator/analytics" Icon="@Icons.Material.Filled.Analytics">
+                        Statistiques
+                    </MudNavLink>
+                    
+                    <MudNavLink Href="/creator/revenue" Icon="@Icons.Material.Filled.Payments">
+                        Revenus
+                    </MudNavLink>
+                </Authorized>
+            </AuthorizeView>
+            
+            <AuthorizeView Roles="Admin">
+                <Authorized Context="adminContext">
+                    <MudDivider Class="my-4" />
+                    <MudText Typo="Typo.subtitle2" Color="Color.Error" Class="px-4 py-2 section-header">ADMINISTRATION</MudText>
+                    
+                    <MudNavLink Href="/admin/dashboard" Icon="@Icons.Material.Filled.AdminPanelSettings">
+                        Tableau de bord
+                    </MudNavLink>
+                    
+                    <MudNavLink Href="/admin/users" Icon="@Icons.Material.Filled.PeopleAlt">
+                        Utilisateurs
+                    </MudNavLink>
+                    
+                    <MudNavLink Href="/admin/mods" Icon="@Icons.Material.Filled.Extension">
+                        Mods
+                    </MudNavLink>
+                    
+                    <MudNavLink Href="/admin/reports" Icon="@Icons.Material.Filled.ReportProblem">
+                        Signalements
+                    </MudNavLink>
+                    
+                    <MudNavLink Href="/admin/settings" Icon="@Icons.Material.Filled.SettingsApplications">
+                        Configuration
+                    </MudNavLink>
+                </Authorized>
+            </AuthorizeView>
+        </Authorized>
+        <NotAuthorized>
+            <MudDivider Class="my-4" />
+            <MudItem Class="d-flex flex-column align-center auth-prompt">
+                <MudText Typo="Typo.body2" Class="mb-3 text-center">
+                    Connectez-vous pour accéder à toutes les fonctionnalités
+                </MudText>
+                <div class="d-flex gap-2">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/login" StartIcon="@Icons.Material.Filled.Login" Size="Size.Small">
+                        Se connecter
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Href="/register" Size="Size.Small">
+                        S'inscrire
+                    </MudButton>
+                </div>
+            </MudItem>
+        </NotAuthorized>
+    </AuthorizeView>
+    
+    <MudDivider Class="my-4" />
+    <MudNavLink Href="/about" Icon="@Icons.Material.Filled.Info">
+        À propos
+    </MudNavLink>
+    <MudNavLink Href="/contact" Icon="@Icons.Material.Filled.Email">
+        Contact
+    </MudNavLink>
+    <MudNavLink Href="/terms" Icon="@Icons.Material.Filled.Gavel">
+        Conditions d'utilisation
+    </MudNavLink>
+</MudNavMenu>

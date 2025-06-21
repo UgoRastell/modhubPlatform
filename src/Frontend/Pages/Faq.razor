@@ -1,0 +1,335 @@
+@page "/faq"
+@using Frontend.Models
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<PageTitle>FAQ - ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Foire aux questions</MudText>
+    
+    <MudPaper Class="pa-4 mb-4 rounded-xl" Elevation="3" Style="background-color: #232634;">
+        <MudText Typo="Typo.body1">
+            Retrouvez ici les réponses aux questions les plus fréquemment posées par notre communauté.
+            Si vous ne trouvez pas la réponse à votre question, n'hésitez pas à nous contacter directement via notre <MudLink Href="/contact">page de contact</MudLink>.
+        </MudText>
+    </MudPaper>
+    
+    <MudGrid>
+        <MudItem xs="12" md="3">
+            <MudPaper Class="pa-4 rounded-xl sticky-top" Elevation="3" Style="background-color: #232634; top: 24px;">
+                <MudText Typo="Typo.h6" Class="mb-4">Catégories</MudText>
+                <MudList T="string" Clickable Dense>
+                    @foreach (var category in faqCategories)
+                    {
+                        <MudListItem T="string" OnClick="@(() => ScrollToCategory(category.Id))" Dense="true">
+                            <div class="d-flex gap-2 align-center">
+                                <MudIcon Icon="@category.Icon" Size="Size.Small" />
+                                <MudText>@category.Name</MudText>
+                            </div>
+                        </MudListItem>
+                    }
+                </MudList>
+                
+                <MudDivider Class="my-4" />
+                
+                <MudButton StartIcon="@Icons.Material.Filled.Search" 
+                          FullWidth="true" 
+                          Color="Color.Primary" 
+                          Variant="Variant.Filled"
+                          OnClick="@(() => searchDialogOpen = true)">
+                    Rechercher
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+        
+        <MudItem xs="12" md="9">
+            @foreach (var category in faqCategories)
+            {
+                <div id="@category.Id" class="scroll-target mb-6">
+                    <MudPaper Class="pa-4 rounded-xl mb-4" Elevation="3" Style="background-color: #232634;">
+                        <MudText Typo="Typo.h5" Class="mb-4">
+                            <MudIcon Icon="@category.Icon" Size="Size.Medium" Class="mr-2" />
+                            @category.Name
+                        </MudText>
+                        
+                        <MudExpansionPanels MultiExpansion="true" DisableBorders="true" Elevation="0">
+                            @foreach (var item in faqItems.Where(i => i.CategoryId == category.Id))
+                            {
+                                <MudExpansionPanel Class="mud-theme-dark mb-2" Style="background-color: rgba(255, 255, 255, 0.05);">
+                                    <TitleContent>
+                                        <div class="d-flex">
+                                            <MudText Typo="Typo.h6">@item.Question</MudText>
+                                        </div>
+                                    </TitleContent>
+                                    <ChildContent>
+                                        <MudText Typo="Typo.body1">@((MarkupString)item.Answer)</MudText>
+                                    </ChildContent>
+                                </MudExpansionPanel>
+                            }
+                        </MudExpansionPanels>
+                    </MudPaper>
+                </div>
+            }
+            
+            <MudPaper Class="pa-4 rounded-xl mt-8" Elevation="3" Style="background-color: #232634;">
+                <MudText Typo="Typo.h6" Class="mb-2">Vous n'avez pas trouvé votre réponse ?</MudText>
+                <MudText Typo="Typo.body2" Class="mb-4">
+                    Si vous n'avez pas trouvé la réponse à votre question, vous pouvez :
+                </MudText>
+                <div class="d-flex flex-column flex-sm-row gap-2">
+                    <MudButton Variant="Variant.Filled" 
+                              Color="Color.Primary" 
+                              Href="/contact"
+                              StartIcon="@Icons.Material.Filled.Email">
+                        Nous contacter
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" 
+                              Color="Color.Secondary" 
+                              Href="/forums"
+                              StartIcon="@Icons.Material.Filled.Forum">
+                        Poser votre question sur le forum
+                    </MudButton>
+                </div>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<!-- Dialogue de recherche -->
+<MudDialog @bind-IsVisible="searchDialogOpen" Options="dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Recherche dans la FAQ</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="searchQuery" 
+                     Label="Rechercher une question" 
+                     Variant="Variant.Outlined" 
+                     Adornment="Adornment.End" 
+                     AdornmentIcon="@Icons.Material.Filled.Search"
+                     Class="mb-4"
+                     Immediate="true"
+                     DebounceInterval="300"
+                     OnDebounceIntervalElapsed="SearchFaq" />
+                     
+        @if (!string.IsNullOrEmpty(searchQuery) && searchResults.Any())
+        {
+            <MudText Typo="Typo.subtitle1" Class="mb-2">Résultats de recherche</MudText>
+            <MudList T="string">
+                @foreach (var result in searchResults)
+                {
+                    <MudListItem T="string" OnClick="@(() => SelectSearchResult(result))" Dense="true">
+                        <div class="d-flex flex-column">
+                            <MudText>@result.Question</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Primary">
+                                Catégorie: @faqCategories.First(c => c.Id == result.CategoryId).Name
+                            </MudText>
+                        </div>
+                    </MudListItem>
+                    <MudDivider />
+                }
+            </MudList>
+        }
+        else if (!string.IsNullOrEmpty(searchQuery))
+        {
+            <MudAlert Severity="Severity.Info">Aucun résultat trouvé pour votre recherche.</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="@(() => searchDialogOpen = false)">Fermer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    // Classes pour structurer les données
+    private class FaqCategory
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Icon { get; set; }
+    }
+    
+    private class FaqItem
+    {
+        public string Question { get; set; }
+        public string Answer { get; set; }
+        public string CategoryId { get; set; }
+    }
+    
+    // Données
+    private List<FaqCategory> faqCategories = new List<FaqCategory>
+    {
+        new FaqCategory { Id = "general", Name = "Questions générales", Icon = Icons.Material.Filled.Info },
+        new FaqCategory { Id = "account", Name = "Compte et profil", Icon = Icons.Material.Filled.AccountCircle },
+        new FaqCategory { Id = "mods", Name = "Utilisation des mods", Icon = Icons.Material.Filled.Extension },
+        new FaqCategory { Id = "creators", Name = "Créateurs de mods", Icon = Icons.Material.Filled.Build },
+        new FaqCategory { Id = "premium", Name = "ModHub Premium", Icon = Icons.Material.Filled.Stars },
+        new FaqCategory { Id = "technical", Name = "Support technique", Icon = Icons.Material.Filled.Settings }
+    };
+    
+    private List<FaqItem> faqItems = new List<FaqItem>
+    {
+        // Questions générales
+        new FaqItem 
+        { 
+            Question = "Qu'est-ce que ModHub ?", 
+            Answer = "ModHub est une plateforme dédiée au partage et à la découverte de mods pour jeux vidéo. Notre mission est de créer un environnement où les créateurs peuvent partager leurs œuvres et où les joueurs peuvent facilement trouver et installer des mods de qualité.",
+            CategoryId = "general" 
+        },
+        new FaqItem 
+        { 
+            Question = "ModHub est-il gratuit ?", 
+            Answer = "ModHub propose une version gratuite avec des fonctionnalités de base et un abonnement premium avec des avantages supplémentaires. La plupart des mods sont disponibles gratuitement, mais certains créateurs peuvent proposer des versions premium de leurs créations.",
+            CategoryId = "general" 
+        },
+        new FaqItem 
+        { 
+            Question = "Quels jeux sont supportés par ModHub ?", 
+            Answer = "ModHub supporte actuellement plus de 100 jeux populaires, dont Minecraft, Skyrim, Fallout 4, Stardew Valley, et bien d'autres. Consultez notre <a href='/games'>page des jeux supportés</a> pour la liste complète.",
+            CategoryId = "general" 
+        },
+        
+        // Compte et profil
+        new FaqItem 
+        { 
+            Question = "Comment créer un compte ?", 
+            Answer = "Pour créer un compte, cliquez sur \"S'inscrire\" dans le menu de navigation, puis remplissez le formulaire d'inscription avec votre adresse e-mail et un mot de passe sécurisé. Vous pouvez également vous inscrire avec votre compte Google ou Discord.",
+            CategoryId = "account" 
+        },
+        new FaqItem 
+        { 
+            Question = "Comment modifier mon profil ?", 
+            Answer = "Une fois connecté, accédez à votre profil en cliquant sur votre nom d'utilisateur, puis sur \"Mon profil\". Cliquez ensuite sur \"Modifier le profil\" pour changer votre avatar, votre description ou d'autres informations personnelles.",
+            CategoryId = "account" 
+        },
+        new FaqItem 
+        { 
+            Question = "J'ai oublié mon mot de passe, comment le réinitialiser ?", 
+            Answer = "Sur la page de connexion, cliquez sur \"Mot de passe oublié\". Vous recevrez un email avec les instructions pour réinitialiser votre mot de passe. Si vous ne recevez pas l'email, vérifiez votre dossier de spam.",
+            CategoryId = "account" 
+        },
+        
+        // Utilisation des mods
+        new FaqItem 
+        { 
+            Question = "Comment installer un mod ?", 
+            Answer = "Les méthodes d'installation varient selon le jeu. Sur la page de chaque mod, vous trouverez un guide d'installation spécifique. En général, vous devez télécharger le mod, puis le placer dans le dossier approprié de votre jeu ou utiliser un gestionnaire de mods compatible.",
+            CategoryId = "mods" 
+        },
+        new FaqItem 
+        { 
+            Question = "Comment résoudre les conflits entre mods ?", 
+            Answer = "Les conflits entre mods sont courants. Pour les résoudre, vérifiez la compatibilité des mods avant l'installation, utilisez des outils de gestion de charge comme LOOT pour les jeux Bethesda, ou consultez les forums pour des conseils spécifiques à votre problème.",
+            CategoryId = "mods" 
+        },
+        new FaqItem 
+        { 
+            Question = "Puis-je télécharger plusieurs mods à la fois ?", 
+            Answer = "Les utilisateurs premium peuvent télécharger plusieurs mods simultanément et bénéficient de vitesses de téléchargement plus rapides. Les utilisateurs gratuits sont limités à un téléchargement à la fois à vitesse standard.",
+            CategoryId = "mods" 
+        },
+        
+        // Créateurs de mods
+        new FaqItem 
+        { 
+            Question = "Comment devenir créateur de mods sur ModHub ?", 
+            Answer = "Pour devenir créateur, inscrivez-vous sur ModHub, puis demandez le statut de créateur dans votre profil. Vous devrez fournir des informations sur vos compétences et expérience en modding. Une fois approuvé, vous pourrez publier vos propres mods.",
+            CategoryId = "creators" 
+        },
+        new FaqItem 
+        { 
+            Question = "Comment monétiser mes créations ?", 
+            Answer = "ModHub offre plusieurs options de monétisation aux créateurs : des mods premium payants, un système de dons, ou un modèle d'abonnement pour accéder à du contenu exclusif. Vous pouvez configurer ces options dans votre espace créateur.",
+            CategoryId = "creators" 
+        },
+        new FaqItem 
+        { 
+            Question = "Quel pourcentage des revenus revient aux créateurs ?", 
+            Answer = "Les créateurs reçoivent 70% des revenus générés par leurs mods premium. Les 30% restants permettent à ModHub de couvrir les frais d'hébergement, de traitement des paiements et de continuer à améliorer la plateforme.",
+            CategoryId = "creators" 
+        },
+        
+        // ModHub Premium
+        new FaqItem 
+        { 
+            Question = "Quels sont les avantages de ModHub Premium ?", 
+            Answer = "ModHub Premium offre plusieurs avantages : téléchargements multiples et plus rapides, accès anticipé à certains mods, absence de publicités, badge premium sur votre profil, support prioritaire, et remises sur les mods payants.",
+            CategoryId = "premium" 
+        },
+        new FaqItem 
+        { 
+            Question = "Combien coûte l'abonnement Premium ?", 
+            Answer = "ModHub Premium est disponible pour 4,99€ par mois ou 49,99€ par an (soit 2 mois gratuits). Nous proposons occasionnellement des promotions, notamment pour les étudiants et les créateurs actifs.",
+            CategoryId = "premium" 
+        },
+        new FaqItem 
+        { 
+            Question = "Comment annuler mon abonnement Premium ?", 
+            Answer = "Pour annuler votre abonnement, accédez à vos paramètres de compte, puis à la section \"Abonnement\". Cliquez sur \"Gérer mon abonnement\" puis \"Annuler l'abonnement\". Vous conserverez vos avantages premium jusqu'à la fin de la période payée.",
+            CategoryId = "premium" 
+        },
+        
+        // Support technique
+        new FaqItem 
+        { 
+            Question = "Mon jeu plante après l'installation d'un mod, que faire ?", 
+            Answer = "En cas de plantage, essayez de : 1) Désactiver le mod récemment installé pour voir s'il est responsable, 2) Vérifier que vous avez les prérequis nécessaires (comme Script Extender pour Skyrim), 3) Consulter la page du mod pour des problèmes connus, ou 4) Demander de l'aide sur nos forums.",
+            CategoryId = "technical" 
+        },
+        new FaqItem 
+        { 
+            Question = "Le mod que j'ai téléchargé ne fonctionne pas, comment le dépanner ?", 
+            Answer = "Vérifiez d'abord que vous avez suivi exactement les instructions d'installation. Assurez-vous que votre jeu est à jour et compatible avec la version du mod. Vérifiez aussi que vous avez installé tous les prérequis mentionnés par le créateur.",
+            CategoryId = "technical" 
+        },
+        new FaqItem 
+        { 
+            Question = "Comment signaler un bug ou un problème avec ModHub ?", 
+            Answer = "Vous pouvez signaler un bug via notre <a href='/contact'>formulaire de contact</a> en sélectionnant \"Signaler un bug\" comme sujet. Décrivez précisément le problème rencontré, les étapes pour le reproduire, et joignez des captures d'écran si possible.",
+            CategoryId = "technical" 
+        }
+    };
+    
+    // Variables pour la recherche
+    private bool searchDialogOpen;
+    private string searchQuery = "";
+    private List<FaqItem> searchResults = new List<FaqItem>();
+    
+    private DialogOptions dialogOptions = new DialogOptions { 
+        CloseOnEscapeKey = true,
+        MaxWidth = MaxWidth.Medium,
+        FullWidth = true
+    };
+    
+    // Méthodes
+    private void ScrollToCategory(string categoryId)
+    {
+        // Dans une implémentation réelle, utiliserait JS Interop pour faire défiler vers la catégorie
+        NavigationManager.NavigateTo($"/faq#{categoryId}", forceLoad: false);
+    }
+    
+    private void SearchFaq()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            searchResults.Clear();
+            return;
+        }
+        
+        // Recherche simple basée sur le contenu des questions et réponses
+        searchResults = faqItems
+            .Where(item => 
+                item.Question.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) || 
+                item.Answer.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+    
+    private void SelectSearchResult(FaqItem result)
+    {
+        searchDialogOpen = false;
+        
+        // Dans une implémentation réelle, utiliserait JS Interop pour faire défiler vers l'élément
+        // et peut-être mettre en surbrillance la question
+        NavigationManager.NavigateTo($"/faq#{result.CategoryId}", forceLoad: false);
+    }
+}

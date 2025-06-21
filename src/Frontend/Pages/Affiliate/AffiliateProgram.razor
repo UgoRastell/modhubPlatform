@@ -1,0 +1,453 @@
+@page "/affiliate-program"
+@using Frontend.Services.Affiliate
+@using Frontend.Models.Affiliate
+@using Frontend.Models.Affiliate.Requests
+@using Frontend.Components.Affiliate
+@using System.Threading
+@using Microsoft.AspNetCore.Authorization
+@inject IAffiliateService AffiliateService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@attribute [Authorize]
+
+<PageTitle>Programme d'affiliation - ModsGamingPlatform</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+    <MudGrid>
+        <MudItem xs="12" Class="mb-4">
+            <MudPaper Elevation="3" Class="pa-4">
+                <MudText Typo="Typo.h4">Programme d'affiliation</MudText>
+                <MudText Typo="Typo.body1" Class="mt-2">
+                    Recommandez nos mods et services à vos amis et gagnez des commissions sur leurs achats.
+                </MudText>
+                
+                @if(_statistics != null)
+                {
+                    <MudDivider Class="my-4" />
+                    <MudGrid>
+                        <MudItem xs="12" sm="4">
+                            <MudPaper Elevation="0" Class="pa-4" Style="background-color: var(--mud-palette-background-grey);">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Primary">COMMISSIONS EN ATTENTE</MudText>
+                                <MudText Typo="Typo.h5" Color="Color.Dark">@_statistics.CommissionPending.ToString("C2")</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudPaper Elevation="0" Class="pa-4" Style="background-color: var(--mud-palette-background-grey);">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Primary">COMMISSIONS TOTALES</MudText>
+                                <MudText Typo="Typo.h5" Color="Color.Dark">@_statistics.TotalCommissionEarned.ToString("C2")</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudPaper Elevation="0" Class="pa-4" Style="background-color: var(--mud-palette-background-grey);">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Primary">TAUX DE CONVERSION</MudText>
+                                <MudText Typo="Typo.h5" Color="Color.Dark">@_statistics.ConversionRate.ToString("P2")</MudText>
+                            </MudPaper>
+                        </MudItem>
+                    </MudGrid>
+                }
+            </MudPaper>
+        </MudItem>
+        
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="3" Class="h-100">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Votre niveau d'affiliation</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (_loading)
+                    {
+                        <MudSkeleton Width="100%" Height="60px" />
+                    }
+                    else if (_statistics?.CurrentLevel != null)
+                    {
+                        <div class="d-flex justify-center mb-4">
+                            <MudAvatar Size="Size.Large" Style="background-color: var(--mud-palette-primary); color: white;">
+                                @(_levelName != null && _levelName.Length > 0 ? _levelName[0] : '?')
+                            </MudAvatar>
+                        </div>
+                        <MudText Typo="Typo.h5" Align="Align.Center">@_levelName</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mb-4">@_levelDescription</MudText>
+                        
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Commission: <strong>@(_bonusPercentage + _programDetails?.CommissionPercentage ?? 0)%</strong></MudText>
+                        
+                        <MudText Typo="Typo.subtitle2" Class="mt-3 mb-2">Progression vers le niveau suivant:</MudText>
+                        <MudProgressLinear Value="@_statistics.NextLevelProgress" Color="Color.Info" Class="mb-4" />
+                        
+                        <MudText Typo="Typo.subtitle2" Class="mt-3 mb-2">Avantages:</MudText>
+                        @foreach (var benefit in _levelBenefits)
+                        {
+                            <MudText Typo="Typo.body2" Class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.Check" Class="mr-2" Color="Color.Success" Size="Size.Small" />
+                                @benefit
+                            </MudText>
+                        }
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info">
+                            Commencez à recommander des mods pour débloquer les niveaux d'affiliation.
+                        </MudAlert>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        
+        <MudItem xs="12" md="8">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Gérer vos liens d'affiliation</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudButton Variant="Variant.Filled" 
+                                  Color="Color.Primary" 
+                                  StartIcon="@Icons.Material.Filled.Add"
+                                  OnClick="OpenGenerateLinkDialog">
+                            Nouveau lien
+                        </MudButton>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (_loading)
+                    {
+                        <MudSkeleton Width="100%" Height="300px" />
+                    }
+                    else if (_affiliateLinks.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Class="my-4">
+                            Vous n'avez pas encore créé de liens d'affiliation. Cliquez sur "Nouveau lien" pour commencer.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudTable Items="@_affiliateLinks" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
+                            <HeaderContent>
+                                <MudTh>Cible</MudTh>
+                                <MudTh>Lien</MudTh>
+                                <MudTh>Clics</MudTh>
+                                <MudTh>Conversions</MudTh>
+                                <MudTh>Actions</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Cible">
+                                    @GetTargetName(context.TargetType, context.TargetId)
+                                </MudTd>
+                                <MudTd DataLabel="Lien">
+                                    <div class="d-flex align-center">
+                                        <MudText Typo="Typo.body2" Class="text-truncate" Style="max-width: 200px;">
+                                            @context.FullUrl
+                                        </MudText>
+                                        <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" 
+                                                    Size="Size.Small"
+                                                    OnClick="@(() => CopyToClipboard(context.FullUrl))" />
+                                    </div>
+                                </MudTd>
+                                <MudTd DataLabel="Clics">
+                                    @context.TotalClicks
+                                </MudTd>
+                                <MudTd DataLabel="Conversions">
+                                    @context.TotalConversions
+                                </MudTd>
+                                <MudTd DataLabel="Actions">
+                                    <MudIconButton Icon="@Icons.Material.Filled.BarChart" 
+                                                 Size="Size.Small"
+                                                 OnClick="@(() => ViewLinkStatistics(context.Id))" />
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                </MudCardContent>
+            </MudCard>
+            
+            <MudCard Elevation="3" Class="mt-4">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Historique des commissions</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (_loading)
+                    {
+                        <MudSkeleton Width="100%" Height="200px" />
+                    }
+                    else if (_commissions.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Class="my-4">
+                            Vous n'avez pas encore gagné de commissions.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudTable Items="@_commissions" Dense="true" Hover="true" Breakpoint="Breakpoint.Md">
+                            <HeaderContent>
+                                <MudTh>Date</MudTh>
+                                <MudTh>Description</MudTh>
+                                <MudTh>Montant</MudTh>
+                                <MudTh>Statut</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Date">@context.CreatedAt.ToShortDateString()</MudTd>
+                                <MudTd DataLabel="Description">@context.Description</MudTd>
+                                <MudTd DataLabel="Montant">@context.Amount.ToString("C2")</MudTd>
+                                <MudTd DataLabel="Statut">
+                                    <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                                        @context.Status
+                                    </MudChip>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                </MudCardContent>
+                <MudCardActions>
+                    @if (_commissions.Any(c => c.Status == "Pending") && _statistics?.CommissionPending > _programDetails?.MinimumPayoutAmount)
+                    {
+                        <MudButton Variant="Variant.Filled" 
+                                  Color="Color.Success" 
+                                  FullWidth="true"
+                                  OnClick="RequestPayout">
+                            Demander un paiement (@_statistics?.CommissionPending.ToString("C2"))
+                        </MudButton>
+                    }
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        
+        <MudItem xs="12" Class="mt-4">
+            <MudExpansionPanels>
+                <MudExpansionPanel Text="Comment fonctionne le programme d'affiliation?">
+                    <MudText Typo="Typo.body1">
+                        <ol>
+                            <li>
+                                <strong>Créez des liens d'affiliation</strong> - Générez des liens personnalisés pour recommander vos mods préférés.
+                            </li>
+                            <li>
+                                <strong>Partagez avec votre communauté</strong> - Partagez ces liens sur vos réseaux sociaux, blog, chaîne YouTube, etc.
+                            </li>
+                            <li>
+                                <strong>Gagnez des commissions</strong> - Quand quelqu'un achète via votre lien, vous gagnez @(_programDetails?.CommissionPercentage ?? 0)% de commission.
+                            </li>
+                            <li>
+                                <strong>Progression des niveaux</strong> - Plus vous générez de ventes, plus votre niveau d'affiliation augmente, vous donnant droit à des commissions plus élevées.
+                            </li>
+                        </ol>
+                        
+                        <p>Le paiement minimum requis est de @(_programDetails?.MinimumPayoutAmount.ToString("C2") ?? "$25.00"). Les cookies d'affiliation sont valides pendant @(_programDetails?.CookieDuration ?? 30) jours.</p>
+                    </MudText>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private AffiliateProgramInfo? _programDetails;
+    private AffiliateUserStatistics? _statistics;
+    private List<AffiliateLink>? _affiliateLinks;
+    private List<AffiliateCommission>? _commissions;
+    private bool _loading = true;
+    private CancellationTokenSource _cts = new();
+    
+    // Properties to handle CurrentLevel data 
+    private string _levelName = "Standard";
+    private string _levelDescription = "Niveau standard d'affiliation";
+    private decimal _bonusPercentage = 0;
+    private List<string> _levelBenefits = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadAffiliateData();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadAffiliateData()
+    {
+        // Charger les détails du programme d'affiliation
+        _programDetails = await AffiliateService.GetProgramDetailsAsync();
+        
+        // Charger les statistiques de l'utilisateur
+        _statistics = await AffiliateService.GetUserStatisticsAsync();
+        
+        // Déterminer le niveau d'affiliation en fonction de la valeur CurrentLevel
+        if (_statistics != null)
+        {
+            SetLevelProperties(_statistics.CurrentLevel);
+        }
+        
+        // Charger les liens d'affiliation de l'utilisateur
+        _affiliateLinks = await AffiliateService.GetUserAffiliateLinksAsync();
+        
+        // Charger les commissions de l'utilisateur
+        _commissions = await AffiliateService.GetUserCommissionsAsync();
+    }
+    
+    // Méthode pour définir les propriétés de niveau en fonction de l'ID de niveau
+    private void SetLevelProperties(int levelId)
+    {
+        switch (levelId)
+        {
+            case 1:
+                _levelName = "Bronze";
+                _levelDescription = "Niveau de départ pour les affiliés";
+                _bonusPercentage = 0;
+                _levelBenefits = new List<string> { "Commission de base", "Support par email" };
+                break;
+            case 2:
+                _levelName = "Silver";
+                _levelDescription = "Niveau intermédiaire pour affiliés actifs";
+                _bonusPercentage = 2.5m;
+                _levelBenefits = new List<string> { 
+                    "Commission augmentée de 2.5%", 
+                    "Support prioritaire",
+                    "Accès aux promotions exclusives" 
+                };
+                break;
+            case 3:
+                _levelName = "Gold";
+                _levelDescription = "Niveau premium pour affiliés performants";
+                _bonusPercentage = 5m;
+                _levelBenefits = new List<string> { 
+                    "Commission augmentée de 5%", 
+                    "Support VIP",
+                    "Promotions exclusives",
+                    "Paiements prioritaires" 
+                };
+                break;
+            case 4:
+                _levelName = "Platinum";
+                _levelDescription = "Niveau élite pour les meilleurs affiliés";
+                _bonusPercentage = 10m;
+                _levelBenefits = new List<string> { 
+                    "Commission augmentée de 10%", 
+                    "Support dédié 24/7",
+                    "Promotions exclusives",
+                    "Paiements accélérés",
+                    "Commissions sur les renouvellements" 
+                };
+                break;
+            default:
+                _levelName = "Standard";
+                _levelDescription = "Niveau standard d'affiliation";
+                _bonusPercentage = 0;
+                _levelBenefits = new List<string> { "Commission de base" };
+                break;
+        }
+    }
+    
+    private async Task OpenGenerateLinkDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            { "ProgramDetails", _programDetails }
+        };
+        
+        var dialog = await DialogService.ShowAsync<GenerateAffiliateLinkDialog>("Créer un lien d'affiliation", parameters);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            var request = (LinkGenerationRequest)result.Data;
+            try
+            {
+                var newLink = await AffiliateService.GenerateAffiliateLinkAsync(request);
+                _affiliateLinks.Add(newLink);
+                Snackbar.Add("Lien d'affiliation créé avec succès!", Severity.Success);
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+    
+    private async Task ViewLinkStatistics(string linkId)
+    {
+        var parameters = new DialogParameters
+        {
+            { "LinkId", linkId }
+        };
+        
+        await DialogService.ShowAsync<AffiliateLinkStatisticsDialog>("Statistiques du lien", parameters);
+    }
+    
+    private async Task RequestPayout()
+    {
+        var parameters = new DialogParameters
+        {
+            { "PendingAmount", _statistics?.CommissionPending ?? 0 },
+            { "MinimumAmount", _programDetails?.MinimumPayoutAmount ?? 25 }
+        };
+        
+        var dialog = await DialogService.ShowAsync<RequestPayoutDialog>("Demande de paiement", parameters);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            var request = (PayoutRequestData)result.Data;
+            try
+            {
+                await AffiliateService.RequestPayoutAsync(request);
+                Snackbar.Add("Demande de paiement envoyée avec succès!", Severity.Success);
+                
+                // Recharger les données pour refléter les changements
+                await LoadAffiliateData();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+    
+    private async Task CopyToClipboard(string text)
+    {
+        await AffiliateService.CopyToClipboardAsync(text);
+        Snackbar.Add("Lien copié dans le presse-papier!", Severity.Success);
+    }
+    
+    private string GetTargetName(string targetType, string targetId)
+    {
+        if (targetType == "mod")
+        {
+            // Idéalement, récupérer le nom du mod depuis une base de données ou un cache
+            return $"Mod #{targetId}";
+        }
+        else if (targetType == "subscription")
+        {
+            return "Abonnement Premium";
+        }
+        else
+        {
+            return $"{targetType} #{targetId}";
+        }
+    }
+    
+    private Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Pending" => Color.Warning,
+            "Paid" => Color.Success,
+            "Cancelled" => Color.Error,
+            _ => Color.Default
+        };
+    }
+    
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+}

@@ -1,0 +1,27 @@
+@page "/payment-success"
+@inject NavigationManager NavigationManager
+
+<MudContainer Class="d-flex flex-column align-center justify-center py-8" Style="min-height: 60vh;">
+    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" Class="mb-4" Style="font-size: 64px;" />
+    
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4">Paiement réussi !</MudText>
+    
+    <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-6">
+        Nous avons bien reçu votre paiement. Merci pour votre achat.
+        <br />Vous recevrez une confirmation par email dans les prochaines minutes.
+    </MudText>
+    
+    <div class="d-flex gap-3">
+        <MudButton Variant="Variant.Filled" 
+                   Color="Color.Primary" 
+                   OnClick="@(() => NavigationManager.NavigateTo("/"))">
+            Retour à l'accueil
+        </MudButton>
+        
+        <MudButton Variant="Variant.Outlined" 
+                   Color="Color.Secondary" 
+                   OnClick="@(() => NavigationManager.NavigateTo("/profile"))">
+            Voir mes achats
+        </MudButton>
+    </div>
+</MudContainer>

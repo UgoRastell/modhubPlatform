@@ -1,0 +1,312 @@
+@page "/admin/moderation"
+@using Frontend.Models.Moderation
+@using Frontend.Services.Moderation
+@using Microsoft.AspNetCore.Authorization
+@inject IModerationService ModerationService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@attribute [Authorize(Roles = "Admin,Moderator")]
+
+<PageTitle>Tableau de bord de modération - ModsGaming Platform</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudCard>
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h4">Tableau de bord de modération</MudText>
+                <MudText Typo="Typo.subtitle1">Gérez les signalements de contenu et prenez des actions de modération</MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudButton Variant="Variant.Outlined" 
+                          Color="Color.Primary" 
+                          OnClick="LoadStatistics"
+                          StartIcon="@Icons.Material.Filled.Assessment">
+                    Statistiques
+                </MudButton>
+            </CardHeaderActions>
+        </MudCardHeader>
+
+        <MudCardContent>
+            <!-- Filtres -->
+            <MudGrid>
+                <MudItem xs="12" md="3">
+                    <MudSelect T="ReportStatus?" Label="Statut" 
+                              AnchorOrigin="Origin.BottomCenter"
+                              @bind-Value="_selectedStatus">
+                        <MudSelectItem Value="@((ReportStatus?)null)">Tous</MudSelectItem>
+                        <MudSelectItem Value="@(ReportStatus.Pending)">En attente</MudSelectItem>
+                        <MudSelectItem Value="@(ReportStatus.InReview)">En cours de revue</MudSelectItem>
+                        <MudSelectItem Value="@(ReportStatus.Resolved)">Résolu</MudSelectItem>
+                        <MudSelectItem Value="@(ReportStatus.Rejected)">Rejeté</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                
+                <MudItem xs="12" md="3">
+                    <MudSelect T="ContentType?" Label="Type de contenu" 
+                              AnchorOrigin="Origin.BottomCenter"
+                              @bind-Value="_selectedContentType">
+                        <MudSelectItem Value="@((ContentType?)null)">Tous</MudSelectItem>
+                        <MudSelectItem Value="@(ContentType.ForumPost)">Post forum</MudSelectItem>
+                        <MudSelectItem Value="@(ContentType.WikiPage)">Page wiki</MudSelectItem>
+                        <MudSelectItem Value="@(ContentType.Comment)">Commentaire</MudSelectItem>
+                        <MudSelectItem Value="@(ContentType.ModListing)">Mod</MudSelectItem>
+                        <MudSelectItem Value="@(ContentType.UserProfile)">Profil utilisateur</MudSelectItem>
+                        <MudSelectItem Value="@(ContentType.Message)">Message</MudSelectItem>
+                        <MudSelectItem Value="@(ContentType.Review)">Avis</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                
+                <MudItem xs="12" md="3">
+                    <MudSelect T="ReportPriority?" Label="Priorité" 
+                              AnchorOrigin="Origin.BottomCenter"
+                              @bind-Value="_selectedPriority">
+                        <MudSelectItem Value="@((ReportPriority?)null)">Toutes</MudSelectItem>
+                        <MudSelectItem Value="@(ReportPriority.Critical)">Critique</MudSelectItem>
+                        <MudSelectItem Value="@(ReportPriority.High)">Haute</MudSelectItem>
+                        <MudSelectItem Value="@(ReportPriority.Medium)">Moyenne</MudSelectItem>
+                        <MudSelectItem Value="@(ReportPriority.Low)">Basse</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                
+                <MudItem xs="12" md="3">
+                    <MudButton Variant="Variant.Filled" 
+                              Color="Color.Primary" 
+                              OnClick="ApplyFilters"
+                              FullWidth="true"
+                              Class="mt-4">
+                        Appliquer les filtres
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+            <!-- Tableau des signalements -->
+            @if (_loading)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="my-7" />
+            }
+            else if (_reports?.Count > 0)
+            {
+                <MudTable Items="_reports" Hover="true" Dense="true" Bordered="true" Striped="true" Class="mt-4">
+                    <HeaderContent>
+                        <MudTh>ID</MudTh>
+                        <MudTh>Date</MudTh>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Raison</MudTh>
+                        <MudTh>Signalé par</MudTh>
+                        <MudTh>Statut</MudTh>
+                        <MudTh>Priorité</MudTh>
+                        <MudTh Style="text-align: center">Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="ID">@context.Id.Substring(0, Math.Min(8, context.Id.Length))...</MudTd>
+                        <MudTd DataLabel="Date">@context.CreatedAt.ToString("dd/MM/yyyy HH:mm")</MudTd>
+                        <MudTd DataLabel="Type">
+                            <MudChip T="string" Size="Size.Small" Color="@GetContentTypeColor(context.ContentType)">
+                                @context.ContentType.ToString()
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Raison">
+                            <MudTooltip Text="@context.Description">
+                                <MudText>@context.Reason.ToString()</MudText>
+                            </MudTooltip>
+                        </MudTd>
+                        <MudTd DataLabel="Signalé par">@context.ReportedByUsername</MudTd>
+                        <MudTd DataLabel="Statut">
+                            <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                                @context.Status.ToString()
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Priorité">
+                            <MudChip T="string" Size="Size.Small" Color="@GetPriorityColor(context.Priority)">
+                                @context.Priority.ToString()
+                            </MudChip>
+                        </MudTd>
+                        <MudTd Style="text-align: center">
+                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
+                                        Size="Size.Small"
+                                        OnClick="@(() => ViewReportDetails(context))" 
+                                        Title="Voir les détails" />
+                            
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                        Size="Size.Small"
+                                        OnClick="@(() => UpdateReportStatus(context))" 
+                                        Title="Mettre à jour le statut" />
+                            
+                            <MudIconButton Icon="@Icons.Material.Filled.Gavel" 
+                                        Size="Size.Small"
+                                        Color="Color.Warning"
+                                        OnClick="@(() => TakeAction(context))" 
+                                        Title="Prendre une action" />
+                        </MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] { 10, 20, 50, 100 }" />
+                    </PagerContent>
+                </MudTable>
+                
+                <!-- Pagination -->
+                <MudPagination Count="@_totalPages" SelectedChanged="@PageChanged" Class="mt-4 d-flex justify-center" />
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info" Class="mt-3">Aucun signalement ne correspond à vos critères.</MudAlert>
+            }
+        </MudCardContent>
+    </MudCard>
+</MudContainer>
+
+@code {
+    private List<ContentReport> _reports = new();
+    private int _currentPage = 1;
+    private int _pageSize = 20;
+    private int _totalCount;
+    private int _totalPages;
+    private bool _loading = true;
+    
+    private ReportStatus? _selectedStatus;
+    private ContentType? _selectedContentType;
+    private ReportPriority? _selectedPriority;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReportsAsync();
+    }
+    
+    private async Task LoadReportsAsync()
+    {
+        _loading = true;
+        
+        try
+        {
+            var result = await ModerationService.GetAllReportsAsync(
+                _selectedStatus,
+                _selectedContentType,
+                _selectedPriority,
+                _currentPage,
+                _pageSize);
+            
+            _reports = result.Reports;
+            _totalCount = result.TotalCount;
+            _totalPages = result.TotalPages;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des signalements: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+    
+    private async Task PageChanged(int page)
+    {
+        _currentPage = page;
+        await LoadReportsAsync();
+    }
+    
+    private async Task ApplyFilters()
+    {
+        _currentPage = 1; // Réinitialiser à la première page
+        await LoadReportsAsync();
+    }
+    
+    private Color GetContentTypeColor(ContentType type)
+    {
+        return type switch
+        {
+            ContentType.ForumPost => Color.Primary,
+            ContentType.WikiPage => Color.Info,
+            ContentType.Comment => Color.Secondary,
+            ContentType.ModListing => Color.Success,
+            ContentType.UserProfile => Color.Warning,
+            ContentType.Message => Color.Dark,
+            ContentType.Review => Color.Tertiary,
+            _ => Color.Default
+        };
+    }
+    
+    private Color GetStatusColor(ReportStatus status)
+    {
+        return status switch
+        {
+            ReportStatus.Pending => Color.Warning,
+            ReportStatus.InReview => Color.Info,
+            ReportStatus.Resolved => Color.Success,
+            ReportStatus.Rejected => Color.Error,
+            ReportStatus.Duplicate => Color.Default,
+            _ => Color.Default
+        };
+    }
+    
+    private Color GetPriorityColor(ReportPriority priority)
+    {
+        return priority switch
+        {
+            ReportPriority.Critical => Color.Error,
+            ReportPriority.High => Color.Warning,
+            ReportPriority.Medium => Color.Info,
+            ReportPriority.Low => Color.Success,
+            _ => Color.Default
+        };
+    }
+    
+    private void ViewReportDetails(ContentReport report)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("Report", report);
+        
+        DialogService.ShowAsync<ReportDetailsDialog>("Détails du signalement", parameters);
+    }
+    
+    private async Task UpdateReportStatus(ContentReport report)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("Report", report);
+        parameters.Add("CurrentStatus", report.Status);
+        
+        var dialog = await DialogService.ShowAsync<UpdateStatusDialog>("Mettre à jour le statut", parameters);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            await LoadReportsAsync();
+        }
+    }
+    
+    private async Task TakeAction(ContentReport report)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("Report", report);
+        
+        var dialog = await DialogService.ShowAsync<ModeratorActionDialog>("Prendre une action", parameters);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            await LoadReportsAsync();
+        }
+    }
+    
+    private async Task LoadStatistics()
+    {
+        var parameters = new DialogParameters();
+        
+        try
+        {
+            var stats = await ModerationService.GetModerationStatisticsAsync();
+            parameters.Add("Statistics", stats);
+            
+            // Le composant ModerationStatisticsDialog n'existe pas, utilisons un dialogue standard à la place
+            await DialogService.ShowMessageBox(
+                "Statistiques de modération",
+                $"Total des signalements: {stats.TotalReports}, En attente: {stats.PendingReports}, Résolus: {stats.ResolvedReports}",
+                yesText: "OK");
+            
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des statistiques: {ex.Message}", Severity.Error);
+        }
+    }
+}

@@ -1,0 +1,137 @@
+@using MudBlazor
+@using Frontend.Models.Affiliate
+@using Frontend.Services.Affiliate
+@inject IAffiliateService AffiliateService
+
+<MudDialog>
+    <DialogContent>
+        @if (_loading)
+        {
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        }
+        else if (_statistics != null)
+        {
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h6" Class="mb-4">
+                        Statistiques pour lien: @_statistics.Code
+                    </MudText>
+                </MudItem>
+                
+                <MudItem xs="6">
+                    <MudPaper Elevation="0" Class="pa-4" Style="background-color: var(--mud-palette-background-grey);">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">CLICS</MudText>
+                        <MudText Typo="Typo.h5" Color="Color.Dark">@_statistics.Clicks</MudText>
+                    </MudPaper>
+                </MudItem>
+                
+                <MudItem xs="6">
+                    <MudPaper Elevation="0" Class="pa-4" Style="background-color: var(--mud-palette-background-grey);">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">CONVERSIONS</MudText>
+                        <MudText Typo="Typo.h5" Color="Color.Dark">@_statistics.Conversions</MudText>
+                    </MudPaper>
+                </MudItem>
+                
+                <MudItem xs="6">
+                    <MudPaper Elevation="0" Class="pa-4" Style="background-color: var(--mud-palette-background-grey);">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">TAUX DE CONVERSION</MudText>
+                        <MudText Typo="Typo.h5" Color="Color.Dark">@(_statistics.ConversionRate.ToString("P2"))</MudText>
+                    </MudPaper>
+                </MudItem>
+                
+                <MudItem xs="6">
+                    <MudPaper Elevation="0" Class="pa-4" Style="background-color: var(--mud-palette-background-grey);">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">COMMISSIONS</MudText>
+                        <MudText Typo="Typo.h5" Color="Color.Dark">@_statistics.TotalCommissions.ToString("C2")</MudText>
+                    </MudPaper>
+                </MudItem>
+                
+                <MudItem xs="12" Class="mt-4">
+                    <MudText Typo="Typo.subtitle2" Class="mb-2">Évolution des clics (30 derniers jours)</MudText>
+                    <MudChart ChartType="ChartType.Line" ChartSeries="@_clickSeries" XAxisLabels="@_chartLabels" Width="100%" Height="300px"></MudChart>
+                </MudItem>
+            </MudGrid>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Info">
+                Aucune statistique disponible pour ce lien.
+            </MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Close">Fermer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    public IMudDialogInstance MudDialog { get; set; } = default!;
+    
+    [Parameter] 
+    public string LinkId { get; set; } = default!;
+    
+    private AffiliateLinkStatistics? _statistics;
+    private bool _loading = true;
+    private List<ChartSeries> _clickSeries = new();
+    private string[] _chartLabels = new string[30];
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLinkStatistics();
+    }
+    
+    private async Task LoadLinkStatistics()
+    {
+        try
+        {
+            _loading = true;
+            
+            // Dans une application réelle, appeler un service pour récupérer les statistiques
+            _statistics = await AffiliateService.GetLinkStatisticsAsync(LinkId);
+            
+            // Générer des données de graphique pour l'exemple
+            GenerateChartData();
+        }
+        catch (Exception)
+        {
+            _statistics = null;
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+    
+    private void GenerateChartData()
+    {
+        if (_statistics == null) return;
+        
+        // Générer les labels pour les 30 derniers jours
+        for (int i = 0; i < 30; i++)
+        {
+            _chartLabels[i] = DateTime.Now.AddDays(-29 + i).ToString("dd/MM");
+        }
+        
+        // Créer la série de données pour les clics
+        var clickData = new double[30];
+        if (_statistics.DailyClicks != null)
+        {
+            for (int i = 0; i < Math.Min(30, _statistics.DailyClicks.Count); i++)
+            {
+                clickData[i] = _statistics.DailyClicks[i];
+            }
+        }
+        
+        _clickSeries = new List<ChartSeries>
+        {
+            new ChartSeries { Name = "Clics", Data = clickData }
+        };
+    }
+    
+    private void Close()
+    {
+        MudDialog.Close();
+    }
+}

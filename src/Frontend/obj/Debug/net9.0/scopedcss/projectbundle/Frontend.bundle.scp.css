@@ -1,0 +1,206 @@
+/* /Layout/MainLayout.razor.rz.scp.css */
+.page[b-yxi2lmzgn0] {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+main[b-yxi2lmzgn0] {
+    flex: 1;
+}
+
+.sidebar[b-yxi2lmzgn0] {
+    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+}
+
+.top-row[b-yxi2lmzgn0] {
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #d6d5d5;
+    justify-content: flex-end;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+}
+
+    .top-row[b-yxi2lmzgn0]  a, .top-row[b-yxi2lmzgn0]  .btn-link {
+        white-space: nowrap;
+        margin-left: 1.5rem;
+        text-decoration: none;
+    }
+
+    .top-row[b-yxi2lmzgn0]  a:hover, .top-row[b-yxi2lmzgn0]  .btn-link:hover {
+        text-decoration: underline;
+    }
+
+    .top-row[b-yxi2lmzgn0]  a:first-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+@media (max-width: 640.98px) {
+    .top-row[b-yxi2lmzgn0] {
+        justify-content: space-between;
+    }
+
+    .top-row[b-yxi2lmzgn0]  a, .top-row[b-yxi2lmzgn0]  .btn-link {
+        margin-left: 0;
+    }
+}
+
+@media (min-width: 641px) {
+    .page[b-yxi2lmzgn0] {
+        flex-direction: row;
+    }
+
+    .sidebar[b-yxi2lmzgn0] {
+        width: 250px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+
+    .top-row[b-yxi2lmzgn0] {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .top-row.auth[b-yxi2lmzgn0]  a:first-child {
+        flex: 1;
+        text-align: right;
+        width: 0;
+    }
+
+    .top-row[b-yxi2lmzgn0], article[b-yxi2lmzgn0] {
+        padding-left: 2rem !important;
+        padding-right: 1.5rem !important;
+    }
+}
+/* /Shared/MainLayout.razor.rz.scp.css */
+.page[b-gknvvqa2uj] {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-primary, #1b1f27);
+}
+
+main[b-gknvvqa2uj] {
+    flex: 1;
+    padding: 24px;
+}
+
+.sidebar[b-gknvvqa2uj] {
+    background-color: var(--bg-secondary, #232634);
+}
+
+.mud-drawer[b-gknvvqa2uj] {
+    border-right: 1px solid var(--divider, #2f3441);
+}
+
+.mud-nav-link:hover[b-gknvvqa2uj] {
+    background-color: rgba(0, 170, 255, 0.08);
+    transform: scale(1.03);
+    transition: all 0.2s ease-out;
+}
+
+.mud-button[b-gknvvqa2uj] {
+    border-radius: 8px;
+}
+
+.mud-button-filled:hover[b-gknvvqa2uj] {
+    box-shadow: 0 4px 16px rgba(0, 170, 255, 0.27);
+    transform: scale(1.03);
+    transition: all 0.2s ease-out;
+}
+
+.mud-card[b-gknvvqa2uj] {
+    border-radius: 16px;
+    background-color: var(--bg-secondary, #232634);
+}
+
+.mud-paper[b-gknvvqa2uj] {
+    background-color: var(--bg-secondary, #232634);
+}
+
+.mud-table[b-gknvvqa2uj] {
+    background-color: var(--bg-secondary, #232634);
+    color: var(--text-primary, #f5f7fa);
+}
+
+.mud-input[b-gknvvqa2uj] {
+    background-color: var(--bg-primary, #1b1f27);
+}
+
+.mud-input-outlined[b-gknvvqa2uj] {
+    border-color: var(--divider, #2f3441);
+}
+
+.mud-input-outlined:focus-within[b-gknvvqa2uj] {
+    border-color: var(--accent-primary, #00aaff);
+}
+
+.mud-chip[b-gknvvqa2uj] {
+    border-radius: 8px;
+}
+
+/* Effets de glow pour les éléments principaux */
+.mud-theme-primary[b-gknvvqa2uj] {
+    box-shadow: 0 0 8px rgba(0, 170, 255, 0.2);
+}
+
+.mud-theme-secondary[b-gknvvqa2uj] {
+    box-shadow: 0 0 8px rgba(37, 227, 152, 0.2);
+}
+
+/* Animations pour les loaders */
+.mud-progress-circular[b-gknvvqa2uj] {
+    animation: glow-b-gknvvqa2uj 1.5s infinite alternate;
+}
+
+@keyframes glow-b-gknvvqa2uj {
+    from {
+        filter: drop-shadow(0 0 2px rgba(0, 170, 255, 0.5));
+    }
+    to {
+        filter: drop-shadow(0 0 8px rgba(37, 227, 152, 0.5));
+    }
+}
+/* /Shared/NavMenu.razor.rz.scp.css */
+/* Styles for the navigation menu */
+.mud-nav-link[b-9ljbyqraro] {
+    padding: 12px 16px;
+    transition: all 0.2s ease;
+}
+
+.mud-nav-link:hover .mud-nav-link-icon[b-9ljbyqraro] {
+    transform: translateX(4px);
+    transition: transform 0.2s ease;
+}
+
+.mud-navmenu .mud-nav-group > .mud-nav-link[b-9ljbyqraro] {
+    font-weight: 500;
+}
+
+/* Animation for dropdown icons */
+.mud-nav-group .mud-nav-link .mud-nav-link-expand-icon[b-9ljbyqraro] {
+    transition: transform 0.3s ease;
+}
+
+.mud-nav-group.expanded .mud-nav-link .mud-nav-link-expand-icon[b-9ljbyqraro] {
+    transform: rotate(180deg);
+}
+
+/* Login/register section in drawer */
+.auth-prompt[b-9ljbyqraro] {
+    padding: 16px;
+    border-radius: 8px;
+    background-color: rgba(0,0,0,0.1);
+    margin: 16px 8px;
+}
+
+.section-header[b-9ljbyqraro] {
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    font-weight: 500;
+}

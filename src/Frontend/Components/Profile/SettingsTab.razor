@@ -1,0 +1,466 @@
+@using Frontend.Models
+@using System.ComponentModel.DataAnnotations
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudText Typo="Typo.h5" Class="mb-4">Paramètres du compte</MudText>
+    </MudItem>
+    
+    <MudItem xs="12">
+        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+            <!-- Profile Settings -->
+            <MudTabPanel Text="Profil" Icon="@Icons.Material.Filled.Person">
+                <EditForm Model="@editedProfile" OnValidSubmit="SaveProfileChanges">
+                    <DataAnnotationsValidator />
+                    
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="editedProfile.Username" 
+                                          Label="Nom d'utilisateur" 
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          Counter="32"
+                                          HelperText="Entre 3 et 32 caractères, doit être unique" />
+                            <ValidationMessage For="@(() => editedProfile.Username)" />
+                        </MudItem>
+                        
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="editedProfile.Email" 
+                                          Label="Email" 
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          HelperText="Visible uniquement par vous" />
+                            <ValidationMessage For="@(() => editedProfile.Email)" />
+                        </MudItem>
+                        
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="editedProfile.ShortBio" 
+                                          Label="Biographie" 
+                                          Variant="Variant.Outlined"
+                                          Counter="280"
+                                          Placeholder="Parlez de vous en quelques mots..."
+                                          Lines="3"
+                                          HelperText="Markdown limité autorisé (**, _, ``, liens)" />
+                            <ValidationMessage For="@(() => editedProfile.ShortBio)" />
+                        </MudItem>
+                        
+                        <MudItem xs="12" Class="mb-4">
+                            <MudExpansionPanel Class="mb-2" Text="Liens externes" Icon="@Icons.Material.Filled.Link">
+                                <MudGrid>
+                                    @foreach (var linkType in new[] { "Discord", "Twitch", "YouTube", "Website" })
+                                    {
+                                        var link = GetLinkByType(linkType);
+                                        <MudItem xs="12" sm="6">
+                                            <MudTextField Value="@(link?.Url ?? "")" 
+                                                        Label="@linkType"
+                                                        Variant="Variant.Outlined"
+                                                        Adornment="Adornment.Start"
+                                                        AdornmentIcon="@GetIconByType(linkType)"
+                                                        OnChange="@((string newValue) => UpdateExternalLink(linkType, newValue))" />
+                                        </MudItem>
+                                    }
+                                </MudGrid>
+                            </MudExpansionPanel>
+                        </MudItem>
+                        
+                        <MudItem xs="12" Class="d-flex justify-end">
+                            <MudButton ButtonType="ButtonType.Submit"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       Disabled="isSaving">
+                                @if (isSaving)
+                                {
+                                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                    <MudText Class="ms-2">Enregistrement...</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>Enregistrer</MudText>
+                                }
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </EditForm>
+            </MudTabPanel>
+            
+            <!-- Security Settings -->
+            <MudTabPanel Text="Sécurité" Icon="@Icons.Material.Filled.Security">
+                <MudText Typo="Typo.h6" Class="mb-4">Sécurité du compte</MudText>
+                
+                <MudPaper Class="pa-4 mb-6">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2">Mot de passe</MudText>
+                    <MudButton Color="Color.Primary" 
+                              Variant="Variant.Outlined"
+                              OnClick="OpenChangePasswordDialog">
+                        Changer le mot de passe
+                    </MudButton>
+                </MudPaper>
+                
+                <MudPaper Class="pa-4 mb-6">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2">Authentification à deux facteurs</MudText>
+                    <MudSwitch T="bool" @bind-Checked="is2FAEnabled" 
+                              Color="Color.Primary"
+                              Label="Activer la 2FA" 
+                              UnCheckedLabel="2FA désactivée"
+                              LabelPosition="LabelPosition.End"
+                              OnChange="Toggle2FA" />
+                    
+                    @if (is2FAEnabled)
+                    {
+                        <div class="mt-4">
+                            <MudText Class="mb-2">Scannez ce QR code avec votre application d'authentification</MudText>
+                            <div class="d-flex justify-center mb-3">
+                                <MudImage Src="/images/mock-qr-code.png" Alt="QR Code pour 2FA" 
+                                         Height="180" Width="180" ObjectFit="ObjectFit.Cover" />
+                            </div>
+                            <MudTextField @bind-Value="twoFactorCode"
+                                         Label="Code d'authentification" 
+                                         Counter="6"
+                                         MaxLength="6"
+                                         Variant="Variant.Outlined" />
+                            <MudButton Color="Color.Primary" 
+                                      Variant="Variant.Filled"
+                                      Class="mt-2"
+                                      OnClick="Verify2FA">
+                                Vérifier & Activer
+                            </MudButton>
+                        </div>
+                    }
+                </MudPaper>
+                
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2">Sessions actives</MudText>
+                    <MudSimpleTable Hover="true" Striped="true" Class="mt-2">
+                        <thead>
+                            <tr>
+                                <th>Appareil</th>
+                                <th>Emplacement</th>
+                                <th>Dernière activité</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Windows Chrome</td>
+                                <td>Paris, France</td>
+                                <td>Maintenant</td>
+                                <td><MudChip T="string" Color="Color.Success" Size="Size.Small">Actuelle</MudChip></td>
+                            </tr>
+                            <tr>
+                                <td>iPhone Safari</td>
+                                <td>Lyon, France</td>
+                                <td>Il y a 2 heures</td>
+                                <td><MudIconButton Icon="@Icons.Material.Filled.Logout" Size="Size.Small" Color="Color.Error" /></td>
+                            </tr>
+                            <tr>
+                                <td>Android Firefox</td>
+                                <td>Marseille, France</td>
+                                <td>Il y a 3 jours</td>
+                                <td><MudIconButton Icon="@Icons.Material.Filled.Logout" Size="Size.Small" Color="Color.Error" /></td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                    
+                    <MudButton Color="Color.Error" 
+                              Variant="Variant.Text"
+                              Class="mt-4"
+                              OnClick="DeactivateAllSessions">
+                        Déconnecter toutes les sessions
+                    </MudButton>
+                </MudPaper>
+            </MudTabPanel>
+            
+            <!-- Notification Settings -->
+            <MudTabPanel Text="Notifications" Icon="@Icons.Material.Filled.Notifications">
+                <MudText Typo="Typo.h6" Class="mb-4">Préférences de notification</MudText>
+                
+                <MudPaper Class="pa-4 mb-4">
+                    <MudText Typo="Typo.subtitle1" Class="mb-4">Email</MudText>
+                    
+                    <MudCheckBox T="bool" @bind-Checked="notifyUpdates" 
+                                 Label="Mises à jour des mods suivis"
+                                 Color="Color.Primary" />
+                    
+                    <MudCheckBox T="bool" @bind-Checked="notifyComments" 
+                                 Label="Commentaires sur mes mods"
+                                 Color="Color.Primary" />
+                    
+                    <MudCheckBox T="bool" @bind-Checked="notifyNewFollowers" 
+                                 Label="Nouveaux abonnés"
+                                 Color="Color.Primary" />
+                    
+                    <MudCheckBox T="bool" @bind-Checked="notifyNewsletter" 
+                                 Label="Newsletter mensuelle"
+                                 Color="Color.Primary" />
+                </MudPaper>
+                
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.subtitle1" Class="mb-4">Dans l'application</MudText>
+                    
+                    <MudCheckBox T="bool" @bind-Checked="inAppNotifyAll" 
+                                 Label="Toutes les notifications"
+                                 Color="Color.Primary" />
+                    
+                    <MudSlider @bind-Value="notificationFrequency" 
+                              Color="Color.Primary"
+                              Min="0" Max="3" 
+                              ValueLabel="true" 
+                              Class="mt-4">
+                        Fréquence des notifications (@GetNotificationFrequencyLabel(notificationFrequency))
+                    </MudSlider>
+                    
+                    <MudButton Color="Color.Primary" 
+                              Variant="Variant.Filled"
+                              Class="mt-4"
+                              OnClick="SaveNotificationPreferences">
+                        Enregistrer les préférences
+                    </MudButton>
+                </MudPaper>
+            </MudTabPanel>
+            
+            <!-- RGPD/Privacy Settings -->
+            <MudTabPanel Text="RGPD" Icon="@Icons.Material.Filled.PrivacyTip">
+                <MudText Typo="Typo.h6" Class="mb-4">Vos données personnelles</MudText>
+                
+                <MudAlert Severity="Severity.Info" Class="mb-4" Variant="Variant.Filled">
+                    En conformité avec le RGPD, vous pouvez exporter ou supprimer vos données personnelles à tout moment.
+                </MudAlert>
+                
+                <MudPaper Class="pa-4 mb-4">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2">Exporter mes données</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-4">
+                        Téléchargez une copie complète de vos données personnelles au format JSON, 
+                        incluant vos informations de profil, activités et préférences.
+                    </MudText>
+                    
+                    <MudButton Color="Color.Primary" 
+                              Variant="Variant.Outlined"
+                              StartIcon="@Icons.Material.Filled.Download"
+                              OnClick="ExportData">
+                        Exporter mes données
+                    </MudButton>
+                </MudPaper>
+                
+                <MudPaper Class="pa-4 mb-4">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2" Color="Color.Error">Supprimer mon compte</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-4">
+                        Cette action supprimera définitivement votre compte et toutes vos données personnelles dans un délai de 30 jours,
+                        conformément à notre politique de confidentialité.
+                    </MudText>
+                    
+                    <MudButton Color="Color.Error" 
+                              Variant="Variant.Outlined"
+                              StartIcon="@Icons.Material.Filled.DeleteForever"
+                              OnClick="OpenDeleteAccountDialog">
+                        Supprimer mon compte
+                    </MudButton>
+                </MudPaper>
+                
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2">Historique de données</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-2">
+                        Nous conservons l'historique de vos actions pendant 90 jours à des fins de sécurité et de support.
+                    </MudText>
+                    
+                    <MudSimpleTable Striped="true" Hover="true" Class="mt-4">
+                        <thead>
+                            <tr>
+                                <th>Type de données</th>
+                                <th>Durée de conservation</th>
+                                <th>Raison</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Profil utilisateur</td>
+                                <td>Jusqu'à suppression du compte</td>
+                                <td>Fonctionnalité de base</td>
+                            </tr>
+                            <tr>
+                                <td>Historique d'activité</td>
+                                <td>90 jours</td>
+                                <td>Sécurité et support</td>
+                            </tr>
+                            <tr>
+                                <td>Logs de connexion</td>
+                                <td>30 jours</td>
+                                <td>Sécurité</td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudPaper>
+            </MudTabPanel>
+        </MudTabs>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public UserProfile? UserProfile { get; set; }
+    
+    [Parameter]
+    public EventCallback<UserProfile> OnProfileUpdated { get; set; }
+    
+    private UserProfile editedProfile = new UserProfile();
+    private bool isSaving = false;
+    
+    // Security settings
+    private bool is2FAEnabled = false;
+    private string twoFactorCode = string.Empty;
+    
+    // Notification settings
+    private bool notifyUpdates = true;
+    private bool notifyComments = true;
+    private bool notifyNewFollowers = true;
+    private bool notifyNewsletter = false;
+    private bool inAppNotifyAll = true;
+    private int notificationFrequency = 2;
+    
+    protected override void OnInitialized()
+    {
+        if (UserProfile != null)
+        {
+            // Clone the user profile to avoid modifying the original directly
+            editedProfile = new UserProfile
+            {
+                Id = UserProfile.Id,
+                Username = UserProfile.Username,
+                Email = UserProfile.Email,
+                ShortBio = UserProfile.ShortBio,
+                ExternalLinks = new List<ExternalLink>(UserProfile.ExternalLinks)
+            };
+        }
+    }
+    
+    private ExternalLink? GetLinkByType(string type)
+    {
+        return editedProfile.ExternalLinks?.FirstOrDefault(l => l.Type == type);
+    }
+    
+    private string GetIconByType(string type)
+    {
+        return type.ToLower() switch
+        {
+            "discord" => "fab fa-discord",
+            "twitch" => "fab fa-twitch",
+            "youtube" => "fab fa-youtube",
+            "website" => "fas fa-globe",
+            _ => "fas fa-link"
+        };
+    }
+    
+    private void UpdateExternalLink(string type, string url)
+    {
+        var existingLink = editedProfile.ExternalLinks?.FirstOrDefault(l => l.Type == type);
+        
+        if (existingLink != null)
+        {
+            existingLink.Url = url;
+        }
+        else if (!string.IsNullOrEmpty(url))
+        {
+            editedProfile.ExternalLinks.Add(new ExternalLink
+            {
+                Type = type,
+                Url = url,
+                Icon = GetIconByType(type)
+            });
+        }
+    }
+    
+    private async Task SaveProfileChanges()
+    {
+        isSaving = true;
+        
+        try
+        {
+            // In a real implementation, call the API to update the profile
+            // await Http.PutAsJsonAsync("/api/users/me", editedProfile);
+            
+            // Simulate API call
+            await Task.Delay(1000);
+            
+            Snackbar.Add("Profil mis à jour avec succès", Severity.Success);
+            await OnProfileUpdated.InvokeAsync(editedProfile);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors de la mise à jour du profil : {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+    
+    private void OpenChangePasswordDialog()
+    {
+        // In a real implementation, this would open a dialog to change password
+        Snackbar.Add("Fonctionnalité de changement de mot de passe en cours d'implémentation", Severity.Info);
+    }
+    
+    private void Toggle2FA(bool value)
+    {
+        // In a real implementation, this would handle the 2FA toggle
+        Snackbar.Add(value ? "2FA en cours d'activation..." : "2FA désactivée", Severity.Info);
+    }
+    
+    private void Verify2FA()
+    {
+        // In a real implementation, this would verify the 2FA code
+        if (twoFactorCode.Length == 6)
+        {
+            Snackbar.Add("2FA activée avec succès", Severity.Success);
+            twoFactorCode = string.Empty;
+        }
+        else
+        {
+            Snackbar.Add("Le code doit contenir 6 chiffres", Severity.Error);
+        }
+    }
+    
+    private void DeactivateAllSessions()
+    {
+        // In a real implementation, this would deactivate all sessions
+        Snackbar.Add("Toutes les sessions ont été déconnectées", Severity.Success);
+    }
+    
+    private string GetNotificationFrequencyLabel(double value)
+    {
+        return ((int)value) switch
+        {
+            0 => "Aucune",
+            1 => "Faible",
+            2 => "Moyenne",
+            3 => "Élevée",
+            _ => "Moyenne"
+        };
+    }
+    
+    private async Task SaveNotificationPreferences()
+    {
+        // In a real implementation, call API to save notification preferences
+        // await Http.PutAsJsonAsync("/api/users/me/notifications", new { ... });
+        
+        await Task.Delay(500);
+        Snackbar.Add("Préférences de notification enregistrées", Severity.Success);
+    }
+    
+    private async Task ExportData()
+    {
+        // In a real implementation, call API to export data
+        // var response = await Http.GetAsync("/api/users/me/export");
+        
+        await Task.Delay(1000);
+        Snackbar.Add("Export des données en cours, vous recevrez un email contenant vos données", Severity.Success);
+    }
+    
+    private void OpenDeleteAccountDialog()
+    {
+        // In a real implementation, open a dialog to confirm account deletion
+        Snackbar.Add("Fonctionnalité de suppression de compte en cours d'implémentation", Severity.Warning);
+    }
+}
