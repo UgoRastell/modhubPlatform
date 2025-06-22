@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-DOMAIN_NAME="www.modhub.fr."
+DOMAIN_NAME="modhub.fr"
 EMAIL_LETSENCRYPT="votre@email.fr" # <-- à personnaliser !
 
 echo "=== Déploiement automatisé ModHub ==="
@@ -62,15 +62,15 @@ fi
 echo "Arrêt éventuel des anciens conteneurs..."
 docker-compose -f docker-compose.prod.yml down || true
 
-# 8. Génération/Renouvellement certificat SSL Let's Encrypt
-if [ ! -d "/etc/letsencrypt/live/${DOMAIN_NAME}" ]; then
-  echo "Génération du certificat SSL Let's Encrypt pour ${DOMAIN_NAME}..."
-  docker run -it --rm -v "$(pwd)/docker/letsencrypt/www:/var/www/certbot" \
-    -v "/etc/letsencrypt:/etc/letsencrypt" certbot/certbot certonly \
-    --webroot -w /var/www/certbot -d ${DOMAIN_NAME} --email ${EMAIL_LETSENCRYPT} --agree-tos --no-eff-email
-  # Copie les certificats dans le dossier du projet (pour montage docker)
-  cp -L /etc/letsencrypt/live/${DOMAIN_NAME}/fullchain.pem ./docker/letsencrypt/live/${DOMAIN_NAME}/
-  cp -L /etc/letsencrypt/live/${DOMAIN_NAME}/privkey.pem ./docker/letsencrypt/live/${DOMAIN_NAME}/
+# 8. Générer un certificat auto-signé si non présent
+if [ ! -f "./docker/ssl/certs/nginx-selfsigned.crt" ]; then
+  echo "Génération d’un certificat SSL auto-signé pour tests..."
+  mkdir -p ./docker/ssl/certs ./docker/ssl/private
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout ./docker/ssl/private/nginx-selfsigned.key \
+    -out ./docker/ssl/certs/nginx-selfsigned.crt \
+    -subj "/CN=${DOMAIN_NAME}"
+  openssl dhparam -out ./docker/ssl/certs/dhparam.pem 2048
 fi
 
 # 9. Lancement stack Docker
