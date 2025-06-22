@@ -77,10 +77,10 @@ echo "Vérification de l'état des conteneurs..."
 docker-compose -f docker-compose.prod.yml ps
 
 # Configuration du renouvellement automatique des certificats SSL
-if ! grep -q "certbot renew" /etc/crontab; then
-  echo "Configuration du renouvellement automatique des certificats SSL..."
-  echo "0 3 * * * root certbot renew --quiet && cp -L /etc/letsencrypt/live/modhub.fr/fullchain.pem /etc/letsencrypt/live/modhub.fr/privkey.pem $(pwd)/docker/letsencrypt/live/modhub.fr/ && docker-compose -f $(pwd)/docker-compose.prod.yml restart nginx" >> /etc/crontab
-fi
+# if ! grep -q "certbot renew" /etc/crontab; then
+#   echo "Configuration du renouvellement automatique des certificats SSL..."
+#   echo "0 3 * * * root certbot renew --quiet && cp -L /etc/letsencrypt/live/modhub.fr/fullchain.pem /etc/letsencrypt/live/modhub.fr/privkey.pem $(pwd)/docker/letsencrypt/live/modhub.fr/ && docker-compose -f $(pwd)/docker-compose.prod.yml restart nginx" >> /etc/crontab
+# fi
 
 echo "=== Déploiement terminé avec succès ==="
 echo "Vous pouvez maintenant accéder à ModHub sur https://modhub.fr"
