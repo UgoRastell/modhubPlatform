@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-DOMAIN_NAME="modhub.fr"
+DOMAIN_NAME="www.modhub.fr"
 EMAIL_LETSENCRYPT="votre@email.fr" # <-- à personnaliser !
 
 echo "=== Déploiement automatisé ModHub ==="
@@ -44,7 +44,6 @@ mkdir -p docker/data/mongo
 mkdir -p docker/data/redis
 mkdir -p docker/data/mods
 mkdir -p docker/data/prometheus
-mkdir -p docker/data/grafana
 
 # 6. Génération fichier .env
 if [ ! -f ".env" ]; then
@@ -53,9 +52,6 @@ if [ ! -f ".env" ]; then
 MONGO_ROOT_USER=root
 MONGO_ROOT_PASSWORD=changeme
 JWT_SECRET=your_jwt_secret_key
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
-GRAFANA_ADMIN_PASSWORD=admin
 DOMAIN_NAME=${DOMAIN_NAME}
 EOL
   echo "IMPORTANT : Modifiez le fichier .env avant de relancer le script !"
