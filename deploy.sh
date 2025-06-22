@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-DOMAIN_NAME="www.modhub.fr"
+DOMAIN_NAME="www.modhub.fr."
 EMAIL_LETSENCRYPT="votre@email.fr" # <-- à personnaliser !
 
 echo "=== Déploiement automatisé ModHub ==="
