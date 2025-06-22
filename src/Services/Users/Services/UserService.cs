@@ -2,6 +2,8 @@ using System.Text.Json;
 using UsersService.Data;
 using UsersService.Models;
 using UsersService.Models.DTOs;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace UsersService.Services;
 
@@ -12,6 +14,7 @@ public interface IUserService
     Task<UserProfileResponse?> UpdateProfileAsync(string userId, UpdateProfileRequest request);
     Task<bool> UpdatePasswordAsync(string userId, UpdatePasswordRequest request);
     Task<bool> UpdatePreferencesAsync(string userId, UpdatePreferencesRequest request);
+    Task<AvatarUploadResponse?> UploadAvatarAsync(string userId, IFormFile file);
     
     // Gestion RGPD
     Task<bool> UpdateConsentAsync(string userId, GdprConsentUpdateRequest request);
@@ -24,15 +27,18 @@ public class UserService : IUserService
     private readonly IUserRepository _userRepository;
     private readonly IAuthService _authService;
     private readonly ILogger<UserService> _logger;
+    private readonly IConfiguration _configuration;
 
     public UserService(
         IUserRepository userRepository,
         IAuthService authService,
-        ILogger<UserService> logger)
+        ILogger<UserService> logger,
+        IConfiguration configuration)
     {
         _userRepository = userRepository;
         _authService = authService;
         _logger = logger;
+        _configuration = configuration;
     }
 
     public async Task<UserProfileResponse?> GetProfileAsync(string userId)
@@ -119,22 +125,84 @@ public class UserService : IUserService
             return false;
         }
 
-        // Mise à jour des préférences
+        // Mettre à jour les préférences ou les créer si elles n'existent pas
+        user.Preferences ??= new UserPreferences();
+        
+        // Mise à jour des préférences uniquement si elles sont fournies dans la requête
         if (request.EmailNotifications.HasValue)
             user.Preferences.EmailNotifications = request.EmailNotifications.Value;
             
         if (request.MarketingEmails.HasValue)
             user.Preferences.MarketingEmails = request.MarketingEmails.Value;
-            
+        
         if (!string.IsNullOrEmpty(request.Theme))
             user.Preferences.Theme = request.Theme;
             
         if (!string.IsNullOrEmpty(request.Language))
             user.Preferences.Language = request.Language;
-
+        
         await _userRepository.UpdateAsync(userId, user);
         _logger.LogInformation("Préférences mises à jour pour l'utilisateur: {UserId}", userId);
+        
         return true;
+    }
+
+    public async Task<AvatarUploadResponse?> UploadAvatarAsync(string userId, IFormFile file)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            _logger.LogWarning("Tentative d'upload d'avatar pour un utilisateur inexistant: {UserId}", userId);
+            return null;
+        }
+        
+        // Générer un nom unique pour le fichier pour éviter les collisions
+        var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+        var fileName = $"{userId}_{timestamp}{Path.GetExtension(file.FileName).ToLowerInvariant()}";
+        
+        // Chemin où les avatars sont stockés
+        var uploadsDirectory = _configuration["Storage:AvatarsPath"] ?? "wwwroot/avatars";
+        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), uploadsDirectory);
+        
+        // S'assurer que le répertoire existe
+        if (!Directory.Exists(fullPath))
+        {
+            Directory.CreateDirectory(fullPath);
+        }
+        
+        var filePath = Path.Combine(fullPath, fileName);
+        
+        try
+        {
+            // Sauvegarder le fichier
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+            
+            // Déterminer l'URL publique de l'avatar
+            var baseUrl = _configuration["BaseUrls:UsersService"] ?? "http://localhost:5002";
+            var avatarRelativePath = $"avatars/{fileName}";
+            var avatarUrl = $"{baseUrl}/{avatarRelativePath}";
+            
+            // Mettre à jour l'avatar de l'utilisateur dans la base de données
+            user.ProfilePictureUrl = avatarUrl;
+            await _userRepository.UpdateAsync(userId, user);
+            
+            _logger.LogInformation("Avatar mis à jour pour l'utilisateur: {UserId}, URL: {AvatarUrl}", userId, avatarUrl);
+            
+            return new AvatarUploadResponse
+            {
+                AvatarUrl = avatarUrl,
+                Message = "Avatar mis à jour avec succès",
+                UploadedAt = DateTime.UtcNow
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de l'upload d'avatar pour l'utilisateur {UserId}", userId);
+            return null;
+        }
     }
 
     public async Task<bool> UpdateConsentAsync(string userId, GdprConsentUpdateRequest request)

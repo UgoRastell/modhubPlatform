@@ -45,6 +45,7 @@ builder.Services.AddScoped<IModService, ModService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IGameService, GameService>();
 
 // Configuration des services MudBlazor
 builder.Services.AddMudServices(config =>

@@ -52,6 +52,9 @@ namespace Frontend.Models
     {
         public required string Id { get; set; }
         public required string Name { get; set; }
+        public string ShortDescription { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = string.Empty;
+        public int ModCount { get; set; }
     }
 
     public class Tag

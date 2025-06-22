@@ -1,7 +1,13 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
 @using MudBlazor
+@using System.Net.Http.Json
+@using System.Text.Json
+@using System.Net.Http.Headers
+@using Frontend.Services
 @inject ISnackbar Snackbar
+@inject HttpClient Http
+@inject ILocalStorageService LocalStorage
 
 <MudCard Class="settings-card mb-4">
     <EditForm Model="@profile" OnValidSubmit="SaveProfileChanges">
@@ -123,40 +129,145 @@
 @code {
     private ProfileModel profile = new();
     private bool isSaving = false;
+    private bool isLoading = true;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Here we would typically load the profile data from the API
-        // For demonstration, let's populate with mock data
-        profile = new ProfileModel
+        await LoadProfile();
+    }
+
+    private async Task LoadProfile()
+    {
+        try
         {
-            Username = "ModSuperUser",
-            Bio = "Amateur de jeux indépendants et créateur de mods depuis 2018. Spécialisé dans les mods de graphismes et d'UI.",
-            AvatarUrl = "",
-            SocialLinks = new SocialLinks
+            isLoading = true;
+
+            // Récupérer le token d'authentification du stockage local
+            var token = await LocalStorage.GetItemAsync<string>("authToken");
+            if (string.IsNullOrEmpty(token))
             {
-                Discord = "ModSuper#1234",
-                Youtube = "ModSuperChannel",
-                Twitch = "modsuperstreamer",
-                Website = "https://modsupersite.com"
+                Snackbar.Add("Vous devez être connecté pour accéder à votre profil", Severity.Warning);
+                return;
             }
-        };
+
+            // Ajouter le token à la requête
+            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            // Appeler l'API pour obtenir les données du profil
+            var response = await Http.GetAsync("/api/users/profile");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var apiProfile = await response.Content.ReadFromJsonAsync<UserProfileResponse>();
+                if (apiProfile != null)
+                {
+                    // Mapper les données API vers notre modèle ProfileModel
+                    profile = new ProfileModel
+                    {
+                        Username = apiProfile.Username,
+                        Bio = apiProfile.Bio ?? "",
+                        AvatarUrl = apiProfile.ProfilePictureUrl ?? "",
+                        // Initialiser SocialLinks si nécessaire (à adapter si votre API retourne ces informations)
+                        SocialLinks = new SocialLinks
+                        {
+                            // Ces champs pourraient être initialisés depuis l'API si disponible
+                            Discord = "",
+                            Youtube = "",
+                            Twitch = "",
+                            Website = ""
+                        }
+                    };
+                }
+            }
+            else
+            {
+                Snackbar.Add("Erreur lors du chargement du profil", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
     }
 
     private async Task UploadAvatar(InputFileChangeEventArgs e)
     {
         if (e.File != null)
         {
-            // Here we would typically upload the file to an API
-            // For demonstration purposes, we'll just simulate a successful upload
-            
-            // Simulate upload processing
-            await Task.Delay(1000);
-            
-            // Update the avatar URL (would come from the API response in real implementation)
-            profile.AvatarUrl = "https://example.com/avatar.jpg"; // Mock URL
-            
-            Snackbar.Add("Avatar mis à jour avec succès", Severity.Success);
+            try
+            {
+                // Vérifier la taille du fichier (max 2MB)
+                if (e.File.Size > 2 * 1024 * 1024)
+                {
+                    Snackbar.Add("Le fichier ne doit pas dépasser 2MB", Severity.Warning);
+                    return;
+                }
+
+                // Vérifier l'extension du fichier
+                var extension = Path.GetExtension(e.File.Name).ToLowerInvariant();
+                if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
+                {
+                    Snackbar.Add("Seuls les formats JPG et PNG sont acceptés", Severity.Warning);
+                    return;
+                }
+
+                // Récupérer le token d'authentification
+                var token = await LocalStorage.GetItemAsync<string>("authToken");
+                if (string.IsNullOrEmpty(token))
+                {
+                    Snackbar.Add("Vous devez être connecté pour modifier votre avatar", Severity.Warning);
+                    return;
+                }
+
+                // Préparer le contenu multipart
+                using var content = new MultipartFormDataContent();
+                
+                // Lire le fichier en mémoire
+                var ms = new MemoryStream();
+                await e.File.OpenReadStream(maxAllowedSize: 2 * 1024 * 1024).CopyToAsync(ms);
+                ms.Position = 0;
+                
+                // Créer un StreamContent à partir du flux de mémoire
+                var fileContent = new StreamContent(ms);
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(e.File.ContentType);
+                
+                // Ajouter le fichier au contenu multipart
+                content.Add(
+                    content: fileContent,
+                    name: "file",
+                    fileName: e.File.Name
+                );
+                
+                // Configurer l'en-tête d'autorisation
+                Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                
+                // Envoyer la requête à l'API
+                var response = await Http.PostAsync("/api/users/avatar", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<AvatarUploadResponse>();
+                    if (result != null)
+                    {
+                        // Mettre à jour l'URL de l'avatar avec celle retournée par l'API
+                        profile.AvatarUrl = result.AvatarUrl;
+                        Snackbar.Add(result.Message, Severity.Success);
+                    }
+                }
+                else
+                {
+                    Snackbar.Add("Erreur lors de l'upload de l'avatar", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+            }
         }
     }
 
@@ -166,11 +277,41 @@
         
         try
         {
-            // Here we would typically save the profile to an API
-            // Simulate API call
-            await Task.Delay(1000);
+            // Récupérer le token d'authentification
+            var token = await LocalStorage.GetItemAsync<string>("authToken");
+            if (string.IsNullOrEmpty(token))
+            {
+                Snackbar.Add("Vous devez être connecté pour modifier votre profil", Severity.Warning);
+                return;
+            }
             
-            Snackbar.Add("Profil mis à jour avec succès", Severity.Success);
+            // Préparer l'objet de mise à jour
+            var updateRequest = new UpdateProfileRequest
+            {
+                Username = profile.Username,
+                Bio = profile.Bio,
+                // Ne pas inclure AvatarUrl ici car c'est géré par l'upload séparé
+            };
+            
+            // Configurer l'en-tête d'autorisation
+            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            
+            // Envoyer la requête à l'API
+            var response = await Http.PutAsJsonAsync("/api/users/profile", updateRequest);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<UserProfileResponse>();
+                if (result != null)
+                {
+                    Snackbar.Add("Profil mis à jour avec succès", Severity.Success);
+                }
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Erreur lors de la mise à jour du profil: {errorContent}", Severity.Error);
+            }
         }
         catch (Exception ex)
         {
@@ -203,5 +344,32 @@
         public string Youtube { get; set; }
         public string Twitch { get; set; }
         public string Website { get; set; }
+    }
+
+    private class UserProfileResponse
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string? ProfilePictureUrl { get; set; }
+        public string? Bio { get; set; }
+        public List<string> Roles { get; set; } = new List<string>();
+        public DateTime CreatedAt { get; set; }
+        public DateTime? LastLogin { get; set; }
+    }
+
+    private class UpdateProfileRequest
+    {
+        public string Username { get; set; } = string.Empty;
+        public string? Bio { get; set; }
+    }
+
+    private class AvatarUploadResponse
+    {
+        public string AvatarUrl { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public DateTime UploadedAt { get; set; }
     }
 }

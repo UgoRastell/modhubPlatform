@@ -8,7 +8,8 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - ./docker/data/mongo:/data/db
+      - ./docker/data/mongo_clean:/data/db
+    command: ["--bind_ip", "0.0.0.0", "--wiredTigerCacheSizeGB", "1"]
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example

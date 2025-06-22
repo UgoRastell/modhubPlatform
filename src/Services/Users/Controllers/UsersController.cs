@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using UsersService.Models.DTOs;
 using UsersService.Services;
+using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace UsersService.Controllers;
 
@@ -172,6 +174,43 @@ public class UsersController : ControllerBase
 
         _logger.LogInformation("Données exportées pour l'utilisateur: {UserId}", userId);
         return Ok(exportData);
+    }
+
+    [HttpPost("avatar")]
+    [ProducesResponseType(typeof(AvatarUploadResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UploadAvatar(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(new { message = "Aucun fichier n'a été envoyé" });
+        }
+
+        if (file.Length > 2 * 1024 * 1024) // 2MB max
+        {
+            return BadRequest(new { message = "La taille du fichier ne doit pas dépasser 2 MB" });
+        }
+
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
+        {
+            return BadRequest(new { message = "Seuls les formats JPG et PNG sont acceptés" });
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(new { message = "Utilisateur non authentifié" });
+        }
+
+        var result = await _userService.UploadAvatarAsync(userId, file);
+        if (result == null)
+        {
+            return BadRequest(new { message = "L'upload de l'avatar a échoué" });
+        }
+
+        _logger.LogInformation("Avatar mis à jour pour l'utilisateur: {UserId}", userId);
+        return Ok(result);
     }
 
     [HttpDelete]

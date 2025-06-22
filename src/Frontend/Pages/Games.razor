@@ -1,8 +1,10 @@
 @page "/games"
 @using Frontend.Models
+@using Frontend.Services
 @using Microsoft.AspNetCore.Authorization
 @attribute [AllowAnonymous]
 @inject NavigationManager NavigationManager
+@inject IGameService GameService
 
 <PageTitle>Jeux Supportés - ModHub</PageTitle>
 
@@ -65,90 +67,58 @@
 </MudContainer>
 
 @code {
-    // Classes pour les modèles de données
-    private class Game
-    {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public string ShortDescription { get; set; }
-        public string ImageUrl { get; set; }
-        public int ModCount { get; set; }
-    }
-    
     // Variables
     private string searchQuery = "";
     private string sortOption = "popularity";
     
-    // Données de démonstration
-    private List<Game> games = new List<Game>
-    {
-        new Game
-        {
-            Id = "skyrim",
-            Name = "The Elder Scrolls V: Skyrim",
-            ShortDescription = "RPG de monde ouvert médiéval-fantastique de Bethesda",
-            ImageUrl = "/images/games/skyrim.jpg",
-            ModCount = 8547
-        },
-        new Game
-        {
-            Id = "minecraft",
-            Name = "Minecraft",
-            ShortDescription = "Jeu bac à sable de construction et de survie",
-            ImageUrl = "/images/games/minecraft.jpg",
-            ModCount = 6238
-        },
-        new Game
-        {
-            Id = "fallout4",
-            Name = "Fallout 4",
-            ShortDescription = "RPG post-apocalyptique en monde ouvert",
-            ImageUrl = "/images/games/fallout4.jpg",
-            ModCount = 5921
-        },
-        new Game
-        {
-            Id = "witcher3",
-            Name = "The Witcher 3: Wild Hunt",
-            ShortDescription = "RPG en monde ouvert basé sur la saga du Sorceleur",
-            ImageUrl = "/images/games/witcher3.jpg",
-            ModCount = 2847
-        },
-        new Game
-        {
-            Id = "stardewvalley",
-            Name = "Stardew Valley",
-            ShortDescription = "Simulation de ferme et RPG relaxant",
-            ImageUrl = "/images/games/stardewvalley.jpg",
-            ModCount = 1953
-        },
-        new Game
-        {
-            Id = "cyberpunk2077",
-            Name = "Cyberpunk 2077",
-            ShortDescription = "RPG futuriste en monde ouvert",
-            ImageUrl = "/images/games/cyberpunk2077.jpg",
-            ModCount = 1845
-        }
-    };
+    // Collection de jeux récupérés via API
+    private IEnumerable<Game> games = new List<Game>();
+    private IEnumerable<Game> filteredGames = new List<Game>();
+    private bool isLoading = true;
+    private string errorMessage;
     
-    private List<Game> filteredGames => games
-        .Where(g => string.IsNullOrEmpty(searchQuery) || 
-                    g.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                    g.ShortDescription.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
-        .ToList();
-    
-    // Méthodes
-    private void SearchGames()
+    protected override async Task OnInitializedAsync()
     {
-        // Dans une implémentation réelle, ce serait un appel API
-        StateHasChanged();
+        await LoadGamesAsync();
     }
     
-    private void SortGames(string option)
+    private async Task LoadGamesAsync()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            games = await GameService.GetGamesAsync(searchQuery, sortOption);
+            UpdateFilteredGames();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erreur lors du chargement des jeux: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    
+    private void UpdateFilteredGames()
+    {
+        filteredGames = games
+            .Where(g => string.IsNullOrEmpty(searchQuery) || 
+                      g.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                      g.ShortDescription.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+    
+    // Méthodes
+    private async Task SearchGames()
+    {
+        await LoadGamesAsync();
+    }
+    
+    private async Task SortGames(string option)
     {
         sortOption = option;
-        // Dans une implémentation réelle, ce serait un appel API ou un tri local
-        StateHasChanged();
+        await LoadGamesAsync();
     }
 }
