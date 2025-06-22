@@ -34,7 +34,9 @@ services:
 
   # Service d'authentification et gestion des utilisateurs
   usersservice:
-    image: modhub/usersservice:latest
+    build:
+      context: ./src/Services/Users
+      dockerfile: Dockerfile
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -57,7 +59,9 @@ services:
 
   # Service de gestion des mods
   modsservice:
-    image: modhub/modsservice:latest
+    build:
+      context: ./src/Services/Mods
+      dockerfile: Dockerfile
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -76,7 +80,9 @@ services:
 
   # Service de paiements
   paymentsservice:
-    image: modhub/paymentsservice:latest
+    build:
+      context: ./src/Services/Payments
+      dockerfile: Dockerfile
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -95,7 +101,9 @@ services:
 
   # Service de communauté
   communityservice:
-    image: modhub/communityservice:latest
+    build:
+      context: ./src/Services/Community
+      dockerfile: Dockerfile
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -114,7 +122,9 @@ services:
 
   # API Gateway
   gateway:
-    image: modhub/gateway:latest
+    build:
+      context: ./src/Gateway
+      dockerfile: Dockerfile
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -123,7 +133,6 @@ services:
       - Services__PaymentsService=http://paymentsservice
       - Services__CommunityService=http://communityservice
       - JWT__Secret=${JWT_SECRET}
-      - REDIS__ConnectionString=redis:6379
     depends_on:
       - usersservice
       - modsservice
@@ -139,7 +148,9 @@ services:
 
   # Frontend
   frontend:
-    image: modhub/frontend:latest
+    build:
+      context: ./src/Frontend
+      dockerfile: Dockerfile
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
