@@ -62,8 +62,6 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__MongoDb=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017
-      - Stripe__SecretKey=${STRIPE_SECRET_KEY}
-      - Stripe__WebhookSecret=${STRIPE_WEBHOOK_SECRET}
     depends_on:
       - mongodb
     networks:
@@ -142,26 +140,13 @@ services:
     networks:
       - modhub_network
 
-  grafana:
-    image: grafana/grafana:latest
-    restart: always
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./docker/grafana/provisioning:/etc/grafana/provisioning
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
-      - GF_USERS_ALLOW_SIGN_UP=false
-    depends_on:
-      - prometheus
-    networks:
-      - modhub_network
+ 
 
 volumes:
   mongodb_data:
   redis_data:
   mod_files:
   prometheus_data:
-  grafana_data:
 
 networks:
   modhub_network:
