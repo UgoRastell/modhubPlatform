@@ -62,14 +62,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__MongoDb=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017
-      - Storage__AccountName=${AZURE_STORAGE_ACCOUNT}
-      - Storage__AccountKey=${AZURE_STORAGE_KEY}
-      - Storage__BlobContainerName=mods
-      - Storage__ModsImageContainer=mod-images
-      - REDIS__ConnectionString=redis:6379
     depends_on:
       - mongodb
-      - redis
     volumes:
       - mod_files:/app/mod-files
     networks:
