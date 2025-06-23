@@ -27,7 +27,8 @@ services:
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__MongoDb=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017
+      - ASPNETCORE_URLS=http://+:8080
+      - MongoDbSettings__ConnectionString=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DATABASE}?authSource=admin&authMechanism=SCRAM-SHA-256
       - JWT__Secret=${JWT_SECRET}
       - JWT__ExpiryMinutes=60
       - JWT__Issuer=ModsGamingPlatform
