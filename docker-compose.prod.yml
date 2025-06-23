@@ -34,6 +34,8 @@ services:
       - JWT__Issuer=ModsGamingPlatform
       - JWT__Audience=ModsGamingPlatformUsers
       - REDIS__ConnectionString=redis:6379
+    ports:
+      - "5001:5001"
     depends_on:
       - mongodb
       - redis
