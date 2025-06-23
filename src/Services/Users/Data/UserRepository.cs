@@ -36,18 +36,25 @@ public class UserRepository : IUserRepository
         _usersCollection = database.GetCollection<User>(settings.UsersCollectionName);
         
         // Créer des index pour optimiser les requêtes courantes
-        var keys = Builders<User>.IndexKeys.Ascending(u => u.Email);
-        var options = new CreateIndexOptions { Unique = true };
-        _usersCollection.Indexes.CreateOne(new CreateIndexModel<User>(keys, options));
-        
-        // Index pour le nom d'utilisateur
-        var usernameKeys = Builders<User>.IndexKeys.Ascending(u => u.Username);
-        var usernameOptions = new CreateIndexOptions { Unique = true };
-        _usersCollection.Indexes.CreateOne(new CreateIndexModel<User>(usernameKeys, usernameOptions));
-        
-        // Index pour le token de réinitialisation
-        _usersCollection.Indexes.CreateOne(
-            new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.ResetToken)));
+        try
+        {
+            var keys = Builders<User>.IndexKeys.Ascending(u => u.Email);
+            var options = new CreateIndexOptions { Unique = true };
+            _usersCollection.Indexes.CreateOne(new CreateIndexModel<User>(keys, options));
+
+            // Index pour le nom d'utilisateur
+            var usernameKeys = Builders<User>.IndexKeys.Ascending(u => u.Username);
+            var usernameOptions = new CreateIndexOptions { Unique = true };
+            _usersCollection.Indexes.CreateOne(new CreateIndexModel<User>(usernameKeys, usernameOptions));
+
+            // Index pour le token de réinitialisation
+            _usersCollection.Indexes.CreateOne(
+                new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.ResetToken)));
+        }
+        catch (MongoCommandException ex) when (ex.Code is 85 or 11000)
+        {
+            // L'index existe déjà ou est en conflit : on l'ignore pour éviter de planter le service.
+        }
     }
     
     public async Task<List<User>> GetAllAsync()
