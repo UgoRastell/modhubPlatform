@@ -59,7 +59,14 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 
         if (keyValuePairs != null)
         {
-            keyValuePairs.TryGetValue(ClaimTypes.Role, out object? roles);
+            // Chercher d'abord avec la clé "role" utilisée dans notre JWT
+            keyValuePairs.TryGetValue("role", out object? roles);
+            
+            // Si rien n'est trouvé, essayer avec le ClaimTypes.Role standard
+            if (roles == null)
+            {
+                keyValuePairs.TryGetValue(ClaimTypes.Role, out roles);
+            }
 
             if (roles != null)
             {

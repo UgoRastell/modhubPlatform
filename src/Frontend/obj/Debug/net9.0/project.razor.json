@@ -781,43 +781,6 @@
         }
       },
       {
-        "HashCode": -2034322992,
-        "Kind": "Components.Component",
-        "Name": "Frontend.Pages.Moderation.ModerationDashboard",
-        "AssemblyName": "Frontend",
-        "CaseSensitive": true,
-        "TagMatchingRules": [
-          {
-            "TagName": "ModerationDashboard"
-          }
-        ],
-        "Metadata": {
-          "Common.TypeName": "Frontend.Pages.Moderation.ModerationDashboard",
-          "Common.TypeNameIdentifier": "ModerationDashboard",
-          "Common.TypeNamespace": "Frontend.Pages.Moderation",
-          "Runtime.Name": "Components.IComponent"
-        }
-      },
-      {
-        "HashCode": 2073391851,
-        "Kind": "Components.Component",
-        "Name": "Frontend.Pages.Moderation.ModerationDashboard",
-        "AssemblyName": "Frontend",
-        "CaseSensitive": true,
-        "TagMatchingRules": [
-          {
-            "TagName": "Frontend.Pages.Moderation.ModerationDashboard"
-          }
-        ],
-        "Metadata": {
-          "Common.TypeName": "Frontend.Pages.Moderation.ModerationDashboard",
-          "Common.TypeNameIdentifier": "ModerationDashboard",
-          "Common.TypeNamespace": "Frontend.Pages.Moderation",
-          "Components.NameMatch": "Components.FullyQualifiedNameMatch",
-          "Runtime.Name": "Components.IComponent"
-        }
-      },
-      {
         "HashCode": -1236691716,
         "Kind": "Components.Component",
         "Name": "Frontend.Pages.Moderation.UpdateStatusDialog",
@@ -4286,6 +4249,43 @@
           "Components.IsSpecialKind": "Components.ChildContent",
           "Components.NameMatch": "Components.FullyQualifiedNameMatch",
           "Runtime.Name": "Components.None"
+        }
+      },
+      {
+        "HashCode": -1110991762,
+        "Kind": "Components.Component",
+        "Name": "__GeneratedComponent.AspNetCore_a10a7c85057c745496ddff1c1800cd58d7e9edb4",
+        "AssemblyName": "Frontend",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "AspNetCore_a10a7c85057c745496ddff1c1800cd58d7e9edb4"
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "__GeneratedComponent.AspNetCore_a10a7c85057c745496ddff1c1800cd58d7e9edb4",
+          "Common.TypeNameIdentifier": "AspNetCore_a10a7c85057c745496ddff1c1800cd58d7e9edb4",
+          "Common.TypeNamespace": "__GeneratedComponent",
+          "Runtime.Name": "Components.IComponent"
+        }
+      },
+      {
+        "HashCode": 1869719991,
+        "Kind": "Components.Component",
+        "Name": "__GeneratedComponent.AspNetCore_a10a7c85057c745496ddff1c1800cd58d7e9edb4",
+        "AssemblyName": "Frontend",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "__GeneratedComponent.AspNetCore_a10a7c85057c745496ddff1c1800cd58d7e9edb4"
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "__GeneratedComponent.AspNetCore_a10a7c85057c745496ddff1c1800cd58d7e9edb4",
+          "Common.TypeNameIdentifier": "AspNetCore_a10a7c85057c745496ddff1c1800cd58d7e9edb4",
+          "Common.TypeNamespace": "__GeneratedComponent",
+          "Components.NameMatch": "Components.FullyQualifiedNameMatch",
+          "Runtime.Name": "Components.IComponent"
         }
       },
       {
