@@ -89,7 +89,7 @@ services:
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - Services__UsersService=http://usersservice
+      - Services__UsersService=http://usersservice:80
       - Services__ModsService=http://modsservice
       - Services__PaymentsService=http://paymentsservice
       - Services__CommunityService=http://communityservice
