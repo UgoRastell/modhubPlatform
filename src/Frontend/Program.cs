@@ -1,11 +1,11 @@
 using Frontend;
 using Frontend.Services;
+using Frontend.Services.Moderation;
 using Frontend.Theme;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
-using MudBlazor.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -46,6 +46,7 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<IModerationService, ModerationService>();
 
 // Configuration des services MudBlazor
 builder.Services.AddMudServices(config =>
