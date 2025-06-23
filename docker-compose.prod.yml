@@ -137,22 +137,12 @@ services:
     networks:
       - modhub_network
 
-  prometheus:
-    image: prom/prometheus:latest
-    restart: always
-    volumes:
-      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    networks:
-      - modhub_network
-
  
 
 volumes:
   mongodb_data:
   redis_data:
   mod_files:
-  prometheus_data:
 
 networks:
   modhub_network:
