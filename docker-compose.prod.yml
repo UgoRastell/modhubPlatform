@@ -90,9 +90,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - Services__UsersService=http://usersservice:80
-      - Services__ModsService=http://modsservice
-      - Services__PaymentsService=http://paymentsservice
-      - Services__CommunityService=http://communityservice
+      - Services__ModsService=http://modsservice:80
+      - Services__PaymentsService=http://paymentsservice:80
+      - Services__CommunityService=http://communityservice:80
       - JWT__Secret=${JWT_SECRET}
     depends_on:
       - usersservice
