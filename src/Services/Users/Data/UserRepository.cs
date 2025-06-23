@@ -51,7 +51,7 @@ public class UserRepository : IUserRepository
             _usersCollection.Indexes.CreateOne(
                 new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.ResetToken)));
         }
-        catch (MongoCommandException ex) when (ex.Code is 85 or 11000)
+        catch (Exception ex)
         {
             // L'index existe déjà ou est en conflit : on l'ignore pour éviter de planter le service.
         }
