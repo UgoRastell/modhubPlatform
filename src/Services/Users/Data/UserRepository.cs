@@ -1,4 +1,8 @@
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using UsersService.Models;
 
 namespace UsersService.Data;
@@ -31,29 +35,48 @@ public class UserRepository : IUserRepository
 
     public UserRepository(MongoDbSettings settings)
     {
-        var mongoClient = new MongoClient(settings.ConnectionString);
-        var database = mongoClient.GetDatabase(settings.DatabaseName);
-        _usersCollection = database.GetCollection<User>(settings.UsersCollectionName);
-        
-        // Créer des index pour optimiser les requêtes courantes
         try
         {
-            var keys = Builders<User>.IndexKeys.Ascending(u => u.Email);
-            var options = new CreateIndexOptions { Unique = true };
-            _usersCollection.Indexes.CreateOne(new CreateIndexModel<User>(keys, options));
+            var mongoClient = new MongoClient(settings.ConnectionString);
+            var database = mongoClient.GetDatabase(settings.DatabaseName);
+            _usersCollection = database.GetCollection<User>(settings.UsersCollectionName);
+            
+            // Désactiver la création d'index en production pour éviter les erreurs
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Production")
+            {
+                try
+                {
+                    // Créer des index pour optimiser les requêtes courantes
+                    var keys = Builders<User>.IndexKeys.Ascending(u => u.Email);
+                    var options = new CreateIndexOptions { Unique = true };
+                    _usersCollection.Indexes.CreateOne(new CreateIndexModel<User>(keys, options));
 
-            // Index pour le nom d'utilisateur
-            var usernameKeys = Builders<User>.IndexKeys.Ascending(u => u.Username);
-            var usernameOptions = new CreateIndexOptions { Unique = true };
-            _usersCollection.Indexes.CreateOne(new CreateIndexModel<User>(usernameKeys, usernameOptions));
+                    // Index pour le nom d'utilisateur
+                    var usernameKeys = Builders<User>.IndexKeys.Ascending(u => u.Username);
+                    var usernameOptions = new CreateIndexOptions { Unique = true };
+                    _usersCollection.Indexes.CreateOne(new CreateIndexModel<User>(usernameKeys, usernameOptions));
 
-            // Index pour le token de réinitialisation
-            _usersCollection.Indexes.CreateOne(
-                new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.ResetToken)));
+                    // Index pour le token de réinitialisation
+                    _usersCollection.Indexes.CreateOne(
+                        new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.ResetToken)));
+                }
+                catch (MongoCommandException ex) when (ex.Code is 85 or 11000)
+                {
+                    // L'index existe déjà ou est en conflit : on l'ignore pour éviter de planter le service.
+                    Console.WriteLine($"Warning: Index already exists: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    // Log l'erreur mais continue l'exécution
+                    Console.WriteLine($"Warning: Failed to create indexes: {ex.GetType().Name} - {ex.Message}");
+                }
+            }
         }
-        catch (Exception ex)
+        catch (Exception ex) 
         {
-            // L'index existe déjà ou est en conflit : on l'ignore pour éviter de planter le service.
+            // Log complet de l'erreur critique
+            Console.WriteLine($"CRITICAL: MongoDB initialization failed: {ex.GetType().Name} - {ex.Message}");
+            throw; // On remonte l'erreur pour arrêter le service si la connexion est impossible
         }
     }
     
