@@ -1,5 +1,4 @@
 using MongoDB.Driver;
-using MongoDB.Driver.Core.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -60,15 +59,10 @@ public class UserRepository : IUserRepository
                     _usersCollection.Indexes.CreateOne(
                         new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.ResetToken)));
                 }
-                catch (MongoCommandException ex) when (ex.Code is 85 or 11000)
-                {
-                    // L'index existe déjà ou est en conflit : on l'ignore pour éviter de planter le service.
-                    Console.WriteLine($"Warning: Index already exists: {ex.Message}");
-                }
                 catch (Exception ex)
                 {
-                    // Log l'erreur mais continue l'exécution
-                    Console.WriteLine($"Warning: Failed to create indexes: {ex.GetType().Name} - {ex.Message}");
+                    // L'index existe déjà ou est en conflit : on l'ignore pour éviter de planter le service.
+                    Console.WriteLine($"Warning: Index creation failed: {ex.GetType().Name} - {ex.Message}");
                 }
             }
         }
