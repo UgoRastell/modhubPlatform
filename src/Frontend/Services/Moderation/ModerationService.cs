@@ -1,6 +1,7 @@
 using Frontend.Models.Moderation;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -12,10 +13,12 @@ namespace Frontend.Services.Moderation
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<ModerationService> _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public ModerationService(HttpClient httpClient, ILogger<ModerationService> logger)
+        public ModerationService(IHttpClientFactory httpClientFactory, ILogger<ModerationService> logger)
         {
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+            _httpClient = _httpClientFactory.CreateClient("CommunityService");
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
