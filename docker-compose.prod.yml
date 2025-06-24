@@ -77,7 +77,7 @@ services:
 
   communityservice:
     build:
-      context: ./src/CommunityService
+      context: ./src/Services/Community
       dockerfile: Dockerfile
     restart: always
     environment:
