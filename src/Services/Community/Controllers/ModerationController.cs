@@ -1,5 +1,3 @@
-using CommunityService.Models.Moderation;
-using CommunityService.Services.Moderation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -7,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Community.Models.Moderation;
+using Community.Services.Moderation;
 
-namespace CommunityService.Controllers
+namespace Community.Controllers
 {
     [ApiController]
     [Route("api/moderation")]

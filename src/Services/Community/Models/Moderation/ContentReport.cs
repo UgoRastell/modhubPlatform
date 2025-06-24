@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace CommunityService.Models.Moderation
+namespace Community.Models.Moderation
 {
     public class ContentReport
     {

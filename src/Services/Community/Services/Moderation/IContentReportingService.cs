@@ -1,9 +1,9 @@
-using CommunityService.Models.Moderation;
+using Community.Models.Moderation;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CommunityService.Services.Moderation
+namespace Community.Services.Moderation
 {
     public interface IContentReportingService
     {

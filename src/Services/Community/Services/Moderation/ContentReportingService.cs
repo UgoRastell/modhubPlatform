@@ -1,11 +1,11 @@
-using CommunityService.Models.Moderation;
+using Community.Models.Moderation;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CommunityService.Services.Moderation
+namespace Community.Services.Moderation
 {
     public class ContentReportingService : IContentReportingService
     {
