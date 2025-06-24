@@ -10,7 +10,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddAuthentication("Bearer");
 
 // Register Moderation Services
-builder.Services.AddScoped<CommunityService.Services.Moderation.IContentReportingService, CommunityService.Services.Moderation.ContentReportingService>();
+builder.Services.AddScoped<Community.Services.Moderation.IContentReportingService, Community.Services.Moderation.ContentReportingService>();
 
 // Add CORS to allow frontend requests
 builder.Services.AddCors(options =>
