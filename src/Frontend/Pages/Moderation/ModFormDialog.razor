@@ -1,0 +1,373 @@
+@using Frontend.Models
+@using Frontend.Services
+@inject IModService ModService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height: 70vh; overflow-y: auto;">
+            <EditForm Model="@_modRequest" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                
+                <!-- Informations de base -->
+                <MudCard Class="mb-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Informations de base</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_modRequest.Name"
+                                            Label="Nom du mod *"
+                                            Variant="Variant.Outlined"
+                                            Required="true"
+                                            RequiredError="Le nom est requis"
+                                            For="@(() => _modRequest.Name)" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_modRequest.Slug"
+                                            Label="Slug (URL)"
+                                            Variant="Variant.Outlined"
+                                            HelperText="Généré automatiquement à partir du nom si vide"
+                                            For="@(() => _modRequest.Slug)" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="_modRequest.ShortDescription"
+                                            Label="Description courte *"
+                                            Variant="Variant.Outlined"
+                                            Lines="2"
+                                            Required="true"
+                                            RequiredError="La description courte est requise"
+                                            For="@(() => _modRequest.ShortDescription)" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="_modRequest.Description"
+                                            Label="Description détaillée (Markdown supporté)"
+                                            Variant="Variant.Outlined"
+                                            Lines="6"
+                                            For="@(() => _modRequest.Description)" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+
+                <!-- Catégorisation -->
+                <MudCard Class="mb-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Catégorisation</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudSelect @bind-Value="_modRequest.GameId" 
+                                          Label="Jeu *" 
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          RequiredError="Veuillez sélectionner un jeu">
+                                    <MudSelectItem Value="@("")">Sélectionner un jeu</MudSelectItem>
+                                    <MudSelectItem Value="@("minecraft")">Minecraft</MudSelectItem>
+                                    <MudSelectItem Value="@("skyrim")">The Elder Scrolls V: Skyrim</MudSelectItem>
+                                    <MudSelectItem Value="@("fallout4")">Fallout 4</MudSelectItem>
+                                    <MudSelectItem Value="@("gta5")">Grand Theft Auto V</MudSelectItem>
+                                    <MudSelectItem Value="@("valheim")">Valheim</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudSelect @bind-Value="_modRequest.CategoryId" 
+                                          Label="Catégorie principale *" 
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          RequiredError="Veuillez sélectionner une catégorie">
+                                    <MudSelectItem Value="@("")">Sélectionner une catégorie</MudSelectItem>
+                                    <MudSelectItem Value="@("gameplay")">Gameplay</MudSelectItem>
+                                    <MudSelectItem Value="@("graphics")">Graphiques & Visuels</MudSelectItem>
+                                    <MudSelectItem Value="@("content")">Nouveau Contenu</MudSelectItem>
+                                    <MudSelectItem Value="@("utility")">Utilitaires</MudSelectItem>
+                                    <MudSelectItem Value="@("performance")">Performance</MudSelectItem>
+                                    <MudSelectItem Value="@("ui")">Interface Utilisateur</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="_tagsString"
+                                            Label="Tags (séparés par des virgules)"
+                                            Variant="Variant.Outlined"
+                                            HelperText="Ex: action, aventure, multijoueur"
+                                            OnBlur="ParseTags" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+
+                <!-- Médias -->
+                <MudCard Class="mb-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Médias</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_modRequest.ThumbnailUrl"
+                                            Label="URL de l'image de miniature"
+                                            Variant="Variant.Outlined"
+                                            For="@(() => _modRequest.ThumbnailUrl)" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="_modRequest.DocumentationUrl"
+                                            Label="URL de la documentation"
+                                            Variant="Variant.Outlined"
+                                            For="@(() => _modRequest.DocumentationUrl)" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="_screenshotsString"
+                                            Label="URLs des captures d'écran (séparées par des virgules)"
+                                            Variant="Variant.Outlined"
+                                            Lines="2"
+                                            OnBlur="ParseScreenshots" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+
+                <!-- Paramètres avancés -->
+                <MudCard Class="mb-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Paramètres</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudSwitch T="bool" @bind-Checked="_modRequest.IsFeatured" 
+                                           Label="Mod mis en avant" 
+                                           Color="Color.Primary" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudSwitch T="bool" @bind-Checked="_modRequest.IsApproved" 
+                                           Label="Mod approuvé" 
+                                           Color="Color.Success" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            </EditForm>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annuler</MudButton>
+        <MudButton Color="Color.Primary" 
+                  Variant="Variant.Filled" 
+                  OnClick="Submit"
+                  Disabled="_isSubmitting">
+            @if (_isSubmitting)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">@(_isEdit ? "Mise à jour..." : "Création...")</MudText>
+            }
+            else
+            {
+                <MudText>@(_isEdit ? "Mettre à jour" : "Créer")</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public string? ModId { get; set; }
+    [Parameter] public bool IsEdit { get; set; } = false;
+
+    private ModCreateRequest _modRequest = new();
+    private string _tagsString = string.Empty;
+    private string _screenshotsString = string.Empty;
+    private bool _isSubmitting = false;
+    private bool _isEdit => IsEdit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_isEdit && !string.IsNullOrEmpty(ModId))
+        {
+            await LoadExistingMod();
+        }
+        else
+        {
+            // Initialiser avec des valeurs par défaut pour un nouveau mod
+            _modRequest = new ModCreateRequest
+            {
+                Name = string.Empty,
+                ShortDescription = string.Empty,
+                Description = string.Empty,
+                GameId = string.Empty,
+                CategoryId = string.Empty,
+                Tags = new List<string>(),
+                ScreenshotUrls = new List<string>(),
+                IsFeatured = false,
+                IsApproved = false
+            };
+        }
+    }
+
+    private async Task LoadExistingMod()
+    {
+        try
+        {
+            var response = await ModService.GetModByIdAsync(ModId!);
+            
+            if (response.Success && response.Data != null)
+            {
+                var mod = response.Data;
+                _modRequest = new ModCreateRequest
+                {
+                    Name = mod.Name,
+                    Slug = mod.Slug,
+                    ShortDescription = mod.ShortDescription,
+                    Description = mod.Description,
+                    GameId = mod.GameId,
+                    CategoryId = mod.CategoryId,
+                    ThumbnailUrl = mod.ThumbnailUrl,
+                    DocumentationUrl = mod.DocumentationUrl,
+                    Tags = mod.Tags?.ToList() ?? new List<string>(),
+                    ScreenshotUrls = mod.ScreenshotUrls?.ToList() ?? new List<string>(),
+                    IsFeatured = mod.IsFeatured,
+                    IsApproved = mod.IsApproved
+                };
+
+                _tagsString = string.Join(", ", _modRequest.Tags);
+                _screenshotsString = string.Join(", ", _modRequest.ScreenshotUrls);
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "Erreur lors du chargement du mod", Severity.Error);
+                Cancel();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement du mod: {ex.Message}", Severity.Error);
+            Cancel();
+        }
+    }
+
+    private void ParseTags()
+    {
+        if (!string.IsNullOrWhiteSpace(_tagsString))
+        {
+            _modRequest.Tags = _tagsString
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(t => t.Trim())
+                .Where(t => !string.IsNullOrEmpty(t))
+                .ToList();
+        }
+        else
+        {
+            _modRequest.Tags = new List<string>();
+        }
+    }
+
+    private void ParseScreenshots()
+    {
+        if (!string.IsNullOrWhiteSpace(_screenshotsString))
+        {
+            _modRequest.ScreenshotUrls = _screenshotsString
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s.Trim())
+                .Where(s => !string.IsNullOrEmpty(s))
+                .ToList();
+        }
+        else
+        {
+            _modRequest.ScreenshotUrls = new List<string>();
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        await Submit();
+    }
+
+    private async Task Submit()
+    {
+        if (_isSubmitting) return;
+
+        _isSubmitting = true;
+        
+        try
+        {
+            // Parser les tags et screenshots avant soumission
+            ParseTags();
+            ParseScreenshots();
+            
+            // Générer le slug automatiquement s'il est vide
+            if (string.IsNullOrWhiteSpace(_modRequest.Slug) && !string.IsNullOrWhiteSpace(_modRequest.Name))
+            {
+                _modRequest.Slug = GenerateSlug(_modRequest.Name);
+            }
+
+            ApiResponse<ModDto> response;
+            
+            if (_isEdit && !string.IsNullOrEmpty(ModId))
+            {
+                var updateRequest = new ModUpdateRequest
+                {
+                    Name = _modRequest.Name,
+                    Slug = _modRequest.Slug,
+                    ShortDescription = _modRequest.ShortDescription,
+                    Description = _modRequest.Description,
+                    GameId = _modRequest.GameId,
+                    CategoryId = _modRequest.CategoryId,
+                    ThumbnailUrl = _modRequest.ThumbnailUrl,
+                    DocumentationUrl = _modRequest.DocumentationUrl,
+                    Tags = _modRequest.Tags,
+                    ScreenshotUrls = _modRequest.ScreenshotUrls,
+                    IsFeatured = _modRequest.IsFeatured,
+                    IsApproved = _modRequest.IsApproved
+                };
+                
+                response = await ModService.UpdateModAsync(ModId, updateRequest);
+            }
+            else
+            {
+                response = await ModService.CreateModAsync(_modRequest);
+            }
+
+            if (response.Success)
+            {
+                MudDialog.Close(DialogResult.Ok(response.Data));
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "Une erreur est survenue", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private static string GenerateSlug(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return string.Empty;
+
+        return input.ToLowerInvariant()
+            .Replace(" ", "-")
+            .Replace("_", "-")
+            .Trim('-');
+    }
+}

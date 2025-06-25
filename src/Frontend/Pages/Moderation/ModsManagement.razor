@@ -1,0 +1,314 @@
+@page "/admin/mods-management"
+@using Frontend.Models
+@using Frontend.Services
+@using Microsoft.AspNetCore.Authorization
+@inject IModService ModService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@attribute [Authorize(Roles = "Admin,Moderator")]
+
+<PageTitle>Gestion des Mods - ModsGaming Platform</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudCard>
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h4">Gestion des Mods</MudText>
+                <MudText Typo="Typo.subtitle1">Gérez tous les mods de la plateforme</MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudButton Variant="Variant.Filled" 
+                          Color="Color.Primary" 
+                          OnClick="OpenCreateModDialog"
+                          StartIcon="@Icons.Material.Filled.Add">
+                    Créer un Mod
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" 
+                          Color="Color.Secondary" 
+                          OnClick="RefreshMods"
+                          StartIcon="@Icons.Material.Filled.Refresh">
+                    Actualiser
+                </MudButton>
+            </CardHeaderActions>
+        </MudCardHeader>
+
+        <MudCardContent>
+            <!-- Filtres et recherche -->
+            <MudGrid Class="mb-4">
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_searchTerm" 
+                                 Label="Rechercher un mod" 
+                                 Variant="Variant.Outlined"
+                                 Adornment="Adornment.End"
+                                 AdornmentIcon="@Icons.Material.Filled.Search"
+                                 OnAdornmentClick="SearchMods" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudSelect @bind-Value="_selectedCategory" 
+                              Label="Catégorie" 
+                              Variant="Variant.Outlined"
+                              Clearable="true">
+                        <MudSelectItem Value="@("")">Toutes les catégories</MudSelectItem>
+                        <MudSelectItem Value="@("gameplay")">Gameplay</MudSelectItem>
+                        <MudSelectItem Value="@("graphics")">Graphiques</MudSelectItem>
+                        <MudSelectItem Value="@("content")">Contenu</MudSelectItem>
+                        <MudSelectItem Value="@("utility")">Utilitaires</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudSelect @bind-Value="_sortBy" 
+                              Label="Trier par" 
+                              Variant="Variant.Outlined">
+                        <MudSelectItem Value="@("created")">Date de création</MudSelectItem>
+                        <MudSelectItem Value="@("updated")">Dernière mise à jour</MudSelectItem>
+                        <MudSelectItem Value="@("downloads")">Téléchargements</MudSelectItem>
+                        <MudSelectItem Value="@("rating")">Note</MudSelectItem>
+                        <MudSelectItem Value="@("name")">Nom</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="2">
+                    <MudButton Variant="Variant.Filled" 
+                              Color="Color.Primary" 
+                              OnClick="ApplyFilters"
+                              FullWidth="true"
+                              Class="mt-1">
+                        Filtrer
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+            <!-- Tableau des mods -->
+            @if (_loading)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="my-7" />
+            }
+            else if (_mods?.Any() == true)
+            {
+                <MudTable Items="_mods" Hover="true" Dense="true" Bordered="true" Striped="true">
+                    <HeaderContent>
+                        <MudTh>Image</MudTh>
+                        <MudTh>Nom</MudTh>
+                        <MudTh>Créateur</MudTh>
+                        <MudTh>Jeu</MudTh>
+                        <MudTh>Téléchargements</MudTh>
+                        <MudTh>Note</MudTh>
+                        <MudTh>Statut</MudTh>
+                        <MudTh>Créé le</MudTh>
+                        <MudTh Style="text-align: center">Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Image">
+                            <MudAvatar Image="@context.ThumbnailUrl" Size="Size.Small" />
+                        </MudTd>
+                        <MudTd DataLabel="Nom">
+                            <MudText Typo="Typo.body2" Style="font-weight: 500">@context.Name</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Primary">@context.ShortDescription</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Créateur">@context.CreatorName</MudTd>
+                        <MudTd DataLabel="Jeu">@context.GameName</MudTd>
+                        <MudTd DataLabel="Téléchargements">
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info">@context.DownloadCount.ToString("N0")</MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Note">
+                            @if (context.RatingCount > 0)
+                            {
+                                <MudRating SelectedValue="(int)Math.Round(context.AverageRating)" ReadOnly="true" Size="Size.Small" />
+                                <MudText Typo="Typo.caption">(@context.RatingCount)</MudText>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.caption">Pas de note</MudText>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="Statut">
+                            <MudChip T="string" Size="Size.Small" 
+                                    Color="@(context.IsApproved ? Color.Success : Color.Warning)">
+                                @(context.IsApproved ? "Approuvé" : "En attente")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Créé le">@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
+                        <MudTd Style="text-align: center">
+                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
+                                          Size="Size.Small"
+                                          Color="Color.Primary"
+                                          OnClick="@(() => ViewMod(context))" 
+                                          Title="Voir les détails" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                          Size="Size.Small"
+                                          Color="Color.Secondary"
+                                          OnClick="@(() => EditMod(context))" 
+                                          Title="Éditer" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                          Size="Size.Small"
+                                          Color="Color.Error"
+                                          OnClick="@(() => DeleteMod(context))" 
+                                          Title="Supprimer" />
+                        </MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] { 10, 20, 50, 100 }" />
+                    </PagerContent>
+                </MudTable>
+                
+                <!-- Pagination -->
+                <MudPagination Count="@_totalPages" 
+                              SelectedChanged="@PageChanged" 
+                              Class="mt-4 d-flex justify-center" />
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info" Class="mt-3">
+                    Aucun mod ne correspond à vos critères de recherche.
+                </MudAlert>
+            }
+        </MudCardContent>
+    </MudCard>
+</MudContainer>
+
+@code {
+    private List<ModDto> _mods = new();
+    private int _currentPage = 1;
+    private int _pageSize = 20;
+    private int _totalCount;
+    private int _totalPages;
+    private bool _loading = true;
+    
+    private string _searchTerm = string.Empty;
+    private string _selectedCategory = string.Empty;
+    private string _sortBy = "created";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMods();
+    }
+
+    private async Task LoadMods()
+    {
+        _loading = true;
+        try
+        {
+            var response = await ModService.GetModsAsync(_currentPage, _pageSize, _searchTerm, _selectedCategory, _sortBy);
+            
+            if (response.Success && response.Data != null)
+            {
+                _mods = response.Data.Items.ToList();
+                _totalCount = response.Data.TotalCount;
+                _totalPages = (int)Math.Ceiling((double)_totalCount / _pageSize);
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "Erreur lors du chargement des mods", Severity.Error);
+                _mods = new List<ModDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des mods: {ex.Message}", Severity.Error);
+            _mods = new List<ModDto>();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task PageChanged(int page)
+    {
+        _currentPage = page;
+        await LoadMods();
+    }
+
+    private async Task SearchMods()
+    {
+        _currentPage = 1;
+        await LoadMods();
+    }
+
+    private async Task ApplyFilters()
+    {
+        _currentPage = 1;
+        await LoadMods();
+    }
+
+    private async Task RefreshMods()
+    {
+        await LoadMods();
+        Snackbar.Add("Liste des mods actualisée", Severity.Success);
+    }
+
+    private void ViewMod(ModDto mod)
+    {
+        Navigation.NavigateTo($"/mod/{mod.Id}");
+    }
+
+    private async Task EditMod(ModDto mod)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("ModId", mod.Id);
+        parameters.Add("IsEdit", true);
+
+        var dialog = await DialogService.ShowAsync<ModFormDialog>("Éditer le mod", parameters, new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true
+        });
+
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            await LoadMods();
+            Snackbar.Add("Mod mis à jour avec succès", Severity.Success);
+        }
+    }
+
+    private async Task OpenCreateModDialog()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("IsEdit", false);
+
+        var dialog = await DialogService.ShowAsync<ModFormDialog>("Créer un nouveau mod", parameters, new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true
+        });
+
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            await LoadMods();
+            Snackbar.Add("Mod créé avec succès", Severity.Success);
+        }
+    }
+
+    private async Task DeleteMod(ModDto mod)
+    {
+        bool? confirm = await DialogService.ShowMessageBox(
+            "Confirmer la suppression",
+            $"Êtes-vous sûr de vouloir supprimer le mod '{mod.Name}' ? Cette action est irréversible.",
+            yesText: "Supprimer",
+            cancelText: "Annuler");
+
+        if (confirm == true)
+        {
+            try
+            {
+                var response = await ModService.DeleteModAsync(mod.Id);
+                
+                if (response.Success)
+                {
+                    Snackbar.Add("Mod supprimé avec succès", Severity.Success);
+                    await LoadMods();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Erreur lors de la suppression", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur lors de la suppression: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+}
