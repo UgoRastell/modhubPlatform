@@ -12,6 +12,7 @@ namespace Frontend.Services.Moderation
 {
     public class ModerationService : IModerationService
     {
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly HttpClient _httpClient;
         private readonly ILogger<ModerationService> _logger;
         private readonly bool _useMockData;
