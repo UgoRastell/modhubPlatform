@@ -235,6 +235,22 @@
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": [ "admin" ]
       }
+    },
+    {
+      "DownstreamPathTemplate": "/api/moderation/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "communityservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/moderation/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
     }
   ]
 }
