@@ -17,9 +17,10 @@ namespace Frontend.Services.Moderation
         private readonly bool _useMockData;
         private readonly Random _random = new Random();
 
-        public ModerationService(HttpClient httpClient, ILogger<ModerationService> logger)
+        public ModerationService(IHttpClientFactory httpClientFactory, ILogger<ModerationService> logger)
         {
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+            _httpClient = _httpClientFactory.CreateClient("CommunityService");
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _useMockData = true; // Activer les données fictives tant que l'API n'est pas disponible
         }
