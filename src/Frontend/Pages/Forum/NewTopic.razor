@@ -52,13 +52,11 @@
                                 HelperText="Vous pouvez utiliser le Markdown pour formater votre message"
                                 Class="mb-4" />
                     
-                    <MudChipSet @bind-SelectedValues="_selectedTags" MultiSelection="true" Filter="true" Class="mb-4">
-                        <MudChipSet @bind-SelectedValues="_selectedTags" MultiSelection="true" Filter="true" Class="mb-4">
-                            @foreach (var tag in _popularTags)
-                            {
-                                <MudChip Text="@tag" Value="@tag" Color="Color.Primary" />
-                            }
-                        </MudChipSet>
+                    <MudChipSet T="string" SelectedValues="_selectedTags" SelectedValuesChanged="OnSelectedTagsChanged" MultiSelection="true" Filter="true" Class="mb-4">
+                        @foreach (var tag in _popularTags)
+                        {
+                            <MudChip T="string" Text="@tag" Value="@tag" Color="Color.Primary" />
+                        }
                     </MudChipSet>
                     
                     <MudPaper Class="pa-4 mb-4" Style="background-color: #1e222f;">
@@ -72,7 +70,7 @@
                             <div class="d-flex flex-wrap">
                                 @foreach (var tag in _selectedTags)
                                 {
-                                    <MudChip Text="@tag.ToString()" Color="Color.Secondary" Size="Size.Small" OnClose="() => RemoveTag(tag)" Class="ma-1" />
+                                    <MudChip T="string" Text="@tag" Color="Color.Secondary" Size="Size.Small" OnClose="() => RemoveTag(tag)" Class="ma-1" />
                                 }
                             </div>
                         }
@@ -125,7 +123,7 @@
     private CreateForumTopicDto _topicDto = new();
     private List<ForumCategoryViewModel> _categories = new();
     private List<string> _popularTags = new();
-    private HashSet<object> _selectedTags = new();
+    private List<string> _selectedTags = new();
     private string _newTag = string.Empty;
     
     private List<BreadcrumbItem> _breadcrumbs = new List<BreadcrumbItem>
@@ -195,7 +193,7 @@
         if (!string.IsNullOrWhiteSpace(_newTag) && _newTag.Length <= 20)
         {
             string formattedTag = _newTag.Trim().ToLower();
-            if (formattedTag.Length > 0 && !_selectedTags.Any(t => t.ToString().Equals(formattedTag, StringComparison.OrdinalIgnoreCase)))
+            if (formattedTag.Length > 0 && !_selectedTags.Any(t => t.Equals(formattedTag, StringComparison.OrdinalIgnoreCase)))
             {
                 _selectedTags.Add(formattedTag);
                 StateHasChanged();
@@ -204,10 +202,15 @@
         }
     }
     
-    private void RemoveTag(object tag)
+    private void RemoveTag(string tag)
     {
         _selectedTags.Remove(tag);
         StateHasChanged();
+    }
+    
+    private void OnSelectedTagsChanged(IEnumerable<string> tags)
+    {
+        _selectedTags = tags.ToList();
     }
     
     private async Task CreateTopic()
@@ -219,7 +222,7 @@
             try
             {
                 _isSaving = true;
-                _topicDto.Tags = _selectedTags.Select(t => t.ToString()).ToList();
+                _topicDto.Tags = _selectedTags.ToList();
                 
                 var createdTopic = await ForumService.CreateTopicAsync(_topicDto);
                 
