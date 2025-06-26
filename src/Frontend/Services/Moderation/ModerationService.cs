@@ -1,5 +1,4 @@
 using Frontend.Models.Moderation;
-using Frontend.Services.Moderation.MongoDB;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,36 +12,21 @@ namespace Frontend.Services.Moderation
 {
     public class ModerationService : IModerationService
     {
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly HttpClient _httpClient;
         private readonly ILogger<ModerationService> _logger;
-        private readonly bool _useMockData;
-        private readonly ModerationMongoDBService _mongoDBService;
 
         public ModerationService(
-            IHttpClientFactory httpClientFactory, 
-            ILogger<ModerationService> logger,
-            ModerationMongoDBService mongoDBService)
+            HttpClient httpClient,
+            ILogger<ModerationService> logger)
         {
-            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
-            _httpClient = _httpClientFactory.CreateClient("CommunityService");
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _mongoDBService = mongoDBService ?? throw new ArgumentNullException(nameof(mongoDBService));
-            _useMockData = true; // Activer les données fictives tant que l'API n'est pas disponible
-            
-            // Initialiser les données mock si la collection est vide
-            _mongoDBService.InitializeMockDataAsync().GetAwaiter().GetResult();
         }
         
         public async Task<ContentReport> ReportContentAsync(CreateReportRequest request)
         {
             try
             {
-                if (_useMockData)
-                {
-                    return await _mongoDBService.CreateReportAsync(request);
-                }
-
                 var response = await _httpClient.PostAsJsonAsync("api/moderation/reports", request);
                 response.EnsureSuccessStatusCode();
                 
@@ -52,9 +36,7 @@ namespace Frontend.Services.Moderation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la création du signalement");
-                
-                // En cas d'erreur, utiliser MongoDB
-                return await _mongoDBService.CreateReportAsync(request);
+                throw; // Propagation de l'erreur au lieu d'utiliser MongoDB
             }
         }
 
@@ -62,11 +44,6 @@ namespace Frontend.Services.Moderation
         {
             try
             {
-                if (_useMockData)
-                {
-                    return await _mongoDBService.GetReportByIdAsync(reportId);
-                }
-
                 var response = await _httpClient.GetAsync($"api/moderation/reports/{reportId}");
                 
                 if (response.StatusCode == HttpStatusCode.NotFound)
@@ -80,9 +57,7 @@ namespace Frontend.Services.Moderation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la récupération du signalement {ReportId}", reportId);
-                
-                // En cas d'erreur, utiliser MongoDB
-                return await _mongoDBService.GetReportByIdAsync(reportId);
+                throw; // Propagation de l'erreur au lieu d'utiliser MongoDB
             }
         }
 
@@ -90,13 +65,6 @@ namespace Frontend.Services.Moderation
         {
             try
             {
-                if (_useMockData)
-                {
-                    // Utiliser un ID utilisateur fictif pour les tests
-                    const string mockUserId = "user-1";
-                    return await _mongoDBService.GetUserReportsAsync(mockUserId, page, pageSize);
-                }
-                
                 var response = await _httpClient.GetAsync($"api/moderation/reports/my?page={page}&pageSize={pageSize}");
                 response.EnsureSuccessStatusCode();
                 
@@ -117,10 +85,7 @@ namespace Frontend.Services.Moderation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la récupération des signalements de l'utilisateur");
-                
-                // En cas d'erreur, utiliser MongoDB avec un utilisateur fictif
-                const string mockUserId = "user-1";
-                return await _mongoDBService.GetUserReportsAsync(mockUserId, page, pageSize);
+                throw;
             }
         }
 
@@ -133,11 +98,6 @@ namespace Frontend.Services.Moderation
         {
             try
             {
-                if (_useMockData)
-                {
-                    return await _mongoDBService.GetReportsAsync(status, contentType, priority, page, pageSize);
-                }
-                
                 // Construire l'URL avec les paramètres de requête
                 var queryString = $"api/moderation/reports?page={page}&pageSize={pageSize}";
                 
@@ -171,8 +131,53 @@ namespace Frontend.Services.Moderation
             {
                 _logger.LogError(ex, "Erreur lors de la récupération des signalements");
                 
-                // En cas d'erreur, utiliser MongoDB
-                return await _mongoDBService.GetReportsAsync(status, contentType, priority, page, pageSize);
+                // En cas d'erreur, retourner une liste vide
+                return (new List<ContentReport>(), 0, 0);
+            }
+        }
+
+        public async Task<(List<ContentReport> Reports, int TotalCount, int TotalPages)> GetReportsForModerationAsync(
+            ReportStatus? status = null, 
+            string contentType = null, 
+            int page = 1, 
+            int pageSize = 20)
+        {
+            try
+            {
+                // Construire l'URL avec les paramètres de filtrage
+                var queryParams = new List<string>();
+                queryParams.Add($"page={page}");
+                queryParams.Add($"pageSize={pageSize}");
+                
+                if (status.HasValue)
+                    queryParams.Add($"status={status.Value}");
+                
+                if (!string.IsNullOrEmpty(contentType))
+                    queryParams.Add($"contentType={contentType}");
+                
+                var url = $"api/moderation/reports/moderation?{string.Join("&", queryParams)}";
+                
+                var response = await _httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                
+                var reports = await response.Content.ReadFromJsonAsync<List<ContentReport>>();
+                
+                // Récupérer les informations de pagination depuis les en-têtes
+                var totalCount = 0;
+                var totalPages = 0;
+                
+                if (response.Headers.TryGetValues("X-Total-Count", out var totalCountValues))
+                    int.TryParse(totalCountValues.FirstOrDefault(), out totalCount);
+                
+                if (response.Headers.TryGetValues("X-Total-Pages", out var totalPagesValues))
+                    int.TryParse(totalPagesValues.FirstOrDefault(), out totalPages);
+                
+                return (reports ?? new List<ContentReport>(), totalCount, totalPages);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de la récupération des signalements pour modération");
+                throw;
             }
         }
 
@@ -180,21 +185,13 @@ namespace Frontend.Services.Moderation
         {
             try
             {
-                if (_useMockData)
-                {
-                    await _mongoDBService.UpdateReportStatusAsync(reportId, request);
-                    return;
-                }
-                
                 var response = await _httpClient.PutAsJsonAsync($"api/moderation/reports/{reportId}/status", request);
                 response.EnsureSuccessStatusCode();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la mise à jour du statut du signalement {ReportId}", reportId);
-                
-                // En cas d'erreur, essayer d'utiliser MongoDB
-                await _mongoDBService.UpdateReportStatusAsync(reportId, request);
+                throw;
             }
         }
 
@@ -202,21 +199,13 @@ namespace Frontend.Services.Moderation
         {
             try
             {
-                if (_useMockData)
-                {
-                    await _mongoDBService.TakeModeratorActionAsync(reportId, request);
-                    return;
-                }
-                
                 var response = await _httpClient.PutAsJsonAsync($"api/moderation/reports/{reportId}/action", request);
                 response.EnsureSuccessStatusCode();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la prise d'action sur le signalement {ReportId}", reportId);
-                
-                // En cas d'erreur, essayer d'utiliser MongoDB
-                await _mongoDBService.TakeModeratorActionAsync(reportId, request);
+                throw;
             }
         }
 
@@ -224,21 +213,13 @@ namespace Frontend.Services.Moderation
         {
             try
             {
-                if (_useMockData)
-                {
-                    await _mongoDBService.UpdateReportPriorityAsync(reportId, request);
-                    return;
-                }
-                
                 var response = await _httpClient.PutAsJsonAsync($"api/moderation/reports/{reportId}/priority", request);
                 response.EnsureSuccessStatusCode();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la mise à jour de la priorité du signalement {ReportId}", reportId);
-                
-                // En cas d'erreur, essayer d'utiliser MongoDB
-                await _mongoDBService.UpdateReportPriorityAsync(reportId, request);
+                throw;
             }
         }
 
@@ -246,11 +227,6 @@ namespace Frontend.Services.Moderation
         {
             try
             {
-                if (_useMockData)
-                {
-                    return await _mongoDBService.GetModerationStatisticsAsync(startDate, endDate);
-                }
-                
                 // Construire l'URL avec les paramètres de requête
                 var queryString = "api/moderation/statistics";
                 var hasParam = false;
@@ -272,9 +248,7 @@ namespace Frontend.Services.Moderation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la récupération des statistiques de modération");
-                
-                // En cas d'erreur, utiliser MongoDB
-                return await _mongoDBService.GetModerationStatisticsAsync(startDate, endDate);
+                throw;
             }
         }
     }
