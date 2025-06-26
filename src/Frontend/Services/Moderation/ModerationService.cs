@@ -1,10 +1,12 @@
 using Frontend.Models.Moderation;
+using Frontend.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
@@ -14,19 +16,39 @@ namespace Frontend.Services.Moderation
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<ModerationService> _logger;
+        private readonly ILocalStorageService _localStorage;
 
         public ModerationService(
             HttpClient httpClient,
-            ILogger<ModerationService> logger)
+            ILogger<ModerationService> logger,
+            ILocalStorageService localStorage)
         {
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _localStorage = localStorage ?? throw new ArgumentNullException(nameof(localStorage));
+        }
+        
+        private async Task SetAuthHeaderAsync()
+        {
+            try
+            {
+                var token = await _localStorage.GetItemAsync<string>("authToken");
+                if (!string.IsNullOrEmpty(token))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de la récupération du token d'authentification");
+            }
         }
         
         public async Task<ContentReport> ReportContentAsync(CreateReportRequest request)
         {
             try
             {
+                await SetAuthHeaderAsync();
                 var response = await _httpClient.PostAsJsonAsync("api/moderation/reports", request);
                 response.EnsureSuccessStatusCode();
                 
@@ -44,6 +66,7 @@ namespace Frontend.Services.Moderation
         {
             try
             {
+                await SetAuthHeaderAsync();
                 var response = await _httpClient.GetAsync($"api/moderation/reports/{reportId}");
                 
                 if (response.StatusCode == HttpStatusCode.NotFound)
@@ -65,6 +88,7 @@ namespace Frontend.Services.Moderation
         {
             try
             {
+                await SetAuthHeaderAsync();
                 var response = await _httpClient.GetAsync($"api/moderation/reports/my?page={page}&pageSize={pageSize}");
                 response.EnsureSuccessStatusCode();
                 
@@ -98,6 +122,7 @@ namespace Frontend.Services.Moderation
         {
             try
             {
+                await SetAuthHeaderAsync();
                 // Construire l'URL avec les paramètres de requête
                 var queryString = $"api/moderation/reports?page={page}&pageSize={pageSize}";
                 
@@ -185,6 +210,7 @@ namespace Frontend.Services.Moderation
         {
             try
             {
+                await SetAuthHeaderAsync();
                 var response = await _httpClient.PutAsJsonAsync($"api/moderation/reports/{reportId}/status", request);
                 response.EnsureSuccessStatusCode();
             }
@@ -199,6 +225,7 @@ namespace Frontend.Services.Moderation
         {
             try
             {
+                await SetAuthHeaderAsync();
                 var response = await _httpClient.PutAsJsonAsync($"api/moderation/reports/{reportId}/action", request);
                 response.EnsureSuccessStatusCode();
             }
@@ -213,6 +240,7 @@ namespace Frontend.Services.Moderation
         {
             try
             {
+                await SetAuthHeaderAsync();
                 var response = await _httpClient.PutAsJsonAsync($"api/moderation/reports/{reportId}/priority", request);
                 response.EnsureSuccessStatusCode();
             }
@@ -227,6 +255,7 @@ namespace Frontend.Services.Moderation
         {
             try
             {
+                await SetAuthHeaderAsync();
                 // Construire l'URL avec les paramètres de requête
                 var queryString = "api/moderation/statistics";
                 var hasParam = false;

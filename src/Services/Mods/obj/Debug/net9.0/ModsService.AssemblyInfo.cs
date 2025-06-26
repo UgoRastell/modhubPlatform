@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ModsService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dccac5c8aed099884eff0de5d5897b68c0493cec")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ac922df60800fad55c67f8f2061039ba5851094c")]
 [assembly: System.Reflection.AssemblyProductAttribute("ModsService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ModsService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
