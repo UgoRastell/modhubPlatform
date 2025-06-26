@@ -2,6 +2,7 @@ using Frontend;
 using Frontend.Services;
 using Frontend.Services.Forum;
 using Frontend.Services.Moderation;
+using Frontend.Services.Moderation.MongoDB;
 using Frontend.Theme;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -48,6 +49,11 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IGameService, GameService>();
+// Configuration et injection de MongoDB
+builder.Services.Configure<MongoDBSettings>(builder.Configuration.GetSection("MongoDB"));
+builder.Services.AddSingleton<ModerationMongoDBService>();
+
+// Services de modération et forum
 builder.Services.AddScoped<IModerationService, ModerationService>();
 builder.Services.AddScoped<IForumService, ForumService>();
 

@@ -18,9 +18,10 @@ namespace Frontend.Services.Moderation.MongoDB
 
         public ModerationMongoDBService(IOptions<MongoDBSettings> mongoDBSettings, ILogger<ModerationMongoDBService> logger)
         {
-            var mongoClient = new MongoClient(mongoDBSettings.Value.ConnectionString);
-            var mongoDatabase = mongoClient.GetDatabase(mongoDBSettings.Value.DatabaseName);
-            _reportsCollection = mongoDatabase.GetCollection<ContentReportDocument>(mongoDBSettings.Value.ModerationCollectionName);
+            var client = new MongoClient(mongoDBSettings.Value.ConnectionString);
+            var database = client.GetDatabase(mongoDBSettings.Value.DatabaseName);
+
+            _reportsCollection = database.GetCollection<ContentReportDocument>(mongoDBSettings.Value.ModerationCollectionName);
             _logger = logger;
         }
 
@@ -144,10 +145,10 @@ namespace Frontend.Services.Moderation.MongoDB
                     ContentId = request.ContentId,
                     ContentUrl = request.ContentUrl,
                     ContentSnippet = request.ContentSnippet,
-                    ReportedByUserId = request.UserId,
-                    ReportedByUsername = request.Username,
-                    ContentCreatorUserId = request.ContentCreatorId,
-                    ContentCreatorUsername = request.ContentCreatorName,
+                    ReportedByUserId = "user-1", // Valeur par défaut, à remplacer par l'utilisateur connecté
+                    ReportedByUsername = "Utilisateur1", // Valeur par défaut, à remplacer par l'utilisateur connecté
+                    ContentCreatorUserId = request.ContentCreatorUserId,
+                    ContentCreatorUsername = request.ContentCreatorUsername,
                     Reason = request.Reason,
                     Description = request.Description,
                     CreatedAt = DateTime.UtcNow,
@@ -182,9 +183,9 @@ namespace Frontend.Services.Moderation.MongoDB
                 var update = Builders<ContentReportDocument>.Update
                     .Set(r => r.Status, request.Status)
                     .Set(r => r.StatusUpdatedAt, DateTime.UtcNow)
-                    .Set(r => r.ModeratorUserId, request.ModeratorId)
-                    .Set(r => r.ModeratorUsername, request.ModeratorName)
-                    .Set(r => r.ModeratorNotes, request.Notes);
+                    .Set(r => r.ModeratorUserId, "mod-1") // Valeur par défaut, à remplacer par le modérateur connecté
+                    .Set(r => r.ModeratorUsername, "Moderateur1") // Valeur par défaut, à remplacer par le modérateur connecté
+                    .Set(r => r.ModeratorNotes, request.Notes ?? string.Empty);
 
                 await _reportsCollection.UpdateOneAsync(filter, update);
             }
@@ -230,9 +231,9 @@ namespace Frontend.Services.Moderation.MongoDB
                 var update = Builders<ContentReportDocument>.Update
                     .Set(r => r.Status, ReportStatus.Resolved)
                     .Set(r => r.StatusUpdatedAt, DateTime.UtcNow)
-                    .Set(r => r.ModeratorUserId, request.ModeratorId)
-                    .Set(r => r.ModeratorUsername, request.ModeratorName)
-                    .Set(r => r.ModeratorNotes, request.ActionNotes);
+                    .Set(r => r.ModeratorUserId, "mod-1") // Valeur par défaut, à remplacer par le modérateur connecté
+                    .Set(r => r.ModeratorUsername, "Moderateur1") // Valeur par défaut, à remplacer par le modérateur connecté
+                    .Set(r => r.ModeratorNotes, request.Notes ?? string.Empty); // Utilisation de Notes au lieu de ActionNotes
 
                 await _reportsCollection.UpdateOneAsync(filter, update);
             }
@@ -294,7 +295,7 @@ namespace Frontend.Services.Moderation.MongoDB
                     PendingReports = (int)pendingReports,
                     ResolvedReports = (int)resolvedReports,
                     RejectedReports = (int)rejectedReports,
-                    ContentTypeCounts = contentTypeCounts
+                    ReportsByContentType = contentTypeCounts
                 };
             }
             catch (Exception ex)
@@ -323,29 +324,71 @@ namespace Frontend.Services.Moderation.MongoDB
                     
                     for (int i = 1; i <= 100; i++)
                     {
-                        var reportStatus = (ReportStatus)(_random.Next(5));
-                        var reportContentType = (ContentType)(_random.Next(8));
-                        var reportPriority = (ReportPriority)(_random.Next(4));
+                        // Utiliser les valeurs correctes pour les énumérations
+                        var status = _random.Next(5) switch
+                        {
+                            0 => ReportStatus.Pending,
+                            1 => ReportStatus.InReview,
+                            2 => ReportStatus.Resolved,
+                            3 => ReportStatus.Rejected,
+                            _ => ReportStatus.Duplicate
+                        };
+                        
+                        var contentType = _random.Next(8) switch
+                        {
+                            0 => ContentType.ForumPost,
+                            1 => ContentType.WikiPage,
+                            2 => ContentType.Comment,
+                            3 => ContentType.ModListing,
+                            4 => ContentType.UserProfile,
+                            5 => ContentType.Message,
+                            6 => ContentType.Review,
+                            _ => ContentType.Other
+                        };
+                        
+                        var priority = _random.Next(4) switch
+                        {
+                            0 => ReportPriority.Low,
+                            1 => ReportPriority.Medium,
+                            2 => ReportPriority.High,
+                            _ => ReportPriority.Critical
+                        };
+                        
+                        var reason = _random.Next(10) switch
+                        {
+                            0 => ReportReason.Spam,
+                            1 => ReportReason.Harassment,
+                            2 => ReportReason.Violence,
+                            3 => ReportReason.Pornography,
+                            4 => ReportReason.IllegalContent,
+                            5 => ReportReason.ChildAbuse,
+                            6 => ReportReason.HateSpeech,
+                            7 => ReportReason.Misinformation,
+                            8 => ReportReason.Copyright,
+                            _ => ReportReason.Other
+                        };
                         
                         var report = new ContentReportDocument
                         {
-                            ContentType = reportContentType,
+                            // Utiliser une chaîne valide pour MongoDB ObjectId 
+                            Id = ObjectId.GenerateNewId().ToString(),
+                            ContentType = contentType,
                             ContentId = $"content-{i}",
-                            ContentUrl = $"/content/{reportContentType}/{i}",
+                            ContentUrl = $"/content/{contentType}/{i}",
                             ContentSnippet = $"Extrait du contenu signalé {i}",
                             ReportedByUserId = $"user-{_random.Next(1, 20)}",
                             ReportedByUsername = $"Utilisateur{_random.Next(1, 20)}",
                             ContentCreatorUserId = $"creator-{_random.Next(1, 10)}",
                             ContentCreatorUsername = $"Créateur{_random.Next(1, 10)}",
-                            Reason = (ReportReason)(_random.Next(10)),
+                            Reason = reason,
                             Description = $"Description du signalement {i}",
                             CreatedAt = DateTime.Now.AddDays(-_random.Next(30)),
-                            Status = reportStatus,
-                            StatusUpdatedAt = reportStatus != ReportStatus.Pending ? DateTime.Now.AddDays(-_random.Next(10)) : null,
-                            ModeratorUserId = reportStatus != ReportStatus.Pending ? $"mod-{_random.Next(1, 5)}" : null,
-                            ModeratorUsername = reportStatus != ReportStatus.Pending ? $"Modérateur{_random.Next(1, 5)}" : null,
-                            ModeratorNotes = reportStatus != ReportStatus.Pending ? $"Notes du modérateur {i}" : null,
-                            Priority = reportPriority
+                            Status = status,
+                            StatusUpdatedAt = status != ReportStatus.Pending ? DateTime.Now.AddDays(-_random.Next(10)) : null,
+                            ModeratorUserId = status != ReportStatus.Pending ? $"mod-{_random.Next(1, 5)}" : null,
+                            ModeratorUsername = status != ReportStatus.Pending ? $"Modérateur{_random.Next(1, 5)}" : null,
+                            ModeratorNotes = status != ReportStatus.Pending ? $"Notes du modérateur {i}" : null,
+                            Priority = priority
                         };
                         
                         mockReports.Add(report);
