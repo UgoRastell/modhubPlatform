@@ -1,4 +1,5 @@
 using Frontend.Models.Moderation;
+using Frontend.Services.Moderation.MongoDB;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,131 +17,44 @@ namespace Frontend.Services.Moderation
         private readonly HttpClient _httpClient;
         private readonly ILogger<ModerationService> _logger;
         private readonly bool _useMockData;
-        private readonly Random _random = new Random();
+        private readonly ModerationMongoDBService _mongoDBService;
 
-        public ModerationService(IHttpClientFactory httpClientFactory, ILogger<ModerationService> logger)
+        public ModerationService(
+            IHttpClientFactory httpClientFactory, 
+            ILogger<ModerationService> logger,
+            ModerationMongoDBService mongoDBService)
         {
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             _httpClient = _httpClientFactory.CreateClient("CommunityService");
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mongoDBService = mongoDBService ?? throw new ArgumentNullException(nameof(mongoDBService));
             _useMockData = true; // Activer les données fictives tant que l'API n'est pas disponible
+            
+            // Initialiser les données mock si la collection est vide
+            _mongoDBService.InitializeMockDataAsync().GetAwaiter().GetResult();
         }
         
-        /// <summary>
-        /// Génère des données de test pour les signalements
-        /// </summary>
-        private (List<ContentReport> Reports, int TotalCount, int TotalPages) GetMockReports(
-            ReportStatus? status = null, ContentType? contentType = null, ReportPriority? priority = null,
-            int page = 1, int pageSize = 20)
-        {
-            // Générer une liste de 100 signalements fictifs
-            var allReports = new List<ContentReport>();
-            
-            for (int i = 1; i <= 100; i++)
-            {
-                var reportStatus = (ReportStatus)(_random.Next(5));
-                var reportContentType = (ContentType)(_random.Next(8));
-                var reportPriority = (ReportPriority)(_random.Next(4));
-                
-                // Si des filtres sont appliqués, sauter les éléments qui ne correspondent pas
-                if (status.HasValue && reportStatus != status.Value) continue;
-                if (contentType.HasValue && reportContentType != contentType.Value) continue;
-                if (priority.HasValue && reportPriority != priority.Value) continue;
-                
-                var report = new ContentReport
-                {
-                    Id = $"mock-{i}",
-                    ContentType = reportContentType,
-                    ContentId = $"content-{i}",
-                    ContentUrl = $"/content/{reportContentType}/{i}",
-                    ContentSnippet = $"Extrait du contenu signalé {i}",
-                    ReportedByUserId = $"user-{_random.Next(1, 20)}",
-                    ReportedByUsername = $"Utilisateur{_random.Next(1, 20)}",
-                    ContentCreatorUserId = $"creator-{_random.Next(1, 10)}",
-                    ContentCreatorUsername = $"Créateur{_random.Next(1, 10)}",
-                    Reason = (ReportReason)(_random.Next(10)),
-                    Description = $"Description du signalement {i}",
-                    CreatedAt = DateTime.Now.AddDays(-_random.Next(30)),
-                    Status = reportStatus,
-                    StatusUpdatedAt = reportStatus != ReportStatus.Pending ? DateTime.Now.AddDays(-_random.Next(10)) : null,
-                    ModeratorUserId = reportStatus != ReportStatus.Pending ? $"mod-{_random.Next(1, 5)}" : null,
-                    ModeratorUsername = reportStatus != ReportStatus.Pending ? $"Modérateur{_random.Next(1, 5)}" : null,
-                    ModeratorNotes = reportStatus != ReportStatus.Pending ? $"Notes du modérateur {i}" : null,
-                    Priority = reportPriority
-                };
-                
-                allReports.Add(report);
-            }
-            
-            // Appliquer la pagination
-            var totalCount = allReports.Count;
-            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-            
-            var paginatedReports = allReports
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-            
-            return (paginatedReports, totalCount, totalPages);
-        }
-        
-        /// <summary>
-        /// Génère un rapport de contenu fictif avec l'ID spécifié
-        /// </summary>
-        private ContentReport GenerateMockReport(string reportId)
-        {
-            // Extraire le numéro de l'ID si possible, sinon utiliser un nombre aléatoire
-            int reportNumber;
-            if (reportId.StartsWith("mock-") && int.TryParse(reportId.Substring(5), out reportNumber))
-            {
-                // Utiliser le numéro extrait
-            }
-            else
-            {
-                // Génération d'un numéro aléatoire si l'ID ne suit pas le format attendu
-                reportNumber = _random.Next(1, 100);
-            }
-
-            var reportStatus = (ReportStatus)(_random.Next(5));
-            var reportContentType = (ContentType)(_random.Next(8));
-            
-            return new ContentReport
-            {
-                Id = reportId,
-                ContentType = reportContentType,
-                ContentId = $"content-{reportNumber}",
-                ContentUrl = $"/content/{reportContentType}/{reportNumber}",
-                ContentSnippet = $"Extrait du contenu signalé {reportNumber}",
-                ReportedByUserId = $"user-{_random.Next(1, 20)}",
-                ReportedByUsername = $"Utilisateur{_random.Next(1, 20)}",
-                ContentCreatorUserId = $"creator-{_random.Next(1, 10)}",
-                ContentCreatorUsername = $"Créateur{_random.Next(1, 10)}",
-                Reason = (ReportReason)(_random.Next(10)),
-                Description = $"Description du signalement {reportNumber} (détails)",
-                CreatedAt = DateTime.Now.AddDays(-_random.Next(30)),
-                Status = reportStatus,
-                StatusUpdatedAt = reportStatus != ReportStatus.Pending ? DateTime.Now.AddDays(-_random.Next(10)) : null,
-                ModeratorUserId = reportStatus != ReportStatus.Pending ? $"mod-{_random.Next(1, 5)}" : null,
-                ModeratorUsername = reportStatus != ReportStatus.Pending ? $"Modérateur{_random.Next(1, 5)}" : null,
-                ModeratorNotes = reportStatus != ReportStatus.Pending ? $"Notes du modérateur pour le rapport {reportNumber}" : null,
-                Priority = (ReportPriority)(_random.Next(4))
-            };
-        }
-
         public async Task<ContentReport> ReportContentAsync(CreateReportRequest request)
         {
             try
             {
+                if (_useMockData)
+                {
+                    return await _mongoDBService.CreateReportAsync(request);
+                }
+
                 var response = await _httpClient.PostAsJsonAsync("api/moderation/reports", request);
                 response.EnsureSuccessStatusCode();
                 
-                var result = await response.Content.ReadFromJsonAsync<ContentReport>();
-                return result ?? new ContentReport();
+                var report = await response.Content.ReadFromJsonAsync<ContentReport>();
+                return report;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors du signalement de contenu");
-                throw;
+                _logger.LogError(ex, "Erreur lors de la création du signalement");
+                
+                // En cas d'erreur, utiliser MongoDB
+                return await _mongoDBService.CreateReportAsync(request);
             }
         }
 
@@ -148,30 +62,27 @@ namespace Frontend.Services.Moderation
         {
             try
             {
-                // Si le mode mock est actif, retourner un signalement fictif
                 if (_useMockData)
                 {
-                    _logger.LogWarning("API de modération non disponible - utilisation de données fictives");
-                    return GenerateMockReport(reportId);
+                    return await _mongoDBService.GetReportByIdAsync(reportId);
                 }
-                
+
                 var response = await _httpClient.GetAsync($"api/moderation/reports/{reportId}");
                 
-                // Si l'API retourne 404, utiliser des données fictives
                 if (response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    _logger.LogWarning("API de modération non disponible (404) - utilisation de données fictives");
-                    return GenerateMockReport(reportId);
-                }
-                
+                    return null;
+                    
                 response.EnsureSuccessStatusCode();
-                var result = await response.Content.ReadFromJsonAsync<ContentReport>();
-                return result ?? new ContentReport();
+                
+                var report = await response.Content.ReadFromJsonAsync<ContentReport>();
+                return report;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la récupération du signalement {ReportId}", reportId);
-                return GenerateMockReport(reportId);
+                
+                // En cas d'erreur, utiliser MongoDB
+                return await _mongoDBService.GetReportByIdAsync(reportId);
             }
         }
 
@@ -179,7 +90,14 @@ namespace Frontend.Services.Moderation
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/moderation/reports/me?page={page}&pageSize={pageSize}");
+                if (_useMockData)
+                {
+                    // Utiliser un ID utilisateur fictif pour les tests
+                    const string mockUserId = "user-1";
+                    return await _mongoDBService.GetUserReportsAsync(mockUserId, page, pageSize);
+                }
+                
+                var response = await _httpClient.GetAsync($"api/moderation/reports/my?page={page}&pageSize={pageSize}");
                 response.EnsureSuccessStatusCode();
                 
                 var reports = await response.Content.ReadFromJsonAsync<List<ContentReport>>();
@@ -198,45 +116,41 @@ namespace Frontend.Services.Moderation
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la récupération de mes signalements");
-                throw;
+                _logger.LogError(ex, "Erreur lors de la récupération des signalements de l'utilisateur");
+                
+                // En cas d'erreur, utiliser MongoDB avec un utilisateur fictif
+                const string mockUserId = "user-1";
+                return await _mongoDBService.GetUserReportsAsync(mockUserId, page, pageSize);
             }
         }
 
         public async Task<(List<ContentReport> Reports, int TotalCount, int TotalPages)> GetAllReportsAsync(
-            ReportStatus? status = null, ContentType? contentType = null, ReportPriority? priority = null,
-            int page = 1, int pageSize = 20)
+            ReportStatus? status = null, 
+            ContentType? contentType = null, 
+            ReportPriority? priority = null,
+            int page = 1, 
+            int pageSize = 20)
         {
             try
             {
-                // Si le mode mock est actif, retourner des données fictives
                 if (_useMockData)
                 {
-                    _logger.LogWarning("API de modération non disponible - utilisation de données fictives");
-                    return GetMockReports(status, contentType, priority, page, pageSize);
+                    return await _mongoDBService.GetReportsAsync(status, contentType, priority, page, pageSize);
                 }
-
+                
                 // Construire l'URL avec les paramètres de requête
                 var queryString = $"api/moderation/reports?page={page}&pageSize={pageSize}";
                 
                 if (status.HasValue)
                     queryString += $"&status={status.Value}";
-                
+                    
                 if (contentType.HasValue)
                     queryString += $"&contentType={contentType.Value}";
-                
+                    
                 if (priority.HasValue)
                     queryString += $"&priority={priority.Value}";
                 
                 var response = await _httpClient.GetAsync(queryString);
-
-                // Si l'API retourne 404, utiliser les données fictives
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    _logger.LogWarning("API de modération non disponible (404) - utilisation de données fictives");
-                    return GetMockReports(status, contentType, priority, page, pageSize);
-                }
-                
                 response.EnsureSuccessStatusCode();
                 
                 var reports = await response.Content.ReadFromJsonAsync<List<ContentReport>>();
@@ -256,9 +170,9 @@ namespace Frontend.Services.Moderation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la récupération des signalements");
-                // En cas d'erreur, utiliser des données fictives plutôt que de planter
-                _logger.LogWarning("Utilisation de données fictives suite à une erreur");
-                return GetMockReports(status, contentType, priority, page, pageSize);
+                
+                // En cas d'erreur, utiliser MongoDB
+                return await _mongoDBService.GetReportsAsync(status, contentType, priority, page, pageSize);
             }
         }
 
@@ -266,13 +180,21 @@ namespace Frontend.Services.Moderation
         {
             try
             {
+                if (_useMockData)
+                {
+                    await _mongoDBService.UpdateReportStatusAsync(reportId, request);
+                    return;
+                }
+                
                 var response = await _httpClient.PutAsJsonAsync($"api/moderation/reports/{reportId}/status", request);
                 response.EnsureSuccessStatusCode();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la mise à jour du statut du signalement {ReportId}", reportId);
-                throw;
+                
+                // En cas d'erreur, essayer d'utiliser MongoDB
+                await _mongoDBService.UpdateReportStatusAsync(reportId, request);
             }
         }
 
@@ -280,13 +202,21 @@ namespace Frontend.Services.Moderation
         {
             try
             {
+                if (_useMockData)
+                {
+                    await _mongoDBService.TakeModeratorActionAsync(reportId, request);
+                    return;
+                }
+                
                 var response = await _httpClient.PutAsJsonAsync($"api/moderation/reports/{reportId}/action", request);
                 response.EnsureSuccessStatusCode();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la prise d'action sur le signalement {ReportId}", reportId);
-                throw;
+                
+                // En cas d'erreur, essayer d'utiliser MongoDB
+                await _mongoDBService.TakeModeratorActionAsync(reportId, request);
             }
         }
 
@@ -294,13 +224,21 @@ namespace Frontend.Services.Moderation
         {
             try
             {
+                if (_useMockData)
+                {
+                    await _mongoDBService.UpdateReportPriorityAsync(reportId, request);
+                    return;
+                }
+                
                 var response = await _httpClient.PutAsJsonAsync($"api/moderation/reports/{reportId}/priority", request);
                 response.EnsureSuccessStatusCode();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la mise à jour de la priorité du signalement {ReportId}", reportId);
-                throw;
+                
+                // En cas d'erreur, essayer d'utiliser MongoDB
+                await _mongoDBService.UpdateReportPriorityAsync(reportId, request);
             }
         }
 
@@ -308,6 +246,11 @@ namespace Frontend.Services.Moderation
         {
             try
             {
+                if (_useMockData)
+                {
+                    return await _mongoDBService.GetModerationStatisticsAsync(startDate, endDate);
+                }
+                
                 // Construire l'URL avec les paramètres de requête
                 var queryString = "api/moderation/statistics";
                 var hasParam = false;
@@ -329,7 +272,9 @@ namespace Frontend.Services.Moderation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la récupération des statistiques de modération");
-                throw;
+                
+                // En cas d'erreur, utiliser MongoDB
+                return await _mongoDBService.GetModerationStatisticsAsync(startDate, endDate);
             }
         }
     }
