@@ -108,14 +108,8 @@
                     case "security":
                         <SecuritySection />
                         break;
-                    case "notifications":
-                        <NotificationsSection />
-                        break;
                     case "privacy":
                         <PrivacySection />
-                        break;
-                    case "interface":
-                        <InterfaceSection />
                         break;
                     case "payments":
                         <PaymentsSection />
@@ -163,9 +157,7 @@
     {
         new MenuItem { Text = "Profil", Icon = Icons.Material.Filled.Person, Section = "profile" },
         new MenuItem { Text = "Sécurité", Icon = Icons.Material.Filled.Security, Section = "security" },
-        new MenuItem { Text = "Notifications", Icon = Icons.Material.Filled.Notifications, Section = "notifications" },
         new MenuItem { Text = "Confidentialité", Icon = Icons.Material.Filled.Lock, Section = "privacy" },
-        new MenuItem { Text = "Interface", Icon = Icons.Material.Filled.Palette, Section = "interface" },
         new MenuItem { Text = "Paiements", Icon = Icons.Material.Filled.CreditCard, Section = "payments" },
         new MenuItem { Text = "Zone critique", Icon = Icons.Material.Filled.Warning, Section = "danger" }
     };
