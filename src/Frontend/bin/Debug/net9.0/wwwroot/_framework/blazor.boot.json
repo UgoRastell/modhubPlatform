@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "Frontend",
   "resources": {
-    "hash": "sha256-rTOAWVHrTKa5IXOZVmC5t9+Ra0EHMX5HNYzPi3Jo6ng=",
+    "hash": "sha256-X8O0k2/PzztR0z7q136K+uszfE3N78aBNFn490c/+nk=",
     "fingerprinting": {
       "FluentValidation.b28mz0qrx7.wasm": "FluentValidation.wasm",
       "Microsoft.AspNetCore.Authorization.esv38zo127.wasm": "Microsoft.AspNetCore.Authorization.wasm",
@@ -213,10 +213,10 @@
       "icudt_CJK.tjcz0u77k5.dat": "icudt_CJK.dat",
       "icudt_EFIGS.tptq2av103.dat": "icudt_EFIGS.dat",
       "icudt_no_CJK.lfu7j35m59.dat": "icudt_no_CJK.dat",
-      "Shared.vl7ix87aa5.wasm": "Shared.wasm",
-      "Shared.gzick4gi7m.pdb": "Shared.pdb",
-      "Frontend.xv3d9x320g.wasm": "Frontend.wasm",
-      "Frontend.6bcgm7v1w0.pdb": "Frontend.pdb"
+      "Shared.y98xfkyzu8.wasm": "Shared.wasm",
+      "Shared.ia3ygl2jl4.pdb": "Shared.pdb",
+      "Frontend.6b2b9vo900.wasm": "Frontend.wasm",
+      "Frontend.fuu7x0wi0a.pdb": "Frontend.pdb"
     },
     "jsModuleNative": {
       "dotnet.native.8bti36lthm.js": "sha256-HFADmT26AarHu4tMjFaTPxINmQjBJGtdPN+CKjtNMFE="
@@ -438,12 +438,12 @@
       "WindowsBase.tuf34ieu7y.wasm": "sha256-Bd+l972cOS1eVeLzrQNlgD6LPWV1QXBSzJhv8Tx1WGI=",
       "mscorlib.5q5u0swn6q.wasm": "sha256-g9cI1sECkF7bxMqOSB+W0a4utdDsqTrqZzyiAEeA65g=",
       "netstandard.w8gk1pigg1.wasm": "sha256-QFR5QNPfvyZTexW3IA/AFx6ZmIF/TecvOUsSK4gM4po=",
-      "Shared.vl7ix87aa5.wasm": "sha256-A8j1AznTTG0AHHk/uXZXMHQJQMwH557jh6vUhr/bw0A=",
-      "Frontend.xv3d9x320g.wasm": "sha256-7dGoVn8k8VhogUSVAky7WMdU4RloPyxjh//qvWUK+fo="
+      "Shared.y98xfkyzu8.wasm": "sha256-JscNhgh/f25/w4zQ+Bk2wcMKNDsikuFGsJ06UWEsAJ0=",
+      "Frontend.6b2b9vo900.wasm": "sha256-ciUCJcCbLUwjWHcPC5jP6nCpE0tF83VsQW8dmDHtdWk="
     },
     "pdb": {
-      "Shared.gzick4gi7m.pdb": "sha256-HI/0pRDC36Y9QO6PCGeN5oCaR0gmViA5xHSncB/Lxwc=",
-      "Frontend.6bcgm7v1w0.pdb": "sha256-UiSrKJeAVZgZC1ooO9LfGwBQIb+NwVbNv3rKG5faNxk="
+      "Shared.ia3ygl2jl4.pdb": "sha256-1lZcJssmDyuIMzGoWT/ceVhmtaP3VT3GN4bv78Uo+rg=",
+      "Frontend.fuu7x0wi0a.pdb": "sha256-GSfyA2JbotGSKvac7bNYi/CCr5jFUqFBzt5meuIZdec="
     }
   },
   "cacheBootResources": true,

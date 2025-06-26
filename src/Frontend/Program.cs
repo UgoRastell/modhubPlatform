@@ -1,5 +1,6 @@
 using Frontend;
 using Frontend.Services;
+using Frontend.Services.Forum;
 using Frontend.Services.Moderation;
 using Frontend.Theme;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -48,6 +49,7 @@ builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IModerationService, ModerationService>();
+builder.Services.AddScoped<IForumService, ForumService>();
 
 // Configuration des services MudBlazor
 builder.Services.AddMudServices(config =>
