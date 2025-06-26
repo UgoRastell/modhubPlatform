@@ -1,0 +1,244 @@
+@page "/forum/new-topic"
+@using Frontend.Services.Forum
+@using Frontend.Models.Forum
+@inject IForumService ForumService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Nouveau sujet - Forum - ModsGamingPlatform</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-16">
+    <MudBreadcrumbs Items="_breadcrumbs" Class="mb-4"></MudBreadcrumbs>
+    
+    <MudText Typo="Typo.h4" Class="mb-4">Créer un nouveau sujet</MudText>
+    
+    <MudCard Elevation="3" Class="mb-4" Style="background-color: #232634;">
+        <MudCardContent>
+            @if (_loading)
+            {
+                <div class="d-flex justify-center my-8">
+                    <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else
+            {
+                <MudForm @ref="_form" Model="@_topicDto" @bind-IsValid="_isFormValid">
+                    <MudSelect T="string" Label="Catégorie" Required RequiredError="La catégorie est requise"
+                              @bind-Value="_topicDto.CategoryId" Class="mb-4">
+                        @foreach (var category in _categories)
+                        {
+                            <MudSelectItem Value="@category.Id">@category.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                    
+                    <MudTextField @bind-Value="_topicDto.Title"
+                                Label="Titre du sujet"
+                                Required
+                                RequiredError="Le titre est requis"
+                                Validation="@(new Func<string, string>(ValidateTitle))"
+                                Counter="100"
+                                MaxLength="100"
+                                Immediate="true"
+                                Class="mb-4" />
+                    
+                    <MudTextField @bind-Value="_topicDto.Content"
+                                Label="Contenu"
+                                Required
+                                RequiredError="Le contenu est requis"
+                                Lines="10"
+                                Counter="4000"
+                                MaxLength="4000"
+                                Validation="@(new Func<string, string>(ValidateContent))"
+                                HelperText="Vous pouvez utiliser le Markdown pour formater votre message"
+                                Class="mb-4" />
+                    
+                    <MudChipSet @bind-SelectedValues="_selectedTags" MultiSelection="true" Filter="true" Class="mb-4">
+                        <MudChipSet @bind-SelectedValues="_selectedTags" MultiSelection="true" Filter="true" Class="mb-4">
+                            @foreach (var tag in _popularTags)
+                            {
+                                <MudChip Text="@tag" Value="@tag" Color="Color.Primary" />
+                            }
+                        </MudChipSet>
+                    </MudChipSet>
+                    
+                    <MudPaper Class="pa-4 mb-4" Style="background-color: #1e222f;">
+                        <MudText Typo="Typo.subtitle1" Class="mb-2">Tags sélectionnés</MudText>
+                        @if (_selectedTags.Count == 0)
+                        {
+                            <MudText Typo="Typo.body2">Aucun tag sélectionné. Choisissez des tags existants ou ajoutez-en de nouveaux.</MudText>
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-wrap">
+                                @foreach (var tag in _selectedTags)
+                                {
+                                    <MudChip Text="@tag.ToString()" Color="Color.Secondary" Size="Size.Small" OnClose="() => RemoveTag(tag)" Class="ma-1" />
+                                }
+                            </div>
+                        }
+                    </MudPaper>
+                    
+                    <MudTextField @bind-Value="_newTag"
+                                Label="Ajouter un nouveau tag"
+                                Placeholder="Entrez un tag et appuyez sur Enter"
+                                Counter="20"
+                                MaxLength="20"
+                                Adornment="Adornment.End"
+                                AdornmentIcon="@Icons.Material.Filled.Add"
+                                OnAdornmentClick="AddNewTag"
+                                OnKeyDown="@(e => { if(e.Key == "Enter") { AddNewTag(); } })"
+                                Class="mb-4" />
+                    
+                    <div class="d-flex justify-end mt-6">
+                        <MudButton Variant="Variant.Text"
+                                 Color="Color.Default"
+                                 OnClick="Cancel"
+                                 Class="mr-3">
+                            Annuler
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled"
+                                 Color="Color.Primary"
+                                 OnClick="CreateTopic"
+                                 Disabled="!_isFormValid || _isSaving">
+                            @if (_isSaving)
+                            {
+                                <MudProgressCircular Class="mr-2" Size="Size.Small" Indeterminate="true" />
+                                <span>Création en cours...</span>
+                            }
+                            else
+                            {
+                                <span>Créer le sujet</span>
+                            }
+                        </MudButton>
+                    </div>
+                </MudForm>
+            }
+        </MudCardContent>
+    </MudCard>
+</MudContainer>
+
+@code {
+    private MudForm _form;
+    private bool _isFormValid;
+    private bool _loading = true;
+    private bool _isSaving = false;
+    private CreateForumTopicDto _topicDto = new();
+    private List<ForumCategoryViewModel> _categories = new();
+    private List<string> _popularTags = new();
+    private HashSet<object> _selectedTags = new();
+    private string _newTag = string.Empty;
+    
+    private List<BreadcrumbItem> _breadcrumbs = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Forum", href: "/forum"),
+        new BreadcrumbItem("Nouveau sujet", href: "/forum/new-topic", disabled: true)
+    };
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur de chargement : {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+    
+    private async Task LoadData()
+    {
+        _categories = await ForumService.GetCategoriesAsync();
+        _popularTags = await ForumService.GetPopularTagsAsync();
+        
+        // Si catégorie passée en paramètre
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("categoryId", out var categoryId))
+        {
+            _topicDto.CategoryId = categoryId.ToString();
+        }
+        else if (_categories.Count > 0)
+        {
+            // Sélectionner la première catégorie par défaut
+            _topicDto.CategoryId = _categories.First().Id;
+        }
+    }
+    
+    private string ValidateTitle(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            return "Le titre est requis";
+            
+        if (title.Length < 5)
+            return "Le titre doit contenir au moins 5 caractères";
+            
+        return null;
+    }
+    
+    private string ValidateContent(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+            return "Le contenu est requis";
+            
+        if (content.Length < 10)
+            return "Le contenu doit contenir au moins 10 caractères";
+            
+        return null;
+    }
+    
+    private void AddNewTag()
+    {
+        if (!string.IsNullOrWhiteSpace(_newTag) && _newTag.Length <= 20)
+        {
+            string formattedTag = _newTag.Trim().ToLower();
+            if (formattedTag.Length > 0 && !_selectedTags.Any(t => t.ToString().Equals(formattedTag, StringComparison.OrdinalIgnoreCase)))
+            {
+                _selectedTags.Add(formattedTag);
+                StateHasChanged();
+            }
+            _newTag = string.Empty;
+        }
+    }
+    
+    private void RemoveTag(object tag)
+    {
+        _selectedTags.Remove(tag);
+        StateHasChanged();
+    }
+    
+    private async Task CreateTopic()
+    {
+        await _form.Validate();
+        
+        if (_isFormValid)
+        {
+            try
+            {
+                _isSaving = true;
+                _topicDto.Tags = _selectedTags.Select(t => t.ToString()).ToList();
+                
+                var createdTopic = await ForumService.CreateTopicAsync(_topicDto);
+                
+                Snackbar.Add("Sujet créé avec succès", Severity.Success);
+                NavigationManager.NavigateTo($"/forum/topics/{createdTopic.Id}");
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur lors de la création du sujet : {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                _isSaving = false;
+            }
+        }
+    }
+    
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/forum");
+    }
+}
