@@ -1,0 +1,204 @@
+@page "/jwt-debugger"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Text.Json
+
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILocalStorageService LocalStorage
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
+    <MudCard>
+        <MudCardHeader>
+            <MudText Typo="Typo.h5">JWT Debugger</MudText>
+        </MudCardHeader>
+        <MudCardContent>
+            @if (_loading)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-2" />
+            }
+            else if (_user?.Identity?.IsAuthenticated == true)
+            {
+                <MudText Typo="Typo.subtitle1" Class="mb-2">Utilisateur authentifié: @_user.Identity.Name</MudText>
+                
+                <MudExpansionPanels>
+                    <MudExpansionPanel Text="Claims de l'utilisateur">
+                        <MudList Dense="true" T="string">
+                            @foreach (var claim in _user.Claims)
+                            {
+                                <MudListItem T="string">
+                                    <strong>@claim.Type:</strong> @claim.Value
+                                </MudListItem>
+                            }
+                        </MudList>
+                    </MudExpansionPanel>
+                    
+                    <MudExpansionPanel Text="Données brutes du JWT">
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Header</MudText>
+                        <MudTextField Value="@_jwtData.Header" ReadOnly="true" Lines="3" Class="mb-4" />
+                        
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Payload</MudText>
+                        <MudTextField Value="@_jwtData.Payload" ReadOnly="true" Lines="10" Class="mb-4" />
+                        
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Signature</MudText>
+                        <MudTextField Value="@_jwtData.Signature" ReadOnly="true" Lines="3" />
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+                
+                <MudDivider Class="my-4" />
+                
+                <MudText Typo="Typo.subtitle1" Class="mb-2">Rôles détectés:</MudText>
+                <MudChipSet T="string">
+                    @foreach (var role in _roles)
+                    {
+                        <MudChip T="string" Color="Color.Primary">@role</MudChip>
+                    }
+                </MudChipSet>
+                
+                @if (!_hasRequiredRoles)
+                {
+                    <MudAlert Severity="Severity.Warning" Class="mt-4">
+                        L'utilisateur ne dispose pas des rôles requis pour accéder aux fonctionnalités de modération (Admin, Moderator).
+                    </MudAlert>
+                }
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Error">
+                    Aucun utilisateur authentifié détecté.
+                </MudAlert>
+            }
+        </MudCardContent>
+        
+        @if (_user?.Identity?.IsAuthenticated == true && !_hasRequiredRoles)
+        {
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" 
+                          Color="Color.Primary" 
+                          OnClick="AddModerationRoleForDebug">
+                    Ajouter temporairement le rôle Moderator (pour debug)
+                </MudButton>
+            </MudCardActions>
+        }
+    </MudCard>
+</MudContainer>
+
+@code {
+    private ClaimsPrincipal? _user;
+    private List<string> _roles = new();
+    private bool _hasRequiredRoles;
+    private bool _loading = true;
+    private JwtParts _jwtData = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            _user = authState.User;
+            
+            if (_user.Identity?.IsAuthenticated == true)
+            {
+                // Extraire les rôles
+                _roles = _user.Claims
+                    .Where(c => c.Type == ClaimTypes.Role)
+                    .Select(c => c.Value)
+                    .ToList();
+                
+                // Vérifier si l'utilisateur a les rôles requis
+                _hasRequiredRoles = _roles.Any(r => r == "Admin" || r == "Moderator");
+                
+                // Décoder le JWT
+                var token = await LocalStorage.GetItemAsync<string>("authToken");
+                if (!string.IsNullOrEmpty(token))
+                {
+                    DecodeJwt(token);
+                }
+            }
+        }
+        finally {
+            _loading = false;
+        }
+    }
+    
+    private void DecodeJwt(string jwt)
+    {
+        try
+        {
+            var parts = jwt.Split('.');
+            if (parts.Length != 3)
+            {
+                return;
+            }
+
+            _jwtData.Header = DecodeBase64UrlToJson(parts[0]);
+            _jwtData.Payload = DecodeBase64UrlToJson(parts[1]);
+            _jwtData.Signature = parts[2]; // La signature reste encodée
+        }
+        catch (Exception)
+        {
+            // Ignorer les erreurs de décodage
+        }
+    }
+    
+    private string DecodeBase64UrlToJson(string base64Url)
+    {
+        string base64 = base64Url.Replace('-', '+').Replace('_', '/');
+        switch (base64.Length % 4)
+        {
+            case 2: base64 += "=="; break;
+            case 3: base64 += "="; break;
+        }
+        
+        var bytes = Convert.FromBase64String(base64);
+        var json = System.Text.Encoding.UTF8.GetString(bytes);
+        
+        try
+        {
+            // Formater le JSON pour une meilleure lisibilité
+            var jsonDoc = JsonDocument.Parse(json);
+            return JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true });
+        }
+        catch
+        {
+            return json;
+        }
+    }
+    
+    private async Task AddModerationRoleForDebug()
+    {
+        // Cette méthode est uniquement pour le débogage
+        // Dans une application réelle, vous ne devriez jamais manipuler
+        // les tokens JWT côté client de cette façon
+        
+        try
+        {
+            _loading = true;
+            
+            // Récupérer le token actuel
+            var token = await LocalStorage.GetItemAsync<string>("authToken");
+            if (string.IsNullOrEmpty(token))
+            {
+                return;
+            }
+            
+            // Astuce temporaire : Stocker le token avec une indication pour le ModerationService
+            // Cela permettra au service d'ajouter un en-tête personnalisé pour le débogage
+            await LocalStorage.SetItemAsync("debugModerationRole", "true");
+            
+            // Rafraîchir la page pour voir le résultat
+            await Task.Delay(1000); // Attendre un peu pour que localStorage soit mis à jour
+            _loading = false;
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            _loading = false;
+        }
+    }
+    
+    private class JwtParts
+    {
+        public string Header { get; set; } = string.Empty;
+        public string Payload { get; set; } = string.Empty;
+        public string Signature { get; set; } = string.Empty;
+    }
+}

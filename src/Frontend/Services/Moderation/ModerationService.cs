@@ -36,6 +36,18 @@ namespace Frontend.Services.Moderation
                 if (!string.IsNullOrEmpty(token))
                 {
                     _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    
+                    // Pour le débogage temporaire de l'autorisation
+                    if (await _localStorage.GetItemAsync<string>("debugModerationRole") == "true")
+                    {
+                        // Ajouter un en-tête personnalisé pour indiquer au backend que nous sommes en mode débogage
+                        if (_httpClient.DefaultRequestHeaders.Contains("X-Debug-Role"))
+                        {
+                            _httpClient.DefaultRequestHeaders.Remove("X-Debug-Role");
+                        }
+                        _httpClient.DefaultRequestHeaders.Add("X-Debug-Role", "Moderator");
+                        _logger.LogInformation("En-tête de débogage des rôles ajouté pour la modération");
+                    }
                 }
             }
             catch (Exception ex)
