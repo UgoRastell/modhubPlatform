@@ -16,8 +16,6 @@
     <link href="css/app-bar.css" rel="stylesheet" />
     
     <MudLayout>
-        <!-- Nouvelle AppBar customisée -->
-        <AppBar />
         
         <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="@DrawerVariant.Responsive">
             <MudDrawerHeader>
@@ -27,7 +25,7 @@
             <Frontend.Layout.MainNavMenu />
         </MudDrawer>
         
-        <MudMainContent Class="pt-16">
+        <MudMainContent>
             <MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
                 @Body
             </MudContainer>
