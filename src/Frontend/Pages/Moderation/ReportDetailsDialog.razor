@@ -100,7 +100,7 @@
         </MudCard>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => MudDialog.Close()">Fermer</MudButton>
+        <MudButton OnClick="CloseDialog">Fermer</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -149,4 +149,6 @@
             }
         }
     }
+    
+    private void CloseDialog() => MudDialog.Cancel();
 }
