@@ -15,10 +15,112 @@ namespace CommunityService.Services.Moderation
         
         // Pour simplifier, nous utiliserons une liste en mémoire pour le moment
         private static readonly List<ContentReport> _reports = new();
+        private static bool _isInitialized = false;
+        private static readonly object _initLock = new object();
 
         public ContentReportingService(ILogger<ContentReportingService> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            
+            // Initialiser les données de test si nécessaire
+            InitializeTestData();
+        }
+        
+        private void InitializeTestData()
+        {
+            // Utiliser un lock pour éviter plusieurs initialisations concurrentes
+            if (!_isInitialized)
+            {
+                lock (_initLock)
+                {
+                    if (!_isInitialized)
+                    {
+                        try
+                        {
+                            _logger.LogInformation("Initializing test data for content reports");
+                            
+                            // Vérifier si la liste est vide avant d'ajouter des données
+                            if (_reports.Count == 0)
+                            {
+                                // Générer quelques signalements de test
+                                var testReports = new List<ContentReport>
+                                {
+                                    new ContentReport
+                                    {
+                                        Id = Guid.NewGuid().ToString(),
+                                        ContentType = ContentType.ForumPost,
+                                        ContentId = "post123",
+                                        ContentUrl = "/forums/topic/1/post/123",
+                                        ContentSnippet = "Ce contenu est inapproprié...",
+                                        ReportedByUserId = "user1",
+                                        ReportedByUsername = "John Doe",
+                                        ContentCreatorUserId = "user2",
+                                        ContentCreatorUsername = "Jane Smith",
+                                        Reason = ReportReason.Harassment,
+                                        Description = "L'utilisateur fait des commentaires harcelants",
+                                        Status = ReportStatus.Pending,
+                                        Priority = ReportPriority.High,
+                                        CreatedAt = DateTime.UtcNow.AddDays(-2),
+                                        StatusUpdatedAt = DateTime.UtcNow.AddDays(-2)
+                                    },
+                                    new ContentReport
+                                    {
+                                        Id = Guid.NewGuid().ToString(),
+                                        ContentType = ContentType.Comment,
+                                        ContentId = "comment456",
+                                        ContentUrl = "/mods/123/comments/456",
+                                        ContentSnippet = "Contenu spam avec des liens douteux...",
+                                        ReportedByUserId = "user3",
+                                        ReportedByUsername = "Alice Johnson",
+                                        ContentCreatorUserId = "user4",
+                                        ContentCreatorUsername = "Bob Williams",
+                                        Reason = ReportReason.Spam,
+                                        Description = "Spam avec des liens vers des sites suspects",
+                                        Status = ReportStatus.InReview,
+                                        Priority = ReportPriority.Medium,
+                                        CreatedAt = DateTime.UtcNow.AddDays(-1),
+                                        StatusUpdatedAt = DateTime.UtcNow.AddHours(-12),
+                                        ModeratorUserId = "mod1",
+                                        ModeratorUsername = "Moderator1"
+                                    },
+                                    new ContentReport
+                                    {
+                                        Id = Guid.NewGuid().ToString(),
+                                        ContentType = ContentType.Mod,
+                                        ContentId = "mod789",
+                                        ContentUrl = "/mods/789",
+                                        ContentSnippet = "Ce mod contient du contenu pour adultes non marqué comme tel...",
+                                        ReportedByUserId = "user5",
+                                        ReportedByUsername = "Charlie Brown",
+                                        ContentCreatorUserId = "user6",
+                                        ContentCreatorUsername = "David Green",
+                                        Reason = ReportReason.Pornography,
+                                        Description = "Contenu pour adultes non signalé comme tel",
+                                        Status = ReportStatus.Resolved,
+                                        Priority = ReportPriority.High,
+                                        CreatedAt = DateTime.UtcNow.AddDays(-3),
+                                        StatusUpdatedAt = DateTime.UtcNow.AddHours(-1),
+                                        ModeratorUserId = "admin1",
+                                        ModeratorUsername = "Administrator",
+                                        ModeratorAction = ModeratorAction.ContentWarningAdded,
+                                        ModeratorNotes = "Ajout d'un avertissement de contenu pour adultes"
+                                    }
+                                };
+                                
+                                // Ajouter les signalements à la liste
+                                _reports.AddRange(testReports);
+                                _logger.LogInformation("Added {Count} test reports", testReports.Count);
+                            }
+                            
+                            _isInitialized = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error initializing test data for content reports");
+                        }
+                    }
+                }
+            }
         }
 
         public async Task<ContentReport> CreateReportAsync(ContentReport report)
