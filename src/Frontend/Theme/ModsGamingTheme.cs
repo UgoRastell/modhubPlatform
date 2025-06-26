@@ -14,7 +14,7 @@ public static class ModsGamingTheme
     /// </summary>
     public static MudTheme GetTheme()
     {
-        // Dans les versions récentes de MudBlazor, nous initialisons directement un MudTheme avec toutes les propriétés
+        // Retour à la structure PaletteDark/PaletteLight pour la compatibilité
         return new MudTheme
         {
             PaletteDark = new PaletteDark()
@@ -43,7 +43,7 @@ public static class ModsGamingTheme
                 ActionDefault = "#a7b2c2",
                 ActionDisabled = "rgba(167, 178, 194, 0.4)",
                 ActionDisabledBackground = "rgba(27, 31, 39, 0.38)",
-                Dark = "#1b1f27"
+                Dark = "#1b1f27",
             },
             
             // PaletteLight définit la même palette sombre (le site utilise un thème sombre par défaut)
