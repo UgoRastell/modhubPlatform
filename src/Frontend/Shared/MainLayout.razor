@@ -16,8 +16,7 @@
     <link href="css/app-bar.css" rel="stylesheet" />
     
     <MudLayout>
-        
-        <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="@DrawerVariant.Responsive">
+        <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="DrawerVariant.Persistent">
             <MudDrawerHeader>
                 <MudText Typo="Typo.h6">ModsGamingPlatform</MudText>
             </MudDrawerHeader>
@@ -25,8 +24,11 @@
             <Frontend.Layout.MainNavMenu />
         </MudDrawer>
         
-        <MudMainContent>
-            <MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+        <MudMainContent Style="padding-top: 0;">
+            <div class="d-flex justify-end px-4 pt-2">
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.End" OnClick="@DrawerToggle" />
+            </div>
+            <MudContainer MaxWidth="MaxWidth.Large" Class="py-2">
                 @Body
             </MudContainer>
             
