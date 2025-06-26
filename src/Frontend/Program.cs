@@ -29,7 +29,7 @@ var apiGatewayUrl = builder.Configuration["ApiSettings:GatewayUrl"] ?? "https://
 // Configuration des services HTTP
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiGatewayUrl) });
 builder.Services.AddHttpClient("UsersService", client => client.BaseAddress = new Uri($"{apiGatewayUrl}/users-service"));
-builder.Services.AddHttpClient("ModsService", client => client.BaseAddress = new Uri($"{apiGatewayUrl}/mods-service/mods"));
+builder.Services.AddHttpClient("ModsService", client => client.BaseAddress = new Uri($"{apiGatewayUrl}/mods-service"));
 builder.Services.AddHttpClient("PaymentsService", client => client.BaseAddress = new Uri($"{apiGatewayUrl}/payments-service"));
 builder.Services.AddHttpClient("CommunityService", client => client.BaseAddress = new Uri($"{apiGatewayUrl}/community-service"));
 
