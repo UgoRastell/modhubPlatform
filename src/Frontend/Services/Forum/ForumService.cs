@@ -181,9 +181,9 @@ namespace Frontend.Services.Forum
             {
                 Items = mockTopics.Skip((page - 1) * pageSize).Take(pageSize).ToList(),
                 TotalCount = mockTopics.Count,
-                Page = page,
-                PageSize = pageSize,
-                TotalPages = (int)Math.Ceiling((double)mockTopics.Count / pageSize)
+                PageNumber = page,
+                PageSize = pageSize
+                // TotalPages est calculé automatiquement à partir de TotalCount et PageSize
             };
         }
 
@@ -299,7 +299,7 @@ namespace Frontend.Services.Forum
 
         #region Posts CRUD
 
-        public async Task<List<ForumPostViewModel>> GetPostsByTopicIdAsync(string topicId, int page = 1, int pageSize = 20)
+        public async Task<List<Frontend.Models.Forum.ForumPostViewModel>> GetPostsByTopicIdAsync(string topicId, int page = 1, int pageSize = 20)
         {
             try
             {
@@ -307,7 +307,7 @@ namespace Frontend.Services.Forum
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<ForumPostViewModel>>(content, _jsonOptions) ?? new List<ForumPostViewModel>();
+                    return JsonSerializer.Deserialize<List<Frontend.Models.Forum.ForumPostViewModel>>(content, _jsonOptions) ?? new List<Frontend.Models.Forum.ForumPostViewModel>();
                 }
             }
             catch { }
@@ -315,7 +315,7 @@ namespace Frontend.Services.Forum
             return GetMockPosts().Where(p => p.TopicId == topicId).ToList();
         }
 
-        public async Task<ForumPostViewModel> GetPostByIdAsync(string postId)
+        public async Task<Frontend.Models.Forum.ForumPostViewModel> GetPostByIdAsync(string postId)
         {
             try
             {
@@ -323,7 +323,7 @@ namespace Frontend.Services.Forum
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<ForumPostViewModel>(content, _jsonOptions) ?? CreateNotFoundPost(postId);
+                    return JsonSerializer.Deserialize<Frontend.Models.Forum.ForumPostViewModel>(content, _jsonOptions) ?? CreateNotFoundPost(postId);
                 }
             }
             catch { }
@@ -331,7 +331,7 @@ namespace Frontend.Services.Forum
             return GetMockPosts().FirstOrDefault(p => p.Id == postId) ?? CreateNotFoundPost(postId);
         }
 
-        public async Task<ForumPostViewModel> CreatePostAsync(CreateForumPostDto postDto)
+        public async Task<Frontend.Models.Forum.ForumPostViewModel> CreatePostAsync(CreateForumPostDto postDto)
         {
             try
             {
@@ -342,7 +342,7 @@ namespace Frontend.Services.Forum
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<ForumPostViewModel>(responseContent, _jsonOptions) ?? throw new InvalidOperationException("Erreur lors de la création du post");
+                    return JsonSerializer.Deserialize<Frontend.Models.Forum.ForumPostViewModel>(responseContent, _jsonOptions) ?? throw new InvalidOperationException("Erreur lors de la création du post");
                 }
             }
             catch { }
@@ -361,7 +361,7 @@ namespace Frontend.Services.Forum
             };
         }
 
-        public async Task<ForumPostViewModel> UpdatePostAsync(UpdateForumPostDto postDto)
+        public async Task<Frontend.Models.Forum.ForumPostViewModel> UpdatePostAsync(UpdateForumPostDto postDto)
         {
             try
             {
@@ -372,19 +372,23 @@ namespace Frontend.Services.Forum
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<ForumPostViewModel>(responseContent, _jsonOptions) ?? throw new InvalidOperationException("Erreur lors de la mise à jour du post");
+                    return JsonSerializer.Deserialize<Frontend.Models.Forum.ForumPostViewModel>(responseContent, _jsonOptions) ?? throw new InvalidOperationException("Erreur lors de la mise à jour du post");
                 }
             }
-            catch { }
+            catch
+            {
+                // En cas d'erreur, on utilise une approche de repli
+            }
 
+            // Fallback : récupérer le post existant
             return await GetPostByIdAsync(postDto.Id);
         }
 
-        public async Task<bool> DeletePostAsync(string id)
+        public async Task<bool> DeletePostAsync(string postId)
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"{_baseUrl}/api/forum/posts/{id}");
+                var response = await _httpClient.DeleteAsync($"{_baseUrl}/api/forum/posts/{postId}");
                 return response.IsSuccessStatusCode;
             }
             catch
@@ -613,9 +617,9 @@ namespace Frontend.Services.Forum
             };
         }
 
-        private List<ForumPostViewModel> GetMockPosts()
+        private List<Frontend.Models.Forum.ForumPostViewModel> GetMockPosts()
         {
-            return new List<ForumPostViewModel>
+            return new List<Frontend.Models.Forum.ForumPostViewModel>
             {
                 new ForumPostViewModel
                 {
@@ -654,7 +658,7 @@ namespace Frontend.Services.Forum
             };
         }
 
-        private ForumPostViewModel CreateNotFoundPost(string id)
+        private Frontend.Models.Forum.ForumPostViewModel CreateNotFoundPost(string id)
         {
             return new ForumPostViewModel
             {
