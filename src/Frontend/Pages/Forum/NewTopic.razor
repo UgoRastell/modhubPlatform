@@ -227,7 +227,7 @@
                 var createdTopic = await ForumService.CreateTopicAsync(_topicDto);
                 
                 Snackbar.Add("Sujet créé avec succès", Severity.Success);
-                NavigationManager.NavigateTo($"/forum/topics/{createdTopic.Id}");
+                NavigationManager.NavigateTo($"/forums/topics/{createdTopic.Id}");
             }
             catch (Exception ex)
             {

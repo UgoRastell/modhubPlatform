@@ -1,0 +1,263 @@
+@page "/forums/topics/{TopicId}"
+@using Frontend.Services.Forum
+@using Frontend.Models.Forum
+@using MudBlazor.Extensions
+@inject IForumService ForumService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>@(topic?.Title ?? "Chargement...") - Forum - ModsGamingPlatform</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-16">
+    <MudBreadcrumbs Items="_breadcrumbs" Class="mb-4"></MudBreadcrumbs>
+    
+    @if (_loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="mt-8 mx-auto d-block" />
+    }
+    else if (_notFound)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-4">
+            Le sujet demandé n'existe pas ou a été supprimé.
+        </MudAlert>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigationManager.NavigateTo("/forums"))">
+            Retour au forum
+        </MudButton>
+    }
+    else
+    {
+        <MudPaper Class="pa-4 mb-4" Elevation="3" Style="background-color: #232634;">
+            <div class="d-flex justify-space-between align-center mb-2">
+                <MudText Typo="Typo.h4">@topic.Title</MudText>
+                <MudChipSet T="string" ReadOnly="true">
+                    @if (topic.IsPinned)
+                    {
+                        <MudChip T="string" Color="Color.Warning" Icon="@Icons.Material.Filled.PushPin" Size="Size.Small">Épinglé</MudChip>
+                    }
+                    @if (topic.IsLocked)
+                    {
+                        <MudChip T="string" Color="Color.Error" Icon="@Icons.Material.Filled.Lock" Size="Size.Small">Verrouillé</MudChip>
+                    }
+                </MudChipSet>
+            </div>
+            
+            <MudText Typo="Typo.subtitle1" Color="Color.Primary" Class="mb-2">
+                Catégorie : @topic.CategoryId
+            </MudText>
+            
+            <MudText Typo="Typo.caption" Color="Color.Default" Class="mb-4">
+                Créé par @topic.AuthorName le @topic.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy à HH:mm") 
+                · @topic.ViewsCount vues · @topic.RepliesCount réponses
+            </MudText>
+            
+            <MudText Class="mb-4">@topic.Content</MudText>
+            
+            @if (topic.Tags.Any())
+            {
+                <MudText Typo="Typo.subtitle2" Class="mb-2">Tags</MudText>
+                <MudChipSet T="string" ReadOnly="true" Class="mb-4">
+                    @foreach (var tag in topic.Tags)
+                    {
+                        <MudChip T="string" Color="Color.Secondary" Size="Size.Small">@tag</MudChip>
+                    }
+                </MudChipSet>
+            }
+            
+            <MudDivider Class="my-4" />
+            
+            <div class="d-flex justify-space-between align-center">
+                <MudText Typo="Typo.subtitle2">@topic.RepliesCount réponses</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                       Disabled="@topic.IsLocked"
+                       OnClick="@(() => NavigationManager.NavigateTo($"/forums/topics/{TopicId}/reply"))">
+                    Répondre
+                </MudButton>
+            </div>
+        </MudPaper>
+        
+        <!-- Posts / Réponses -->
+        @if (_posts.Count == 0)
+        {
+            <MudText Typo="Typo.body1" Class="my-8 text-center">
+                Aucune réponse pour le moment. Soyez le premier à répondre !
+            </MudText>
+        }
+        else
+        {
+            <MudText Typo="Typo.h5" Class="mb-4">Réponses</MudText>
+            
+            @foreach (var post in _posts)
+            {
+                <MudPaper Class="pa-4 mb-4" Elevation="2" Style="background-color: #232634;">
+                    <div class="d-flex justify-space-between mb-2">
+                        <div>
+                            <MudText Typo="Typo.subtitle1">@post.AuthorName</MudText>
+                            <MudText Typo="Typo.caption">
+                                @post.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                @if (post.IsEdited)
+                                {
+                                    <span> (modifié)</span>
+                                }
+                            </MudText>
+                        </div>
+                        <MudMenu Icon="@Icons.Material.Filled.MoreVert">
+                            <MudMenuItem OnClick="@(() => NavigationManager.NavigateTo($"/forums/posts/{post.Id}/edit"))">
+                                Modifier
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="@(() => DeletePost(post.Id))">
+                                Supprimer
+                            </MudMenuItem>
+                        </MudMenu>
+                    </div>
+                    
+                    <MudText Class="mb-2">@post.Content</MudText>
+                    
+                    <MudDivider Class="my-3" />
+                    
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <MudIconButton Icon="@Icons.Material.Filled.ThumbUp" 
+                                       Color="@(post.IsLikedByCurrentUser ? Color.Secondary : Color.Default)" 
+                                       OnClick="@(() => LikePost(post.Id))" />
+                            <MudText Typo="Typo.caption" Inline="true">@post.LikesCount</MudText>
+                        </div>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" 
+                               OnClick="@(() => NavigationManager.NavigateTo($"/forums/posts/{post.Id}/reply"))">
+                            Répondre
+                        </MudButton>
+                    </div>
+                </MudPaper>
+                
+                <!-- Réponses imbriquées -->
+                @if (post.Replies.Any())
+                {
+                    <div class="ml-8 mb-4">
+                        @foreach (var reply in post.Replies)
+                        {
+                            <MudPaper Class="pa-3 mb-3" Elevation="1" Style="background-color: #1e212b;">
+                                <div class="d-flex justify-space-between mb-2">
+                                    <div>
+                                        <MudText Typo="Typo.subtitle2">@reply.AuthorName</MudText>
+                                        <MudText Typo="Typo.caption">
+                                            @reply.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                        </MudText>
+                                    </div>
+                                    <MudMenu Icon="@Icons.Material.Filled.MoreVert">
+                                        <MudMenuItem OnClick="@(() => NavigationManager.NavigateTo($"/forums/posts/{reply.Id}/edit"))">
+                                            Modifier
+                                        </MudMenuItem>
+                                        <MudMenuItem OnClick="@(() => DeletePost(reply.Id))">
+                                            Supprimer
+                                        </MudMenuItem>
+                                    </MudMenu>
+                                </div>
+                                
+                                <MudText Typo="Typo.body2">@reply.Content</MudText>
+                            </MudPaper>
+                        }
+                    </div>
+                }
+            }
+        }
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string TopicId { get; set; } = string.Empty;
+    
+    private bool _loading = true;
+    private bool _notFound = false;
+    private ForumTopicViewModel? topic;
+    private List<ForumPostViewModel> _posts = new();
+    
+    private List<BreadcrumbItem> _breadcrumbs = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Forum", href: "/forums")
+    };
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if (TopicId != null && _breadcrumbs.Count == 1)
+        {
+            await LoadData();
+        }
+    }
+    
+    private async Task LoadData()
+    {
+        try
+        {
+            _loading = true;
+            
+            // Charger les détails du topic
+            topic = await ForumService.GetTopicByIdAsync(TopicId);
+            
+            if (topic == null)
+            {
+                _notFound = true;
+                return;
+            }
+            
+            // Mettre à jour les breadcrumbs
+            if (_breadcrumbs.Count == 1)
+            {
+                _breadcrumbs.Add(new BreadcrumbItem(topic.CategoryId, href: $"/forums/categories/{topic.CategoryId}"));
+                _breadcrumbs.Add(new BreadcrumbItem(topic.Title, href: $"/forums/topics/{topic.Id}", disabled: true));
+            }
+            
+            // Charger les posts associés au topic
+            _posts = await ForumService.GetPostsByTopicIdAsync(TopicId);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur de chargement : {ex.Message}", Severity.Error);
+            _notFound = true;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+    
+    private async Task LikePost(string postId)
+    {
+        try
+        {
+            await ForumService.LikePostAsync(postId, true);
+            // Recharger les posts pour mettre à jour l'état des likes
+            _posts = await ForumService.GetPostsByTopicIdAsync(TopicId);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur : {ex.Message}", Severity.Error);
+        }
+    }
+    
+    private async Task DeletePost(string postId)
+    {
+        try
+        {
+            bool success = await ForumService.DeletePostAsync(postId);
+            if (success)
+            {
+                Snackbar.Add("Message supprimé avec succès", Severity.Success);
+                // Recharger les posts après la suppression
+                _posts = await ForumService.GetPostsByTopicIdAsync(TopicId);
+            }
+            else
+            {
+                Snackbar.Add("Impossible de supprimer le message", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur : {ex.Message}", Severity.Error);
+        }
+    }
+}
