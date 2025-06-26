@@ -19,7 +19,7 @@ namespace Frontend.Services
         {
             try
             {
-                var query = $"api/mods?page={page}&pageSize={pageSize}";
+                var query = $"api/v1/mods?page={page}&pageSize={pageSize}";
                 
                 if (!string.IsNullOrWhiteSpace(searchTerm))
                     query += $"&search={Uri.EscapeDataString(searchTerm)}";
@@ -52,7 +52,7 @@ namespace Frontend.Services
         {
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<ApiResponse<ModDto>>($"api/mods/{id}");
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<ModDto>>($"api/v1/mods/{id}");
                 return response ?? new ApiResponse<ModDto> { Success = false, Message = "Mod non trouvé" };
             }
             catch (Exception ex)
@@ -65,7 +65,7 @@ namespace Frontend.Services
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("api/mods", request);
+                var response = await _httpClient.PostAsJsonAsync("api/v1/mods", request);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -85,7 +85,7 @@ namespace Frontend.Services
         {
             try
             {
-                var response = await _httpClient.PutAsJsonAsync($"api/mods/{id}", request);
+                var response = await _httpClient.PutAsJsonAsync($"api/v1/mods/{id}", request);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -105,7 +105,7 @@ namespace Frontend.Services
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/mods/{id}");
+                var response = await _httpClient.DeleteAsync($"api/v1/mods/{id}");
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -149,7 +149,7 @@ namespace Frontend.Services
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync($"api/mods/{modId}/ratings", request);
+                var response = await _httpClient.PostAsJsonAsync($"api/v1/mods/{modId}/ratings", request);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -169,7 +169,7 @@ namespace Frontend.Services
         {
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<ApiResponse<DownloadStatsDto>>($"api/mods/{modId}/statistics");
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<DownloadStatsDto>>($"api/v1/mods/{modId}/statistics");
                 return response ?? new ApiResponse<DownloadStatsDto> { Success = false, Message = "Statistiques non trouvées" };
             }
             catch (Exception ex)
@@ -182,7 +182,7 @@ namespace Frontend.Services
         {
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<ApiResponse<DownloadStatsDto>>($"api/mods/{modId}/versions/{versionId}/statistics");
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<DownloadStatsDto>>($"api/v1/mods/{modId}/versions/{versionId}/statistics");
                 return response ?? new ApiResponse<DownloadStatsDto> { Success = false, Message = "Statistiques de version non trouvées" };
             }
             catch (Exception ex)
@@ -202,7 +202,7 @@ namespace Frontend.Services
                     return modResponse;
                 
                 // Récupérer les versions du mod
-                var versionsResponse = await _httpClient.GetFromJsonAsync<ApiResponse<List<ModVersionDto>>>($"api/mods/{id}/versions");
+                var versionsResponse = await _httpClient.GetFromJsonAsync<ApiResponse<List<ModVersionDto>>>($"api/v1/mods/{id}/versions");
                 
                 if (modResponse.Data != null) // Vérification de null pour éviter la déréférence
                 {
@@ -229,7 +229,7 @@ namespace Frontend.Services
         {
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<ApiResponse<string>>($"api/mods/{modId}/versions/{versionId}/changelog");
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<string>>($"api/v1/mods/{modId}/versions/{versionId}/changelog");
                 return response ?? new ApiResponse<string> { Success = false, Message = "Changelog non trouvé" };
             }
             catch (Exception ex)
@@ -243,8 +243,8 @@ namespace Frontend.Services
             try
             {
                 string url = versionId == null
-                    ? $"api/mods/{modId}/download"
-                    : $"api/mods/{modId}/versions/{versionId}/download";
+                    ? $"api/v1/mods/{modId}/download"
+                    : $"api/v1/mods/{modId}/versions/{versionId}/download";
 
                 var response = await _httpClient.GetAsync(url);
                 
