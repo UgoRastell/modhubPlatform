@@ -37,9 +37,9 @@ namespace ModsService.Controllers
         /// Récupère tous les mods (avec pagination)
         /// </summary>
         [HttpGet]
-        public async Task<IActionResult> GetAllMods()
+        public async Task<IActionResult> GetAllMods([FromQuery] int page = 1, [FromQuery] int pageSize = 50, [FromQuery] string sortBy = "recent")
         {
-            var response = await _modService.GetAllModsAsync();
+            var response = await _modService.GetAllModsAsync(page, pageSize, sortBy);
             
             if (response.Success)
             {

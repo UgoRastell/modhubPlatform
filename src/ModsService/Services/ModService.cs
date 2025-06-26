@@ -39,40 +39,66 @@ namespace ModsService.Services
             _modImageContainer = configuration["Storage:ModsImageContainer"];
         }
 
-        public async Task<ApiResponse<IEnumerable<Mod>>> GetAllModsAsync()
+        public async Task<ApiResponse<PagedResult<Mod>>> GetAllModsAsync(int page = 1, int pageSize = 50, string sortBy = "recent")
         {
             try
             {
-                // Essayer de récupérer depuis le cache
-                var cacheKey = "ALL_MODS";
-                var cachedMods = await _cacheService.GetAsync<IEnumerable<Mod>>(cacheKey);
+                // Créer une clé de cache basée sur les paramètres de pagination
+                string cacheKey = $"ALL_MODS_{page}_{pageSize}_{sortBy}";
                 
-                if (cachedMods != null)
+                // Essayer de récupérer depuis le cache
+                var cachedResult = await _cacheService.GetAsync<PagedResult<Mod>>(cacheKey);
+                
+                if (cachedResult != null)
                 {
-                    return new ApiResponse<IEnumerable<Mod>>
+                    return new ApiResponse<PagedResult<Mod>>
                     {
                         Success = true,
                         Message = "Mods récupérés du cache avec succès",
-                        Data = cachedMods
+                        Data = cachedResult
                     };
                 }
                 
-                // Si pas dans le cache, récupérer depuis le repository
-                var mods = await _modRepository.GetAllModsAsync();
+                // Créer un objet ModSearchParams pour réutiliser la fonctionnalité de recherche
+                var searchParams = new ModSearchParams
+                {
+                    PageNumber = page,
+                    PageSize = pageSize,
+                    SortBy = sortBy
+                };
+                
+                // Réutiliser la logique de recherche pour la pagination et le tri
+                var (mods, totalCount) = await _modRepository.SearchModsAsync(
+                    null, // gameId
+                    null, // categoryId
+                    null, // searchTerm
+                    sortBy,
+                    page,
+                    pageSize
+                );
+                
+                // Créer le résultat paginé
+                var result = new PagedResult<Mod>
+                {
+                    Items = mods,
+                    TotalCount = totalCount,
+                    PageSize = pageSize,
+                    CurrentPage = page
+                };
                 
                 // Mettre en cache les résultats
-                await _cacheService.SetAsync(cacheKey, mods, _modListCacheExpiration);
+                await _cacheService.SetAsync(cacheKey, result, _modListCacheExpiration);
                 
-                return new ApiResponse<IEnumerable<Mod>>
+                return new ApiResponse<PagedResult<Mod>>
                 {
                     Success = true,
                     Message = "Mods récupérés avec succès",
-                    Data = mods
+                    Data = result
                 };
             }
             catch (Exception ex)
             {
-                return new ApiResponse<IEnumerable<Mod>>
+                return new ApiResponse<PagedResult<Mod>>
                 {
                     Success = false,
                     Message = $"Une erreur est survenue: {ex.Message}"
