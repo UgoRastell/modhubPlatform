@@ -3,6 +3,7 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Frontend.Services
 {
@@ -10,9 +11,9 @@ namespace Frontend.Services
     {
         private readonly HttpClient _httpClient;
 
-        public ModService(HttpClient httpClient)
+        public ModService(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClientFactory.CreateClient("ModsService");
         }
 
         public async Task<ApiResponse<PagedResult<ModDto>>> GetModsAsync(int page, int pageSize, string searchTerm = "", string category = "", string sortBy = "")
