@@ -10,6 +10,22 @@
         background-color: #232634;
         width: 240px;
         height: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .settings-sidebar::before {
+        content: "";
+        position: absolute;
+        top: -50px;
+        left: -50px;
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, rgba(var(--mud-palette-primary-rgb), 0.2) 0%, transparent 70%);
+        border-radius: 50%;
+        opacity: 0.7;
     }
 
     .settings-card {
@@ -17,33 +33,119 @@
         padding: 24px;
         background-color: #232634;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .settings-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     }
 
     .settings-danger-card {
-        border: 1px solid #ff3b3b;
+        border: 1px solid rgba(255, 59, 59, 0.5);
+        background: linear-gradient(135deg, rgba(255, 59, 59, 0.1) 0%, rgba(35, 38, 52, 1) 80%);
+    }
+    
+    .settings-danger-card::before {
+        content: "";
+        position: absolute;
+        top: -30px;
+        right: -30px;
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, rgba(255, 59, 59, 0.3) 0%, transparent 70%);
+        border-radius: 50%;
+        opacity: 0.7;
+        pointer-events: none;
     }
 
     .menu-item {
         border-radius: 8px;
+        transition: all 0.3s ease;
     }
 
     .menu-item:hover {
-        background-color: rgba(0, 170, 255, 0.1);
-        transition: all 0.2s ease;
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.1);
+        transform: translateX(3px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
     .menu-item.active {
-        background-color: rgba(0, 170, 255, 0.2);
+        background: linear-gradient(90deg, rgba(var(--mud-palette-primary-rgb), 0.3) 0%, rgba(var(--mud-palette-primary-rgb), 0.1) 100%);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        border-left: 3px solid var(--mud-palette-primary);
+    }
+    
+    .menu-item.active .mud-icon-root {
+        color: var(--mud-palette-primary);
+    }
+    
+    .settings-header {
+        position: relative;
+    }
+    
+    .gradient-text {
+        background: linear-gradient(90deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientMove 3s linear infinite;
+    }
+    
+    .gradient-text-secondary {
+        background: linear-gradient(90deg, var(--mud-palette-secondary) 0%, var(--mud-palette-primary) 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .gradient-underline {
+        height: 3px;
+        width: 100px;
+        background: linear-gradient(90deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        background-size: 200% auto;
+        animation: gradientMove 3s linear infinite;
+        border-radius: 3px;
+        margin-bottom: 1.5rem;
     }
 
-    /* Animation for cards */
+    /* Animation for elements */
     .fade-in {
-        animation: fadeIn 0.3s ease-in;
+        animation: fadeIn 0.5s ease-out forwards;
+        opacity: 0;
+    }
+    
+    .slide-in {
+        animation: slideIn 0.5s ease-out forwards;
+        opacity: 0;
+        transform: translateY(20px);
     }
 
     @@keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @@keyframes slideIn {
+        from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @@keyframes gradientMove {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    @@keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.9; }
+        100% { transform: scale(1); opacity: 1; }
     }
 
     /* Responsive adjustments */
@@ -51,28 +153,42 @@
         .settings-card {
             padding: 16px;
         }
+        
+        .slide-in {
+            animation: fadeIn 0.5s ease-out forwards;
+            transform: none;
+        }
     }
 
     /* Accessibility - prefers reduced motion */
     @@media (prefers-reduced-motion) {
-        .fade-in {
+        .fade-in, .slide-in {
+            animation: none;
+            opacity: 1;
+            transform: none;
+        }
+        
+        .gradient-text, .gradient-text-secondary, .gradient-underline {
             animation: none;
         }
     }
 </style>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-6">
-    <MudText Typo="Typo.h2" Class="mb-2">Paramètres</MudText>
-    <MudBreadcrumbs Items="@(new[]
-    {
-        new BreadcrumbItem("Mon compte", "/account"),
-        new BreadcrumbItem("Paramètres", null, true)
-    })" />
+    <div class="settings-header fade-in">
+        <MudText Typo="Typo.h2" Class="gradient-text mb-1">Paramètres</MudText>
+        <div class="gradient-underline"></div>
+        <MudBreadcrumbs Items="@(new[]
+        {
+            new BreadcrumbItem("Mon compte", "/account"),
+            new BreadcrumbItem("Paramètres", null, true)
+        })" />
 
+    </div>
     <MudGrid Class="mt-4">
         <!-- Sidebar for desktop -->
-        <MudItem xs="12" md="3" Class="d-none d-md-flex">
-            <MudPaper Class="settings-sidebar pa-3 d-flex flex-column" Elevation="0">
+        <MudItem xs="12" md="3" Class="d-none d-md-flex fade-in" Style="animation-delay: 0.2s;">
+            <MudPaper Class="settings-sidebar pa-3 d-flex flex-column" Elevation="3">
                 @foreach (var menuItem in _menuItems)
                 {
                     <MudButton StartIcon="@menuItem.Icon" 
@@ -88,10 +204,12 @@
         </MudItem>
 
         <!-- Drawer button for mobile -->
-        <MudItem xs="12" Class="d-flex d-md-none mb-3">
+        <MudItem xs="12" Class="d-flex d-md-none mb-3 fade-in" Style="animation-delay: 0.3s;">
             <MudButton Variant="Variant.Outlined" 
                       StartIcon="@Icons.Material.Filled.Menu" 
                       FullWidth="true"
+                      Class="pa-2 rounded-lg"
+                      Style="background: rgba(var(--mud-palette-primary-rgb), 0.05); border: 1px solid rgba(var(--mud-palette-primary-rgb), 0.2);"
                       OnClick="@(() => drawerOpen = true)">
                 @GetCurrentSectionName()
             </MudButton>
@@ -99,7 +217,7 @@
 
         <!-- Content area -->
         <MudItem xs="12" md="9">
-            <div class="fade-in">
+            <div class="fade-in" Style="animation-delay: 0.4s;">
                 @switch (activeSection)
                 {
                     case "profile":
@@ -126,7 +244,7 @@
 <!-- Mobile drawer -->
 <MudDrawer @bind-Open="drawerOpen" Anchor="Anchor.Left" Elevation="2" Variant="@DrawerVariant.Temporary">
     <MudDrawerHeader>
-        <MudText Typo="Typo.h6">Paramètres</MudText>
+        <MudText Typo="Typo.h6" Class="gradient-text-secondary">Paramètres</MudText>
     </MudDrawerHeader>
     <MudNavMenu>
         @foreach (var menuItem in _menuItems)

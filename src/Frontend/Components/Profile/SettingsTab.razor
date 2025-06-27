@@ -3,15 +3,170 @@
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 
+<style>
+    .tab-header {
+        position: relative;
+    }
+    
+    .gradient-text {
+        background: linear-gradient(90deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientMove 3s linear infinite;
+    }
+    
+    .gradient-text-secondary {
+        background: linear-gradient(90deg, var(--mud-palette-secondary) 0%, var(--mud-palette-primary) 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .gradient-underline {
+        height: 3px;
+        width: 80px;
+        background: linear-gradient(90deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        background-size: 200% auto;
+        animation: gradientMove 3s linear infinite;
+        border-radius: 3px;
+        margin-bottom: 1.5rem;
+    }
+
+    .mud-tabs {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .mud-tabs .mud-tab.mud-tab-active {
+        position: relative;
+    }
+
+    .mud-tabs .mud-tab.mud-tab-active::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 25%;
+        width: 50%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        border-radius: 3px 3px 0 0;
+    }
+
+    .mud-tabs .mud-tab .mud-icon-root {
+        transition: all 0.2s ease;
+    }
+
+    .mud-tabs .mud-tab:hover .mud-icon-root {
+        transform: scale(1.2);
+    }
+
+    .settings-card {
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .settings-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .settings-card::before {
+        content: "";
+        position: absolute;
+        top: -50px;
+        left: -50px;
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, rgba(var(--mud-palette-primary-rgb), 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        opacity: 0.7;
+    }
+
+    .submit-button {
+        background: linear-gradient(90deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        background-size: 200% auto;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .submit-button:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(var(--mud-palette-primary-rgb), 0.4);
+    }
+
+    .submit-button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: all 0.6s ease;
+    }
+
+    .submit-button:hover::before {
+        left: 100%;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+        opacity: 0;
+    }
+    
+    .slide-in {
+        animation: slideIn 0.5s ease-out forwards;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @@keyframes slideIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @@keyframes gradientMove {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    @@media (prefers-reduced-motion) {
+        .fade-in, .slide-in {
+            animation: none;
+            opacity: 1;
+            transform: none;
+        }
+        
+        .gradient-text, .gradient-underline {
+            animation: none;
+        }
+    }
+</style>
+
 <MudGrid>
-    <MudItem xs="12">
-        <MudText Typo="Typo.h5" Class="mb-4">Paramètres du compte</MudText>
+    <MudItem xs="12" class="tab-header fade-in">
+        <MudText Typo="Typo.h5" Class="gradient-text mb-1">Paramètres du compte</MudText>
+        <div class="gradient-underline"></div>
     </MudItem>
     
-    <MudItem xs="12">
-        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+    <MudItem xs="12" class="fade-in" style="animation-delay: 0.2s;">
+        <MudTabs Elevation="3" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
             <!-- Profile Settings -->
-            <MudTabPanel Text="Profil" Icon="@Icons.Material.Filled.Person">
+            <MudTabPanel Text="Profil" Icon="@Icons.Material.Filled.Person" Class="slide-in" Style="animation-delay: 0.3s;">
                 <EditForm Model="@editedProfile" OnValidSubmit="SaveProfileChanges">
                     <DataAnnotationsValidator />
                     
@@ -47,7 +202,7 @@
                         </MudItem>
                         
                         <MudItem xs="12" Class="mb-4">
-                            <MudExpansionPanel Class="mb-2" Text="Liens externes" Icon="@Icons.Material.Filled.Link">
+                            <MudExpansionPanel Text="Liens externes" Class="mb-2" Icon="@Icons.Material.Filled.Link">
                                 <MudGrid>
                                     @foreach (var linkType in new[] { "Discord", "Twitch", "YouTube", "Website" })
                                     {
@@ -69,7 +224,8 @@
                             <MudButton ButtonType="ButtonType.Submit"
                                        Variant="Variant.Filled"
                                        Color="Color.Primary"
-                                       Disabled="isSaving">
+                                       Class="mt-3 submit-button"
+                                       Disabled="@isSaving">
                                 @if (isSaving)
                                 {
                                     <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
@@ -86,20 +242,22 @@
             </MudTabPanel>
             
             <!-- Security Settings -->
-            <MudTabPanel Text="Sécurité" Icon="@Icons.Material.Filled.Security">
-                <MudText Typo="Typo.h6" Class="mb-4">Sécurité du compte</MudText>
+            <MudTabPanel Text="Sécurité" Icon="@Icons.Material.Filled.Security" Class="slide-in" Style="animation-delay: 0.3s;">
+                <MudText Typo="Typo.h6" Class="mb-4 gradient-text-secondary">Sécurité du compte</MudText>
                 
-                <MudPaper Class="pa-4 mb-6">
-                    <MudText Typo="Typo.subtitle1" Class="mb-2">Mot de passe</MudText>
+                <MudPaper Class="pa-4 mb-6 settings-card slide-in" Style="animation-delay: 0.4s;">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2 gradient-text-secondary">Changer le mot de passe</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-4">Il est recommandé de changer régulièrement votre mot de passe pour la sécurité de votre compte.</MudText>
                     <MudButton Color="Color.Primary" 
-                              Variant="Variant.Outlined"
+                              Variant="Variant.Filled"
+                              Class="submit-button"
                               OnClick="OpenChangePasswordDialog">
                         Changer le mot de passe
                     </MudButton>
                 </MudPaper>
                 
-                <MudPaper Class="pa-4 mb-6">
-                    <MudText Typo="Typo.subtitle1" Class="mb-2">Authentification à deux facteurs</MudText>
+                <MudPaper Class="pa-4 mb-6 settings-card slide-in" Style="animation-delay: 0.5s;">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2 gradient-text-secondary">Authentification à deux facteurs</MudText>
                     <MudSwitch T="bool" @bind-Checked="is2FAEnabled" 
                               Color="Color.Primary"
                               Label="Activer la 2FA" 
@@ -122,16 +280,12 @@
                                          Variant="Variant.Outlined" />
                             <MudButton Color="Color.Primary" 
                                       Variant="Variant.Filled"
-                                      Class="mt-2"
+                                      Class="mt-2 submit-button"
                                       OnClick="Verify2FA">
                                 Vérifier & Activer
                             </MudButton>
                         </div>
                     }
-                </MudPaper>
-                
-                <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.subtitle1" Class="mb-2">Sessions actives</MudText>
                     <MudSimpleTable Hover="true" Striped="true" Class="mt-2">
                         <thead>
                             <tr>
@@ -172,12 +326,12 @@
                 </MudPaper>
             </MudTabPanel>
             
-            <!-- Notification Settings -->
-            <MudTabPanel Text="Notifications" Icon="@Icons.Material.Filled.Notifications">
-                <MudText Typo="Typo.h6" Class="mb-4">Préférences de notification</MudText>
+            <!-- Paiements Settings -->
+            <MudTabPanel Text="Paiements" Icon="@Icons.Material.Filled.CreditCard" Class="slide-in" Style="animation-delay: 0.3s;">
+                <MudText Typo="Typo.h6" Class="mb-4 gradient-text-secondary">Préférences de notification</MudText>
                 
-                <MudPaper Class="pa-4 mb-4">
-                    <MudText Typo="Typo.subtitle1" Class="mb-4">Email</MudText>
+                <MudPaper Class="pa-4 mb-4 settings-card slide-in" Style="animation-delay: 0.4s;">
+                    <MudText Typo="Typo.subtitle1" Class="mb-4 gradient-text-secondary">Email</MudText>
                     
                     <MudCheckBox T="bool" @bind-Checked="notifyUpdates" 
                                  Label="Mises à jour des mods suivis"
@@ -196,8 +350,8 @@
                                  Color="Color.Primary" />
                 </MudPaper>
                 
-                <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.subtitle1" Class="mb-4">Dans l'application</MudText>
+                <MudPaper Class="pa-4 settings-card slide-in" Style="animation-delay: 0.5s;">
+                    <MudText Typo="Typo.subtitle1" Class="mb-4 gradient-text-secondary">Dans l'application</MudText>
                     
                     <MudCheckBox T="bool" @bind-Checked="inAppNotifyAll" 
                                  Label="Toutes les notifications"
@@ -213,7 +367,7 @@
                     
                     <MudButton Color="Color.Primary" 
                               Variant="Variant.Filled"
-                              Class="mt-4"
+                              Class="mt-4 submit-button"
                               OnClick="SaveNotificationPreferences">
                         Enregistrer les préférences
                     </MudButton>
@@ -221,14 +375,14 @@
             </MudTabPanel>
             
             <!-- RGPD/Privacy Settings -->
-            <MudTabPanel Text="RGPD" Icon="@Icons.Material.Filled.PrivacyTip">
-                <MudText Typo="Typo.h6" Class="mb-4">Vos données personnelles</MudText>
+            <MudTabPanel Text="Confidentialité" Icon="@Icons.Material.Filled.Lock" Class="slide-in" Style="animation-delay: 0.3s;">
+                <MudText Typo="Typo.h6" Class="mb-4 gradient-text-secondary">Vos données personnelles</MudText>
                 
                 <MudAlert Severity="Severity.Info" Class="mb-4" Variant="Variant.Filled">
                     En conformité avec le RGPD, vous pouvez exporter ou supprimer vos données personnelles à tout moment.
                 </MudAlert>
                 
-                <MudPaper Class="pa-4 mb-4">
+                <MudPaper Class="pa-4 mb-4 settings-card slide-in" Style="animation-delay: 0.4s;">
                     <MudText Typo="Typo.subtitle1" Class="mb-2">Exporter mes données</MudText>
                     <MudText Typo="Typo.body2" Class="mb-4">
                         Téléchargez une copie complète de vos données personnelles au format JSON, 
@@ -236,14 +390,15 @@
                     </MudText>
                     
                     <MudButton Color="Color.Primary" 
-                              Variant="Variant.Outlined"
+                              Variant="Variant.Filled"
+                              Class="submit-button"
                               StartIcon="@Icons.Material.Filled.Download"
                               OnClick="ExportData">
                         Exporter mes données
                     </MudButton>
                 </MudPaper>
                 
-                <MudPaper Class="pa-4 mb-4">
+                <MudPaper Class="pa-4 mb-4 settings-card slide-in" Style="animation-delay: 0.4s;">
                     <MudText Typo="Typo.subtitle1" Class="mb-2" Color="Color.Error">Supprimer mon compte</MudText>
                     <MudText Typo="Typo.body2" Class="mb-4">
                         Cette action supprimera définitivement votre compte et toutes vos données personnelles dans un délai de 30 jours,
@@ -252,13 +407,14 @@
                     
                     <MudButton Color="Color.Error" 
                               Variant="Variant.Outlined"
+                              Class="submit-button"
                               StartIcon="@Icons.Material.Filled.DeleteForever"
                               OnClick="OpenDeleteAccountDialog">
                         Supprimer mon compte
                     </MudButton>
                 </MudPaper>
                 
-                <MudPaper Class="pa-4">
+                <MudPaper Class="pa-4 settings-card slide-in" Style="animation-delay: 0.5s;">
                     <MudText Typo="Typo.subtitle1" Class="mb-2">Historique de données</MudText>
                     <MudText Typo="Typo.body2" Class="mb-2">
                         Nous conservons l'historique de vos actions pendant 90 jours à des fins de sécurité et de support.
