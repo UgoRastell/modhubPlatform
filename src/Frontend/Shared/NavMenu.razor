@@ -2,108 +2,234 @@
 
 <style>
     .nav-menu-container {
-        background: linear-gradient(180deg, rgba(21,21,35,0.8) 0%, rgba(42,45,80,0.6) 100%);
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        background: linear-gradient(180deg, rgba(21,21,35,0.9) 0%, rgba(42,45,80,0.7) 100%);
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.15), 0 1px 6px rgba(0,0,0,0.1);
+        overflow: hidden;
+        position: relative;
+    }
+    
+    /* Subtle glass effect overlay */
+    .nav-menu-container:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+        pointer-events: none;
     }
     
     .menu-header-icon {
         background: linear-gradient(45deg, var(--mud-palette-primary) 30%, var(--mud-palette-secondary) 90%);
         border-radius: 50%;
-        padding: 10px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        padding: 12px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2), 0 0 15px rgba(var(--mud-palette-primary-rgb), 0.3);
+        transform: scale(1);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .menu-header-icon:hover {
+        transform: scale(1.1) rotate(5deg);
     }
     
     .section-header {
-        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        letter-spacing: 1px;
-        font-weight: 600;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        letter-spacing: 1.5px;
+        font-weight: 700;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .mud-nav-link {
+        border-radius: 6px;
+        margin: 2px 8px;
+        transition: all 0.3s ease;
     }
     
     .mud-nav-link:hover {
         background-color: rgba(var(--mud-palette-primary-rgb), 0.1);
-        transform: translateX(3px);
-        transition: all 0.2s ease-in-out;
+        transform: translateX(5px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     
     .mud-nav-link.active {
-        border-left: 3px solid var(--mud-palette-primary);
-        background-color: rgba(var(--mud-palette-primary-rgb), 0.05);
+        border-left: 4px solid var(--mud-palette-primary);
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.08);
+        box-shadow: 0 2px 5px rgba(var(--mud-palette-primary-rgb), 0.2);
+    }
+    
+    .animated-gradient-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--mud-palette-primary), transparent);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .animated-gradient-divider::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        height: 1px;
+        width: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+        100% { left: 100%; }
     }
     
     .auth-prompt {
-        background-color: rgba(var(--mud-palette-primary-rgb), 0.05);
-        border-radius: 4px;
-        padding: 16px;
-        margin: 8px 16px;
+        background: linear-gradient(135deg, rgba(var(--mud-palette-primary-rgb), 0.05) 0%, rgba(var(--mud-palette-secondary-rgb), 0.03) 100%);
+        border-radius: 8px;
+        padding: 20px;
+        margin: 12px 16px;
+        border: 1px solid rgba(var(--mud-palette-primary-rgb), 0.1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    
+    .auth-button {
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .auth-button::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: all 0.6s ease;
+    }
+    
+    .auth-button:hover::after {
+        left: 100%;
+    }
+    
+    .role-section {
+        position: relative;
+        border-radius: 8px;
+        padding: 4px;
+    }
+    
+    .footer-link {
+        opacity: 0.8;
+        transition: all 0.2s ease;
+    }
+    
+    .footer-link:hover {
+        opacity: 1;
+    }
+    
+    .menu-icon {
+        transition: all 0.3s ease;
+    }
+    
+    .mud-nav-link:hover .menu-icon {
+        transform: scale(1.15);
+    }
+    
+    .gradient-text {
+        background: linear-gradient(90deg, var(--mud-palette-primary), var(--mud-palette-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 600;
     }
 </style>
 
-<MudNavMenu Bordered="true" Class="mud-width-full py-3 nav-menu-container">
+<MudNavMenu Bordered="true" Class="mud-width-full py-4 nav-menu-container">
     <div class="d-flex justify-center mb-4">
         <MudIcon Icon="@Icons.Custom.Brands.MudBlazor" Size="Size.Large" Class="menu-header-icon" />
     </div>
 
-    <MudDivider Class="mb-4" Style="background: linear-gradient(90deg, transparent, var(--mud-palette-primary), transparent);" />
+    <div class="animated-gradient-divider mb-5"></div>
     
     <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="px-4 py-2 section-header">EXPLORER</MudText>
     
     <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Info">
-        <span style="background: linear-gradient(90deg, var(--mud-palette-primary), var(--mud-palette-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 500;">Accueil</span>
+        <MudIcon Icon="@Icons.Material.Filled.Home" Class="me-3 menu-icon" Color="Color.Info"></MudIcon>
+        <span class="gradient-text">Accueil</span>
     </MudNavLink>
     
-    <MudNavLink Href="/catalog" Icon="@Icons.Material.Filled.Extension" IconColor="Color.Success">
-        Catalogue de mods
+    <MudNavLink Href="/catalog" Icon="@Icons.Material.Filled.Extension">
+        <MudIcon Icon="@Icons.Material.Filled.Extension" Class="me-3 menu-icon" Color="Color.Success"></MudIcon>
+        <span>Catalogue de mods</span>
     </MudNavLink>
     
-    <MudNavLink Href="/games" Icon="@Icons.Material.Filled.SportsEsports" IconColor="Color.Warning">
-        Jeux supportés
+    <MudNavLink Href="/games">
+        <MudIcon Icon="@Icons.Material.Filled.SportsEsports" Class="me-3 menu-icon" Color="Color.Warning"></MudIcon>
+        <span>Jeux supportés</span>
     </MudNavLink>
     
-    <MudNavLink Href="/payment" Icon="@Icons.Material.Filled.Payment" IconColor="Color.Secondary">
-        <span style="font-weight: 500; color: var(--mud-palette-secondary);">Premium</span>
+    <MudNavLink Href="/payment">
+        <MudIcon Icon="@Icons.Material.Filled.Payment" Class="me-3 menu-icon" Color="Color.Secondary"></MudIcon>
+        <span class="gradient-text">Premium</span>
     </MudNavLink>
     
-    <MudNavGroup Title="Communauté" Icon="@Icons.Material.Filled.Groups" Expanded="false" IconColor="Color.Tertiary" Style="font-weight: 500;">
-        <MudNavLink Href="/forums" Icon="@Icons.Material.Filled.Forum">
-            Forums
-        </MudNavLink>
-        <MudNavLink Href="/faq" Icon="@Icons.Material.Filled.QuestionAnswer">
-            FAQ
-        </MudNavLink>
+    <MudNavGroup Title="Communauté" Expanded="false" Style="font-weight: 500; margin: 2px 8px;">
+        <TitleContent>
+            <div class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Tertiary" Class="menu-icon me-3" />  
+                <span>Communauté</span>
+            </div>
+        </TitleContent>
+        <ChildContent>
+            <MudNavLink Href="/forums">
+                <MudIcon Icon="@Icons.Material.Filled.Forum" Class="me-3 menu-icon" Color="Color.Tertiary"></MudIcon>
+                Forums
+            </MudNavLink>
+            <MudNavLink Href="/faq">
+                <MudIcon Icon="@Icons.Material.Filled.QuestionAnswer" Class="me-3 menu-icon" Color="Color.Tertiary"></MudIcon>
+                FAQ
+            </MudNavLink>
+        </ChildContent>
     </MudNavGroup>
     
     <AuthorizeView>
         <Authorized>
-            <MudDivider Class="my-4" Style="background: linear-gradient(90deg, transparent, var(--mud-palette-primary), transparent);" />
+            <div class="animated-gradient-divider my-4"></div>
             <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="px-4 py-2 section-header">MON ESPACE</MudText>
             
-            <MudNavLink Href="/account/settings" Icon="@Icons.Material.Filled.Settings">
+            <MudNavLink Href="/account/settings">
+                <MudIcon Icon="@Icons.Material.Filled.Settings" Class="me-3 menu-icon" Color="Color.Primary"></MudIcon>
                 Paramètres
             </MudNavLink>
             
             <AuthorizeView Roles="Creator">
                 <Authorized Context="creatorContext">
-                    <MudDivider Class="my-4" Style="background: linear-gradient(90deg, transparent, var(--mud-palette-primary), transparent);" />
-                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="px-4 py-2 section-header" Style="background: linear-gradient(90deg, rgba(var(--mud-palette-secondary-rgb), 0.1), transparent); border-radius: 4px;">CRÉATEUR</MudText>
+                    <div class="animated-gradient-divider my-4"></div>
+                    <div class="role-section" style="background: linear-gradient(90deg, rgba(var(--mud-palette-secondary-rgb), 0.1), transparent);">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="px-4 py-2 section-header">CRÉATEUR</MudText>
+                    </div>
                     
-                    <MudNavLink Href="/creator/dashboard" Icon="@Icons.Material.Filled.Dashboard">
+                    <MudNavLink Href="/creator/dashboard">
+                        <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="me-3 menu-icon" Color="Color.Secondary"></MudIcon>
                         Tableau de bord
                     </MudNavLink>
                     
-                    <MudNavLink Href="/creator/mods" Icon="@Icons.Material.Filled.Build">
+                    <MudNavLink Href="/creator/mods">
+                        <MudIcon Icon="@Icons.Material.Filled.Build" Class="me-3 menu-icon" Color="Color.Secondary"></MudIcon>
                         Mes mods
                     </MudNavLink>
                     
-                    <MudNavLink Href="/creator/upload" Icon="@Icons.Material.Filled.Upload">
+                    <MudNavLink Href="/creator/upload">
+                        <MudIcon Icon="@Icons.Material.Filled.Upload" Class="me-3 menu-icon" Color="Color.Secondary"></MudIcon>
                         Publier un mod
                     </MudNavLink>
                     
-                    <MudNavLink Href="/creator/analytics" Icon="@Icons.Material.Filled.Analytics">
+                    <MudNavLink Href="/creator/analytics">
+                        <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="me-3 menu-icon" Color="Color.Secondary"></MudIcon>
                         Statistiques
                     </MudNavLink>
                     
-                    <MudNavLink Href="/creator/revenue" Icon="@Icons.Material.Filled.Payments">
+                    <MudNavLink Href="/creator/revenue">
+                        <MudIcon Icon="@Icons.Material.Filled.Payments" Class="me-3 menu-icon" Color="Color.Secondary"></MudIcon>
                         Revenus
                     </MudNavLink>
                 </Authorized>
@@ -111,42 +237,53 @@
             
             <AuthorizeView Roles="Admin">
                 <Authorized Context="adminContext">
-                    <MudDivider Class="my-4" Style="background: linear-gradient(90deg, transparent, var(--mud-palette-primary), transparent);" />
-                    <MudText Typo="Typo.subtitle2" Color="Color.Error" Class="px-4 py-2 section-header" Style="background: linear-gradient(90deg, rgba(var(--mud-palette-error-rgb), 0.1), transparent); border-radius: 4px;">ADMINISTRATION</MudText>
+                    <div class="animated-gradient-divider my-4"></div>
+                    <div class="role-section" style="background: linear-gradient(90deg, rgba(var(--mud-palette-error-rgb), 0.1), transparent);">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Error" Class="px-4 py-2 section-header">ADMINISTRATION</MudText>
+                    </div>
                     
-                    <MudNavLink Href="/admin/moderation" Icon="@Icons.Material.Filled.AdminPanelSettings">
+                    <MudNavLink Href="/admin/moderation">
+                        <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Class="me-3 menu-icon" Color="Color.Error"></MudIcon>
                         Tableau de bord
                     </MudNavLink>
                     
-                    <MudNavLink Href="/admin/users" Icon="@Icons.Material.Filled.PeopleAlt">
+                    <MudNavLink Href="/admin/users">
+                        <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" Class="me-3 menu-icon" Color="Color.Error"></MudIcon>
                         Utilisateurs
                     </MudNavLink>
                     
-                    <MudNavLink Href="/admin/mods" Icon="@Icons.Material.Filled.Extension">
+                    <MudNavLink Href="/admin/mods">
+                        <MudIcon Icon="@Icons.Material.Filled.Extension" Class="me-3 menu-icon" Color="Color.Error"></MudIcon>
                         Mods
                     </MudNavLink>
                     
-                    <MudNavLink Href="/admin/reports" Icon="@Icons.Material.Filled.ReportProblem">
+                    <MudNavLink Href="/admin/reports">
+                        <MudIcon Icon="@Icons.Material.Filled.ReportProblem" Class="me-3 menu-icon" Color="Color.Error"></MudIcon>
                         Signalements
                     </MudNavLink>
                     
-                    <MudNavLink Href="/admin/settings" Icon="@Icons.Material.Filled.SettingsApplications">
+                    <MudNavLink Href="/admin/settings">
+                        <MudIcon Icon="@Icons.Material.Filled.SettingsApplications" Class="me-3 menu-icon" Color="Color.Error"></MudIcon>
                         Configuration
                     </MudNavLink>
                 </Authorized>
             </AuthorizeView>
         </Authorized>
         <NotAuthorized>
-            <MudDivider Class="my-4" Style="background: linear-gradient(90deg, transparent, var(--mud-palette-primary), transparent);" />
+            <div class="animated-gradient-divider my-4"></div>
             <MudItem Class="d-flex flex-column align-center auth-prompt">
-                <MudText Typo="Typo.body2" Class="mb-3 text-center" Color="Color.Primary">
+                <MudText Typo="Typo.body2" Class="mb-4 text-center gradient-text">
                     Connectez-vous pour accéder à toutes les fonctionnalités
                 </MudText>
-                <div class="d-flex gap-2">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/login" StartIcon="@Icons.Material.Filled.Login" Size="Size.Small" Class="px-4" Style="border-radius: 20px;">
+                <div class="d-flex gap-3">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/login" Size="Size.Small" 
+                              Class="auth-button px-4" Style="border-radius: 20px; box-shadow: 0 3px 8px rgba(var(--mud-palette-primary-rgb), 0.3);">
+                        <MudIcon Icon="@Icons.Material.Filled.Login" Class="me-2 menu-icon"></MudIcon>
                         Connexion
                     </MudButton>
-                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Href="/register" Size="Size.Small" Class="px-4" Style="border-radius: 20px;">
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Href="/register" Size="Size.Small" 
+                              Class="auth-button px-4" Style="border-radius: 20px; box-shadow: 0 3px 8px rgba(var(--mud-palette-secondary-rgb), 0.3);">
+                        <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="me-2 menu-icon"></MudIcon>
                         Inscription
                     </MudButton>
                 </div>
@@ -154,14 +291,19 @@
         </NotAuthorized>
     </AuthorizeView>
     
-    <MudDivider Class="my-4" />
-    <MudNavLink Href="/about" Icon="@Icons.Material.Filled.Info">
-        À propos
-    </MudNavLink>
-    <MudNavLink Href="/contact" Icon="@Icons.Material.Filled.Email">
-        Contact
-    </MudNavLink>
-    <MudNavLink Href="/terms" Icon="@Icons.Material.Filled.Gavel">
-        Conditions d'utilisation
-    </MudNavLink>
+    <div class="animated-gradient-divider my-4"></div>
+    <div class="px-2">
+        <MudNavLink Href="/about" Class="footer-link">
+            <MudIcon Icon="@Icons.Material.Filled.Info" Class="me-3 menu-icon" Color="Color.Default"></MudIcon>
+            À propos
+        </MudNavLink>
+        <MudNavLink Href="/contact" Class="footer-link">
+            <MudIcon Icon="@Icons.Material.Filled.Email" Class="me-3 menu-icon" Color="Color.Default"></MudIcon>
+            Contact
+        </MudNavLink>
+        <MudNavLink Href="/terms" Class="footer-link">
+            <MudIcon Icon="@Icons.Material.Filled.Gavel" Class="me-3 menu-icon" Color="Color.Default"></MudIcon>
+            Conditions d'utilisation
+        </MudNavLink>
+    </div>
 </MudNavMenu>
