@@ -135,7 +135,7 @@ services:
       - "443:443"
     volumes:
       - ./docker/nginx.prod.conf:/etc/nginx/nginx.conf:ro
-      - ./docker/letsencrypt/live/modhub.fr:/etc/nginx/ssl:ro
+      - ./docker/letsencrypt/live/modhub.ovh:/etc/nginx/ssl:ro
       - ./docker/letsencrypt/www:/var/www/certbot:rw
     depends_on:
       - frontend
