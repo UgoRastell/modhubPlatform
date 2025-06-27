@@ -19,7 +19,7 @@ namespace Frontend.Services
         {
             try
             {
-                var query = $"api/mods?page={page}&pageSize={pageSize}";
+                var query = $"api/v1/mods?page={page}&pageSize={pageSize}";
                 
                 if (!string.IsNullOrWhiteSpace(searchTerm))
                     query += $"&search={Uri.EscapeDataString(searchTerm)}";
