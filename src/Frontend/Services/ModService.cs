@@ -20,10 +20,23 @@ namespace Frontend.Services
         
         private async Task SetAuthHeaderAsync()
         {
-            var token = await _localStorage.GetItemAsync<string>("authToken");
-            if (!string.IsNullOrEmpty(token))
+            try 
             {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var token = await _localStorage.GetItemAsync<string>("authToken");
+                if (!string.IsNullOrEmpty(token))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                }
+                else
+                {
+                    // Supprimer l'en-tête d'autorisation s'il était défini précédemment et que l'utilisateur n'est pas connecté
+                    _httpClient.DefaultRequestHeaders.Remove("Authorization");
+                }
+            }
+            catch (Exception)
+            {
+                // Si l'accès au localStorage échoue, on continue sans token
+                _httpClient.DefaultRequestHeaders.Remove("Authorization");
             }
         }
 
