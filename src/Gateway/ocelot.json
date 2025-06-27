@@ -79,7 +79,7 @@
       }
     },
     {
-      "DownstreamPathTemplate": "/api/mods/{everything}",
+      "DownstreamPathTemplate": "/api/v1/mods/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
