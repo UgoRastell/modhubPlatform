@@ -6,39 +6,49 @@
 <PageTitle>FAQ - ModHub</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-    <MudText Typo="Typo.h4" Class="mb-4">Foire aux questions</MudText>
+    <div class="page-header animate-on-scroll">
+        <MudText Typo="Typo.h3" Class="gradient-title mb-2">Foire aux questions</MudText>
+        <div class="title-underline mb-4"></div>
+    </div>
     
-    <MudPaper Class="pa-4 mb-4 rounded-xl" Elevation="3" Style="background-color: #232634;">
-        <MudText Typo="Typo.body1">
+    <MudPaper Class="intro-panel pa-4 mb-6 rounded-xl animate-on-scroll" Elevation="3">
+        <div class="intro-panel-glow"></div>
+        <MudText Typo="Typo.body1" Class="intro-text">
             Retrouvez ici les réponses aux questions les plus fréquemment posées par notre communauté.
-            Si vous ne trouvez pas la réponse à votre question, n'hésitez pas à nous contacter directement via notre <MudLink Href="/contact">page de contact</MudLink>.
+            Si vous ne trouvez pas la réponse à votre question, n'hésitez pas à nous contacter directement via notre <MudLink Href="/contact" Class="contact-link">page de contact</MudLink>.
         </MudText>
     </MudPaper>
     
     <MudGrid>
         <MudItem xs="12" md="3">
-            <MudPaper Class="pa-4 rounded-xl sticky-top" Elevation="3" Style="background-color: #232634; top: 24px;">
-                <MudText Typo="Typo.h6" Class="mb-4">Catégories</MudText>
-                <MudList T="string" Clickable Dense>
+            <MudPaper Class="sidebar-panel pa-4 rounded-xl sticky-top animate-on-scroll" Elevation="4" Style="top: 24px;">
+                <div class="sidebar-glow"></div>
+                <div class="category-header mb-4">
+                    <MudIcon Icon="@Icons.Material.Filled.Category" Class="category-icon mr-2" />
+                    <MudText Typo="Typo.h6" Class="gradient-subtitle">Catégories</MudText>
+                </div>
+                
+                <MudList T="string" Clickable Dense Class="category-list">
                     @foreach (var category in faqCategories)
                     {
-                        <MudListItem T="string" OnClick="@(() => ScrollToCategory(category.Id))" Dense="true">
-                            <div class="d-flex gap-2 align-center">
-                                <MudIcon Icon="@category.Icon" Size="Size.Small" />
-                                <MudText>@category.Name</MudText>
+                        <MudListItem T="string" OnClick="@(() => ScrollToCategory(category.Id))" Dense="true" Class="category-item">
+                            <div class="d-flex gap-3 align-center">
+                                <MudIcon Icon="@category.Icon" Size="Size.Small" Class="category-item-icon" />
+                                <MudText Class="category-item-text">@category.Name</MudText>
                             </div>
                         </MudListItem>
                     }
                 </MudList>
                 
-                <MudDivider Class="my-4" />
+                <div class="animated-gradient-divider my-4"></div>
                 
                 <MudButton StartIcon="@Icons.Material.Filled.Search" 
                           FullWidth="true" 
-                          Color="Color.Primary" 
+                          Color="Color.Secondary" 
                           Variant="Variant.Filled"
-                          OnClick="@(() => searchDialogOpen = true)">
-                    Rechercher
+                          OnClick="@(() => searchDialogOpen = true)"
+                          Class="search-button">
+                    <span class="button-text">Rechercher</span>
                 </MudButton>
             </MudPaper>
         </MudItem>
@@ -46,24 +56,30 @@
         <MudItem xs="12" md="9">
             @foreach (var category in faqCategories)
             {
-                <div id="@category.Id" class="scroll-target mb-6">
-                    <MudPaper Class="pa-4 rounded-xl mb-4" Elevation="3" Style="background-color: #232634;">
-                        <MudText Typo="Typo.h5" Class="mb-4">
-                            <MudIcon Icon="@category.Icon" Size="Size.Medium" Class="mr-2" />
-                            @category.Name
-                        </MudText>
+                <div id="@category.Id" class="scroll-target mb-8 animate-on-scroll">
+                    <MudPaper Class="category-panel pa-5 rounded-xl position-relative overflow-hidden" Elevation="4">
+                        <div class="category-panel-glow"></div>
+                        <div class="d-flex align-center mb-5">
+                            <div class="category-icon-container mr-3">
+                                <MudIcon Icon="@category.Icon" Size="Size.Medium" Class="category-panel-icon" />
+                            </div>
+                            <MudText Typo="Typo.h5" Class="gradient-heading">@category.Name</MudText>
+                        </div>
                         
-                        <MudExpansionPanels MultiExpansion="true" DisableBorders="true" Elevation="0">
+                        <MudExpansionPanels MultiExpansion="true" DisableBorders="true" Elevation="0" Class="faq-panels">
                             @foreach (var item in faqItems.Where(i => i.CategoryId == category.Id))
                             {
-                                <MudExpansionPanel Class="mud-theme-dark mb-2" Style="background-color: rgba(255, 255, 255, 0.05);">
+                                <MudExpansionPanel Class="faq-panel mb-3" Style="background-color: rgba(255, 255, 255, 0.03);">
                                     <TitleContent>
-                                        <div class="d-flex">
-                                            <MudText Typo="Typo.h6">@item.Question</MudText>
+                                        <div class="d-flex align-center py-2">
+                                            <MudIcon Icon="@Icons.Material.Filled.QuestionAnswer" Size="Size.Small" Class="faq-question-icon mr-3" />
+                                            <MudText Typo="Typo.h6" Class="faq-question">@item.Question</MudText>
                                         </div>
                                     </TitleContent>
                                     <ChildContent>
-                                        <MudText Typo="Typo.body1">@((MarkupString)item.Answer)</MudText>
+                                        <div class="faq-answer pa-3">
+                                            <MudText Typo="Typo.body1" Class="answer-text">@((MarkupString)item.Answer)</MudText>
+                                        </div>
                                     </ChildContent>
                                 </MudExpansionPanel>
                             }
@@ -72,23 +88,26 @@
                 </div>
             }
             
-            <MudPaper Class="pa-4 rounded-xl mt-8" Elevation="3" Style="background-color: #232634;">
-                <MudText Typo="Typo.h6" Class="mb-2">Vous n'avez pas trouvé votre réponse ?</MudText>
-                <MudText Typo="Typo.body2" Class="mb-4">
-                    Si vous n'avez pas trouvé la réponse à votre question, vous pouvez :
+            <MudPaper Class="cta-panel pa-5 rounded-xl mt-8 position-relative overflow-hidden animate-on-scroll" Elevation="4">
+                <div class="cta-panel-glow"></div>
+                <MudText Typo="Typo.h5" Class="gradient-heading mb-3">Vous n'avez pas trouvé votre réponse ?</MudText>
+                <MudText Typo="Typo.body1" Class="mb-5 cta-text">
+                    Si vous n'avez pas trouvé la réponse à votre question, nous sommes là pour vous aider :
                 </MudText>
-                <div class="d-flex flex-column flex-sm-row gap-2">
-                    <MudButton Variant="Variant.Filled" 
-                              Color="Color.Primary" 
-                              Href="/contact"
-                              StartIcon="@Icons.Material.Filled.Email">
-                        Nous contacter
+                <div class="d-flex flex-wrap gap-3">
+                    <MudButton Color="Color.Primary" 
+                              Variant="Variant.Filled" 
+                              Href="/contact" 
+                              StartIcon="@Icons.Material.Filled.Email"
+                              Class="cta-button contact-button">
+                        <span class="button-text">Nous contacter</span>
                     </MudButton>
-                    <MudButton Variant="Variant.Outlined" 
-                              Color="Color.Secondary" 
+                    <MudButton Color="Color.Secondary" 
+                              Variant="Variant.Filled" 
                               Href="/forums"
-                              StartIcon="@Icons.Material.Filled.Forum">
-                        Poser votre question sur le forum
+                              StartIcon="@Icons.Material.Filled.Forum"
+                              Class="cta-button forum-button">
+                        <span class="button-text">Poser votre question sur le forum</span>
                     </MudButton>
                 </div>
             </MudPaper>
@@ -97,9 +116,12 @@
 </MudContainer>
 
 <!-- Dialogue de recherche -->
-<MudDialog @bind-IsVisible="searchDialogOpen" Options="dialogOptions">
+<MudDialog @bind-IsVisible="searchDialogOpen" Options="dialogOptions" Class="search-dialog">
     <TitleContent>
-        <MudText Typo="Typo.h6">Recherche dans la FAQ</MudText>
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.Search" Class="search-icon mr-2" /> 
+            <MudText Typo="Typo.h6" Class="dialog-title">Recherche dans la FAQ</MudText>
+        </div>
     </TitleContent>
     <DialogContent>
         <MudTextField @bind-Value="searchQuery" 
@@ -107,38 +129,472 @@
                      Variant="Variant.Outlined" 
                      Adornment="Adornment.End" 
                      AdornmentIcon="@Icons.Material.Filled.Search"
-                     Class="mb-4"
+                     Class="search-field mb-4"
                      Immediate="true"
                      DebounceInterval="300"
                      OnDebounceIntervalElapsed="SearchFaq" />
                      
         @if (!string.IsNullOrEmpty(searchQuery) && searchResults.Any())
         {
-            <MudText Typo="Typo.subtitle1" Class="mb-2">Résultats de recherche</MudText>
-            <MudList T="string">
+            <div class="search-results-header">
+                <MudText Typo="Typo.subtitle1" Class="mb-3 gradient-subtitle">Résultats de recherche</MudText>
+            </div>
+            <MudList T="string" Class="search-results">
                 @foreach (var result in searchResults)
                 {
-                    <MudListItem T="string" OnClick="@(() => SelectSearchResult(result))" Dense="true">
+                    <MudListItem T="string" OnClick="@(() => SelectSearchResult(result))" Dense="true" Class="search-result-item">
                         <div class="d-flex flex-column">
-                            <MudText>@result.Question</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Primary">
-                                Catégorie: @faqCategories.First(c => c.Id == result.CategoryId).Name
-                            </MudText>
+                            <MudText Class="search-result-question">@result.Question</MudText>
+                            <div class="d-flex align-center gap-2 mt-1">
+                                <MudIcon Icon="@faqCategories.First(c => c.Id == result.CategoryId).Icon" Size="Size.Small" Class="search-result-category-icon" />
+                                <MudText Typo="Typo.caption" Class="search-result-category">
+                                    @faqCategories.First(c => c.Id == result.CategoryId).Name
+                                </MudText>
+                            </div>
                         </div>
                     </MudListItem>
-                    <MudDivider />
+                    <MudDivider Class="search-result-divider" />
                 }
             </MudList>
         }
         else if (!string.IsNullOrEmpty(searchQuery))
         {
-            <MudAlert Severity="Severity.Info">Aucun résultat trouvé pour votre recherche.</MudAlert>
+            <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="search-no-results">Aucun résultat trouvé pour votre recherche.</MudAlert>
         }
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Primary" OnClick="@(() => searchDialogOpen = false)">Fermer</MudButton>
+        <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="@(() => searchDialogOpen = false)" Class="close-button">
+            <span class="button-text">Fermer</span>
+        </MudButton>
     </DialogActions>
 </MudDialog>
+
+<style>
+    /* Page Header and Title */
+    .page-header {
+        margin-bottom: 2rem;
+    }
+    
+    .gradient-title {
+        background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    
+    .title-underline {
+        height: 4px;
+        width: 80px;
+        background: linear-gradient(90deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        border-radius: 2px;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Introduction Panel */
+    .intro-panel {
+        background-color: #232634;
+        position: relative;
+        overflow: hidden;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .intro-panel-glow {
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(var(--mud-palette-primary-rgb), 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+        opacity: 0.7;
+        z-index: 0;
+    }
+    
+    .intro-text {
+        position: relative;
+        z-index: 1;
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.6;
+    }
+    
+    .contact-link {
+        color: var(--mud-palette-secondary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+    
+    .contact-link:hover {
+        color: var(--mud-palette-secondary-lighten);
+        text-decoration: underline;
+    }
+    
+    /* Sidebar Panel */
+    .sidebar-panel {
+        background-color: #232634;
+        position: relative;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .sidebar-glow {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, rgba(var(--mud-palette-secondary-rgb), 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+        opacity: 0.7;
+        z-index: 0;
+    }
+    
+    .category-header {
+        display: flex;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .gradient-subtitle {
+        background: linear-gradient(135deg, var(--mud-palette-secondary) 0%, var(--mud-palette-primary) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 600;
+    }
+    
+    .category-icon {
+        color: var(--mud-palette-secondary);
+        animation: pulse 2s infinite;
+    }
+    
+    .category-list {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .category-item {
+        border-radius: 8px;
+        margin-bottom: 4px;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+    
+    .category-item:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        transform: translateX(4px);
+    }
+    
+    .category-item-icon {
+        color: var(--mud-palette-secondary);
+        transition: transform 0.3s ease;
+    }
+    
+    .category-item:hover .category-item-icon {
+        transform: scale(1.2);
+    }
+    
+    .category-item-text {
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .animated-gradient-divider {
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--mud-palette-primary), var(--mud-palette-secondary), transparent);
+        background-size: 200% 100%;
+        animation: gradientMove 3s ease infinite;
+    }
+    
+    .search-button {
+        position: relative;
+        z-index: 1;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    
+    .search-button:hover {
+        transform: translateY(-2px);
+    }
+    
+    .button-text {
+        font-weight: 500;
+    }
+    
+    /* Category Panels */
+    .category-panel {
+        background-color: #232634;
+        position: relative;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s ease;
+    }
+    
+    .category-panel:hover {
+        transform: translateY(-4px);
+    }
+    
+    .category-panel-glow {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, 
+            rgba(var(--mud-palette-primary-rgb), 0.05) 0%, 
+            rgba(var(--mud-palette-secondary-rgb), 0.05) 100%);
+        z-index: 0;
+    }
+    
+    .category-icon-container {
+        background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        width: 40px;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+    }
+    
+    .category-panel-icon {
+        color: white;
+    }
+    
+    .gradient-heading {
+        background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+    
+    /* FAQ Panels */
+    .faq-panels {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .faq-panel {
+        border-radius: 8px;
+        overflow: hidden;
+        transition: box-shadow 0.3s ease, transform 0.3s ease;
+        border-left: 3px solid transparent;
+    }
+    
+    .faq-panel:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transform: translateX(2px);
+        border-left: 3px solid var(--mud-palette-secondary);
+    }
+    
+    .faq-question-icon {
+        color: var(--mud-palette-secondary);
+    }
+    
+    .faq-question {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+    }
+    
+    .faq-answer {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+        margin-top: 8px;
+    }
+    
+    .answer-text {
+        color: rgba(255, 255, 255, 0.85);
+        line-height: 1.6;
+    }
+    
+    .answer-text a {
+        color: var(--mud-palette-secondary);
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+    
+    .answer-text a:hover {
+        color: var(--mud-palette-secondary-lighten);
+        text-decoration: underline;
+    }
+    
+    /* CTA Panel */
+    .cta-panel {
+        background-color: #1c2030;
+        position: relative;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+    }
+    
+    .cta-panel-glow {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, 
+            rgba(var(--mud-palette-primary-rgb), 0.1) 0%, 
+            rgba(var(--mud-palette-secondary-rgb), 0.1) 100%);
+        z-index: 0;
+    }
+    
+    .cta-text {
+        position: relative;
+        z-index: 1;
+        color: rgba(255, 255, 255, 0.85);
+        max-width: 800px;
+    }
+    
+    .cta-button {
+        position: relative;
+        z-index: 1;
+        border-radius: 8px;
+        padding: 10px 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .cta-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+    
+    .contact-button {
+        background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%);
+    }
+    
+    .forum-button {
+        background: linear-gradient(135deg, var(--mud-palette-secondary) 0%, var(--mud-palette-secondary-darken) 100%);
+    }
+    
+    /* Search Dialog */
+    .search-dialog {
+        border-radius: 16px;
+    }
+    
+    .search-dialog :deep(.mud-dialog-content) {
+        padding-top: 24px;
+    }
+    
+    .dialog-title {
+        color: var(--mud-palette-primary);
+        font-weight: 600;
+    }
+    
+    .search-icon {
+        color: var(--mud-palette-secondary);
+    }
+    
+    .search-field :deep(.mud-input) {
+        border-radius: 8px;
+    }
+    
+    .search-field :deep(.mud-input-adornment) {
+        color: var(--mud-palette-secondary);
+    }
+    
+    .search-results {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .search-result-item {
+        border-radius: 8px;
+        padding: 8px;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+    
+    .search-result-item:hover {
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.05);
+        transform: translateY(-2px);
+    }
+    
+    .search-result-question {
+        font-weight: 500;
+    }
+    
+    .search-result-category {
+        color: var(--mud-palette-secondary);
+    }
+    
+    .search-result-category-icon {
+        color: var(--mud-palette-secondary);
+    }
+    
+    .search-result-divider {
+        margin: 8px 0;
+        opacity: 0.3;
+    }
+    
+    .search-no-results {
+        border-radius: 8px;
+    }
+    
+    .close-button {
+        border-radius: 8px;
+    }
+    
+    /* Animations */
+    @@keyframes pulse {
+        0% {
+            opacity: 0.8;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        100% {
+            opacity: 0.8;
+            transform: scale(1);
+        }
+    }
+    
+    @@keyframes gradientMove {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+    
+    /* Scroll Animation */
+    .animate-on-scroll {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 0.8s ease forwards;
+    }
+    
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 960px) {
+        .sidebar-panel {
+            position: relative !important;
+            top: 0 !important;
+            margin-bottom: 24px;
+        }
+    }
+</style>
 
 @code {
     // Classes pour structurer les données
