@@ -87,7 +87,7 @@
           "Port": 80
         }
       ],
-      "UpstreamPathTemplate": "/api/mods/{everything}",
+      "UpstreamPathTemplate": "/api/v1/mods/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
