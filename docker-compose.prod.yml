@@ -53,7 +53,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_HTTP_PORTS=8080
       - ConnectionStrings__MongoDb=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017
+    ports:
+      - "8081:8080"
     depends_on:
       - mongodb
     volumes:
