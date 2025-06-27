@@ -5,76 +5,96 @@
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
     <!-- Hero Section -->
-    <MudPaper Elevation="0" Class="hero-section rounded-lg pa-8 mb-8">
+    <MudPaper Elevation="3" Class="hero-section rounded-xl pa-8 mb-12 position-relative overflow-hidden">
+        <div class="hero-glow"></div>
         <MudGrid>
             <MudItem xs="12" md="7" Class="d-flex flex-column justify-center">
-                <MudText Typo="Typo.h2" Class="mud-text-primary mb-4">Découvrez, téléchargez et créez<br />des mods exceptionnels</MudText>
-                <MudText Typo="Typo.body1" Class="mb-8">
+                <div class="hero-title-container">
+                    <MudText Typo="Typo.h2" Class="gradient-title mb-4 animate-on-scroll">Découvrez, téléchargez et créez<br />des mods <span class="highlight-text">exceptionnels</span></MudText>
+                </div>
+                <MudText Typo="Typo.body1" Class="mb-8 hero-text animate-on-scroll">
                     ModsGamingPlatform est la plateforme ultime pour les joueurs et créateurs de mods.
                     Trouvez des milliers de mods pour vos jeux préférés, partagez vos créations
                     avec une communauté passionnée et faites évoluer votre expérience de jeu.
                 </MudText>
-                <div class="d-flex gap-4 flex-wrap">
+                <div class="d-flex gap-4 flex-wrap animate-on-scroll">
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" 
-                              OnClick="@(() => NavigationManager.NavigateTo("/mods"))">
-                        <MudIcon Icon="@Icons.Material.Filled.Extension" Class="mr-2" />
+                              OnClick="@(() => NavigationManager.NavigateTo("/mods"))"
+                              Class="hero-button pulse-effect">
+                        <MudIcon Icon="@Icons.Material.Filled.Extension" Class="mr-3 scale-on-hover" />
                         Explorer les mods
                     </MudButton>
                     <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Large" 
-                              OnClick="@(() => NavigationManager.NavigateTo("/register"))">
-                        <MudIcon Icon="@Icons.Material.Filled.CreateNewFolder" Class="mr-2" />
+                              OnClick="@(() => NavigationManager.NavigateTo("/register"))"
+                              Class="hero-button border-pulse">
+                        <MudIcon Icon="@Icons.Material.Filled.CreateNewFolder" Class="mr-3 scale-on-hover" />
                         Devenir créateur
                     </MudButton>
                 </div>
             </MudItem>
             <MudItem xs="12" md="5" Class="d-flex align-center justify-center">
-                <MudImage Src="images/hero-image.svg" Alt="Illustration de mod" Class="hero-image" ObjectFit="ObjectFit.Cover" />
+                <div class="hero-image-container animate-on-scroll">
+                    <MudImage Src="images/hero-image.svg" Alt="Illustration de mod" Class="hero-image floating" ObjectFit="ObjectFit.Cover" />
+                    <div class="image-glow"></div>
+                </div>
             </MudItem>
         </MudGrid>
     </MudPaper>
 
     <!-- Featured Mods Section -->
-    <MudText Typo="Typo.h4" Class="mb-4">Mods en vedette</MudText>
-    <div class="d-flex flex-wrap gap-2 mb-4">
-        <MudChip T="string" Color="Color.Primary" Text="Derniers mods" Variant="Variant.Filled" />
-        <MudChip T="string" Color="Color.Secondary" Text="Populaires" Variant="Variant.Filled" />
-        <MudChip T="string" Color="Color.Default" Text="Nouveautés" Variant="Variant.Filled" />
-        <MudChip T="string" Color="Color.Default" Text="Recommandés" Variant="Variant.Filled" />
+    <div class="section-header animate-on-scroll">
+        <div class="section-title-container mb-4">
+            <MudText Typo="Typo.h4" Class="gradient-section-title position-relative">Mods en vedette</MudText>
+        </div>
+        <div class="filter-container d-flex flex-wrap gap-3 mb-6 animate-on-scroll">
+            <MudChip T="string" Color="Color.Primary" Text="Derniers mods" Variant="Variant.Filled" Class="filter-chip" />
+            <MudChip T="string" Color="Color.Secondary" Text="Populaires" Variant="Variant.Filled" Class="filter-chip" />
+            <MudChip T="string" Color="Color.Default" Text="Nouveautés" Variant="Variant.Filled" Class="filter-chip" />
+            <MudChip T="string" Color="Color.Default" Text="Recommandés" Variant="Variant.Filled" Class="filter-chip" />
+        </div>
     </div>
     <MudGrid>
         @foreach (var _ in Enumerable.Range(0, 3))
         {
-            <MudItem xs="12" sm="6" md="4">
-                <MudCard Elevation="4" Class="mod-card h-100">
-                    <MudCardMedia Image="images/placeholder-mod.jpg" Height="200" />
+            <MudItem xs="12" sm="6" md="4" Class="animate-on-scroll">
+                <MudCard Elevation="4" Class="mod-card h-100 position-relative overflow-hidden">
+                    <div class="mod-card-background"></div>
+                    <div class="mod-card-overlay"></div>
+                    <MudCardMedia Image="images/placeholder-mod.jpg" Height="200" Class="mod-image" />
                     <MudCardContent>
                         <div class="d-flex justify-space-between align-center">
-                            <MudText Typo="Typo.h6" Class="mud-text-secondary">Jeu</MudText>
-                            <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled">Populaire</MudChip>
+                            <MudText Typo="Typo.h6" Class="game-title mud-text-secondary">Jeu</MudText>
+                            <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled" Class="status-chip">Populaire</MudChip>
                         </div>
-                        <MudText Typo="Typo.h5" Class="mt-2">Nom du mod</MudText>
-                        <MudText Typo="Typo.body2">par <MudLink>Nom du créateur</MudLink></MudText>
+                        <MudText Typo="Typo.h5" Class="mt-2 mod-title">Nom du mod</MudText>
+                        <MudText Typo="Typo.body2" Class="creator-link">par <MudLink Class="creator-name">Nom du créateur</MudLink></MudText>
                         <MudText Typo="Typo.body2" Class="mt-3 mod-description">
                             Description courte du mod présentant ses caractéristiques principales et
                             donnant envie aux utilisateurs d'en savoir plus...
                         </MudText>
                         <div class="d-flex align-center mt-3">
-                            <MudRating ReadOnly="true" SelectedValue="4" />
-                            <MudText Typo="Typo.body2" Class="ml-2">(420)</MudText>
+                            <MudRating ReadOnly="true" SelectedValue="4" Class="custom-rating" />
+                            <MudText Typo="Typo.body2" Class="ml-2 rating-count">(420)</MudText>
                             <MudSpacer />
-                            <MudIcon Icon="@Icons.Material.Filled.Download" Size="Size.Small" />
-                            <MudText Typo="Typo.body2" Class="ml-1">12.5K</MudText>
+                            <div class="download-info d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.Download" Size="Size.Small" Class="download-icon" />
+                                <MudText Typo="Typo.body2" Class="ml-1 download-count">12.5K</MudText>
+                            </div>
                         </div>
                     </MudCardContent>
-                    <MudCardActions>
+                    <MudCardActions Class="mod-actions">
                         <MudButton Variant="Variant.Text" Color="Color.Primary" 
-                                  OnClick="@(() => NavigationManager.NavigateTo("/mods/details/1"))">
-                            Voir les détails
+                                  OnClick="@(() => NavigationManager.NavigateTo("/mods/details/1"))" 
+                                  Class="details-button">
+                            <span class="button-text">Voir plus</span>
+                            <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Class="ml-1 details-icon" Size="Size.Small" />
                         </MudButton>
                         <MudSpacer />
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" 
-                                  StartIcon="@Icons.Material.Filled.Download">
-                            Télécharger
+                                  OnClick="@(() => NavigationManager.NavigateTo("/mods/download/1"))" 
+                                  Class="download-button">
+                            <MudIcon Icon="@Icons.Material.Filled.Download" Class="mr-2 download-button-icon" />
+                            <span class="button-text">Télécharger</span>
                         </MudButton>
                     </MudCardActions>
                 </MudCard>
@@ -170,39 +190,378 @@
 </MudContainer>
 
 <style>
+    /* Hero Section */
     .hero-section {
         background: linear-gradient(45deg, rgba(35, 38, 52, 0.8), rgba(27, 31, 39, 0.8)), url('images/hero-bg.jpg');
         background-size: cover;
         background-position: center;
-        color: var(--primary-text);
+        color: var(--mud-palette-text-primary);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+    }
+    
+    .hero-glow {
+        position: absolute;
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(circle, rgba(var(--mud-palette-primary-rgb), 0.4) 0%, rgba(var(--mud-palette-primary-rgb), 0) 70%);
+        border-radius: 50%;
+        filter: blur(50px);
+        top: -50px;
+        right: 10%;
+        z-index: -1;
+        animation: pulse-slow 4s ease-in-out infinite alternate;
+    }
+    
+    .hero-title-container {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .gradient-title {
+        background: linear-gradient(45deg, var(--mud-palette-primary), var(--mud-palette-secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .highlight-text {
+        position: relative;
+        color: var(--mud-palette-secondary);
+        -webkit-text-fill-color: var(--mud-palette-secondary);
+        font-weight: 900;
+    }
+    
+    .hero-text {
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        line-height: 1.6;
+    }
+    
+    .hero-image-container {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .image-glow {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(var(--mud-palette-secondary-rgb), 0.4) 0%, rgba(var(--mud-palette-secondary-rgb), 0) 70%);
+        filter: blur(30px);
+        top: 0;
+        left: 0;
+        z-index: -1;
     }
     
     .hero-image {
         max-width: 100%;
         height: auto;
         filter: drop-shadow(0px 10px 20px rgba(0, 170, 255, 0.3));
+        transition: transform 0.3s ease;
     }
     
+    .floating {
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    .hero-button {
+        border-radius: 30px;
+        font-weight: 500;
+        padding: 12px 28px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(var(--mud-palette-primary-rgb), 0.2);
+    }
+    
+    .hero-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(var(--mud-palette-primary-rgb), 0.3);
+    }
+    
+    .pulse-effect {
+        animation: pulse 2s infinite;
+    }
+    
+    .border-pulse {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .border-pulse::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, rgba(var(--mud-palette-secondary-rgb), 0), rgba(var(--mud-palette-secondary-rgb), 0.5), rgba(var(--mud-palette-secondary-rgb), 0));
+        transform: rotate(45deg);
+        animation: border-shimmer 3s linear infinite;
+    }
+    
+    .scale-on-hover {
+        transition: transform 0.3s ease;
+    }
+    
+    .scale-on-hover:hover {
+        transform: scale(1.2);
+    }
+    
+    /* Mods Section */
+    .section-title-container {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .gradient-section-title {
+        position: relative;
+        display: inline-block;
+        padding: 0 4px;
+        background: linear-gradient(90deg, var(--mud-palette-primary), var(--mud-palette-secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+    }
+    
+    .gradient-section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--mud-palette-primary), var(--mud-palette-secondary));
+        border-radius: 2px;
+    }
+    
+    .filter-chip {
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .filter-chip:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Mod Cards */
+    .mod-card {
+        border-radius: 16px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.01);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .mod-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 28px rgba(var(--mud-palette-primary-rgb), 0.15) !important;
+    }
+    
+    .mod-card-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.02));
+        z-index: 1;
+    }
+    
+    .mod-card-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        opacity: 0.05;
+    }
+    
+    .mod-image {
+        transition: transform 0.5s ease;
+    }
+    
+    .mod-card:hover .mod-image {
+        transform: scale(1.05);
+    }
+    
+    .game-title {
+        font-weight: 600;
+        opacity: 0.8;
+        font-size: 0.9rem;
+    }
+    
+    .status-chip {
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        box-shadow: 0 2px 5px rgba(var(--mud-palette-primary-rgb), 0.2);
+    }
+    
+    .mod-title {
+        font-weight: 700;
+        transition: color 0.3s ease;
+    }
+    
+    .mod-card:hover .mod-title {
+        color: var(--mud-palette-primary);
+    }
+    
+    .creator-link {
+        opacity: 0.7;
+    }
+    
+    .creator-name {
+        transition: color 0.3s ease;
+    }
+    
+    .creator-name:hover {
+        color: var(--mud-palette-secondary);
+        text-decoration: none;
+    }
+    
+    .custom-rating {
+        transform: scale(0.9);
+        transform-origin: left;
+    }
+    
+    .rating-count {
+        opacity: 0.6;
+        font-size: 0.8rem;
+    }
+    
+    .download-info {
+        background: rgba(var(--mud-palette-primary-rgb), 0.1);
+        border-radius: 12px;
+        padding: 2px 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .download-icon {
+        color: var(--mud-palette-primary);
+    }
+    
+    .download-count {
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .mod-actions {
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 12px 16px;
+    }
+    
+    .details-button {
+        padding: 4px 12px;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .details-button:hover .details-icon {
+        transform: translateX(3px);
+    }
+    
+    .details-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .download-button {
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(var(--mud-palette-primary-rgb), 0.2);
+    }
+    
+    .download-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 12px rgba(var(--mud-palette-primary-rgb), 0.3);
+    }
+    
+    .download-button-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .download-button:hover .download-button-icon {
+        transform: translateY(1px);
+    }
+    
+    .button-text {
+        font-weight: 500;
+    }
+    
+    /* Features Section */
     .features-section {
-        background-color: rgba(0, 0, 0, 0.1);
+        background: linear-gradient(135deg, rgba(var(--mud-palette-primary-rgb), 0.05), rgba(var(--mud-palette-secondary-rgb), 0.05));
+        border-radius: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
     
     .feature-item {
-        transition: transform 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
         height: 100%;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.01);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
     
     .feature-item:hover {
-        transform: translateY(-5px);
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     }
     
+    /* Stats Section */
     .stats-section {
-        background-color: rgba(0, 170, 255, 0.05);
+        background: linear-gradient(135deg, rgba(var(--mud-palette-secondary-rgb), 0.05), rgba(var(--mud-palette-primary-rgb), 0.05));
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
     }
     
+    .stats-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(var(--mud-palette-primary-rgb), 0.3), transparent);
+    }
+    
+    /* Call-to-Action Section */
     .cta-section {
-        background: linear-gradient(45deg, var(--primary-accent), var(--secondary-accent));
+        background: linear-gradient(45deg, rgba(var(--mud-palette-primary-rgb), 0.8), rgba(var(--mud-palette-secondary-rgb), 0.8));
+        border-radius: 24px;
         color: white;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+    
+    .cta-section::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgdmlld0JveD0iMCAwIDUwMCA1MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8cGF0dGVybiBpZD0icGF0dGVybiIgeD0iMCIgeT0iMCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KICAgICAgPHBhdGggZD0iTTAgMjAgTDQwIDIwIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIvPgogICAgICA8cGF0aCBkPSJNMjAgMCBMMjAgNDAiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2Utb3BhY2l0eT0iMC4xIi8+CiAgICA8L3BhdHRlcm4+CiAgPC9kZWZzPgogIDxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjcGF0dGVybikiIC8+Cjwvc3ZnPg==');
+        opacity: 0.1;
+        z-index: -1;
     }
     
     .mod-description {
@@ -211,5 +570,42 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
+        line-height: 1.5;
+    }
+    
+    /* Animations */
+    @@keyframes float {
+        0% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0); }
+    }
+    
+    @@keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(var(--mud-palette-primary-rgb), 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(var(--mud-palette-primary-rgb), 0); }
+        100% { box-shadow: 0 0 0 0 rgba(var(--mud-palette-primary-rgb), 0); }
+    }
+    
+    @@keyframes pulse-slow {
+        0% { opacity: 0.4; transform: scale(1); }
+        100% { opacity: 0.6; transform: scale(1.1); }
+    }
+    
+    @@keyframes border-shimmer {
+        0% { transform: translateX(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) rotate(45deg); }
+    }
+    
+    .animate-on-scroll {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fade-in-up 0.6s ease forwards;
+    }
+    
+    @@keyframes fade-in-up {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 </style>
