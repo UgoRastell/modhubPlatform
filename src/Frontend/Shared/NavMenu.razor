@@ -1,31 +1,70 @@
 @using Microsoft.AspNetCore.Components.Authorization
 
-<MudNavMenu Bordered="true" Class="mud-width-full py-3">
+<style>
+    .nav-menu-container {
+        background: linear-gradient(180deg, rgba(21,21,35,0.8) 0%, rgba(42,45,80,0.6) 100%);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .menu-header-icon {
+        background: linear-gradient(45deg, var(--mud-palette-primary) 30%, var(--mud-palette-secondary) 90%);
+        border-radius: 50%;
+        padding: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+    
+    .section-header {
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+    
+    .mud-nav-link:hover {
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.1);
+        transform: translateX(3px);
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .mud-nav-link.active {
+        border-left: 3px solid var(--mud-palette-primary);
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.05);
+    }
+    
+    .auth-prompt {
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.05);
+        border-radius: 4px;
+        padding: 16px;
+        margin: 8px 16px;
+    }
+</style>
+
+<MudNavMenu Bordered="true" Class="mud-width-full py-3 nav-menu-container">
     <div class="d-flex justify-center mb-4">
-        <MudIcon Icon="@Icons.Custom.Brands.MudBlazor" Size="Size.Large" Color="Color.Primary" />
+        <MudIcon Icon="@Icons.Custom.Brands.MudBlazor" Size="Size.Large" Class="menu-header-icon" />
     </div>
 
-    <MudDivider Class="mb-4" />
+    <MudDivider Class="mb-4" Style="background: linear-gradient(90deg, transparent, var(--mud-palette-primary), transparent);" />
     
     <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="px-4 py-2 section-header">EXPLORER</MudText>
     
-    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
-        Accueil
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Info">
+        <span style="background: linear-gradient(90deg, var(--mud-palette-primary), var(--mud-palette-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 500;">Accueil</span>
     </MudNavLink>
     
-    <MudNavLink Href="/catalog" Icon="@Icons.Material.Filled.Extension">
+    <MudNavLink Href="/catalog" Icon="@Icons.Material.Filled.Extension" IconColor="Color.Success">
         Catalogue de mods
     </MudNavLink>
     
-    <MudNavLink Href="/games" Icon="@Icons.Material.Filled.SportsEsports">
+    <MudNavLink Href="/games" Icon="@Icons.Material.Filled.SportsEsports" IconColor="Color.Warning">
         Jeux supportés
     </MudNavLink>
     
-    <MudNavLink Href="/payment" Icon="@Icons.Material.Filled.Payment">
-        Premium
+    <MudNavLink Href="/payment" Icon="@Icons.Material.Filled.Payment" IconColor="Color.Secondary">
+        <span style="font-weight: 500; color: var(--mud-palette-secondary);">Premium</span>
     </MudNavLink>
     
-    <MudNavGroup Title="Communauté" Icon="@Icons.Material.Filled.Groups" Expanded="false">
+    <MudNavGroup Title="Communauté" Icon="@Icons.Material.Filled.Groups" Expanded="false" IconColor="Color.Tertiary" Style="font-weight: 500;">
         <MudNavLink Href="/forums" Icon="@Icons.Material.Filled.Forum">
             Forums
         </MudNavLink>
@@ -36,7 +75,7 @@
     
     <AuthorizeView>
         <Authorized>
-            <MudDivider Class="my-4" />
+            <MudDivider Class="my-4" Style="background: linear-gradient(90deg, transparent, var(--mud-palette-primary), transparent);" />
             <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="px-4 py-2 section-header">MON ESPACE</MudText>
             
             <MudNavLink Href="/account/settings" Icon="@Icons.Material.Filled.Settings">
@@ -45,8 +84,8 @@
             
             <AuthorizeView Roles="Creator">
                 <Authorized Context="creatorContext">
-                    <MudDivider Class="my-4" />
-                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="px-4 py-2 section-header">CRÉATEUR</MudText>
+                    <MudDivider Class="my-4" Style="background: linear-gradient(90deg, transparent, var(--mud-palette-primary), transparent);" />
+                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="px-4 py-2 section-header" Style="background: linear-gradient(90deg, rgba(var(--mud-palette-secondary-rgb), 0.1), transparent); border-radius: 4px;">CRÉATEUR</MudText>
                     
                     <MudNavLink Href="/creator/dashboard" Icon="@Icons.Material.Filled.Dashboard">
                         Tableau de bord
@@ -72,8 +111,8 @@
             
             <AuthorizeView Roles="Admin">
                 <Authorized Context="adminContext">
-                    <MudDivider Class="my-4" />
-                    <MudText Typo="Typo.subtitle2" Color="Color.Error" Class="px-4 py-2 section-header">ADMINISTRATION</MudText>
+                    <MudDivider Class="my-4" Style="background: linear-gradient(90deg, transparent, var(--mud-palette-primary), transparent);" />
+                    <MudText Typo="Typo.subtitle2" Color="Color.Error" Class="px-4 py-2 section-header" Style="background: linear-gradient(90deg, rgba(var(--mud-palette-error-rgb), 0.1), transparent); border-radius: 4px;">ADMINISTRATION</MudText>
                     
                     <MudNavLink Href="/admin/moderation" Icon="@Icons.Material.Filled.AdminPanelSettings">
                         Tableau de bord
@@ -98,16 +137,16 @@
             </AuthorizeView>
         </Authorized>
         <NotAuthorized>
-            <MudDivider Class="my-4" />
+            <MudDivider Class="my-4" Style="background: linear-gradient(90deg, transparent, var(--mud-palette-primary), transparent);" />
             <MudItem Class="d-flex flex-column align-center auth-prompt">
-                <MudText Typo="Typo.body2" Class="mb-3 text-center">
+                <MudText Typo="Typo.body2" Class="mb-3 text-center" Color="Color.Primary">
                     Connectez-vous pour accéder à toutes les fonctionnalités
                 </MudText>
                 <div class="d-flex gap-2">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/login" StartIcon="@Icons.Material.Filled.Login" Size="Size.Small">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/login" StartIcon="@Icons.Material.Filled.Login" Size="Size.Small" Class="px-4" Style="border-radius: 20px;">
                         Connexion
                     </MudButton>
-                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Href="/register" Size="Size.Small">
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Href="/register" Size="Size.Small" Class="px-4" Style="border-radius: 20px;">
                         Inscription
                     </MudButton>
                 </div>
