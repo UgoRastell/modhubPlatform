@@ -1,7 +1,9 @@
 @page "/catalog"
 @using Frontend.Models
+@using Frontend.Services
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
+@inject ModService ModService
 
 <PageTitle>Catalogue de mods - ModHub</PageTitle>
 
@@ -143,7 +145,107 @@
             }
             else
             {
-                <!-- À compléter dans la partie 2 -->
+                <!-- Vue grille des mods -->
+                @if (viewMode == ViewMode.Grid)
+                {
+                    <MudGrid>
+                        @foreach (var mod in mods)
+                        {
+                            <MudItem xs="12" sm="6" md="4" lg="4" xl="3">
+                                <MudCard Class="mod-card rounded-xl" Elevation="3">
+                                    <MudCardMedia Image="@(mod.ThumbnailUrl ?? "images/mod-placeholder.jpg")" Height="200" Style="background-size: cover; background-position: center;" />
+                                    <div class="position-relative">
+                                        @if (mod.IsNew)
+                                        {
+                                            <MudChip T="string" Color="Color.Info" Size="Size.Small" Class="position-absolute new-badge" Style="top: -16px; left: 12px;">
+                                                Nouveau
+                                            </MudChip>
+                                        }
+                                        @if (mod.IsPremium)
+                                        {
+                                            <MudChip T="string" Color="Color.Warning" Size="Size.Small" Class="position-absolute premium-badge" Style="top: -16px; right: 12px;">
+                                                Premium
+                                            </MudChip>
+                                        }
+                                    </div>
+                                    <MudCardContent>
+                                        <div class="d-flex justify-space-between align-center">
+                                            <MudText Typo="Typo.h6" Class="mt-n2 text-truncate mud-primary-text">@mod.Name</MudText>
+                                            <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="@(mod.IsFavorite ? Color.Error : Color.Default)" Size="Size.Small" />
+                                        </div>
+                                        <MudText Typo="Typo.body2" Class="mb-2 text-truncate mud-text-secondary">par @mod.Author</MudText>
+                                        <div class="d-flex align-center mb-2">
+                                            <MudRating ReadOnly="true" SelectedValue="(int)Math.Round(mod.Rating)" Size="Size.Small" />
+                                            <MudText Typo="Typo.body2" Class="ml-2 mud-text-secondary">@mod.Rating.ToString("0.0") (@mod.ReviewCount avis)</MudText>
+                                        </div>
+                                        <MudText Typo="Typo.body2" Class="mod-description">@mod.Description</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Class="d-flex justify-space-between">
+                                        <MudText Typo="Typo.caption" Class="mud-text-secondary"><MudIcon Icon="@Icons.Material.Filled.CloudDownload" Size="Size.Small" /> @mod.DownloadCount.ToString("N0")</MudText>
+                                        <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="@($"/mods/{mod.Id}")">
+                                            Détails
+                                        </MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                }
+                else
+                {
+                    <!-- Vue liste des mods -->
+                    <MudPaper Class="pa-0" Elevation="0">
+                        @foreach (var mod in mods)
+                        {
+                            <MudPaper Class="pa-3 mb-3 rounded-xl d-flex" Elevation="3">
+                                <div class="d-flex" Style="width:100%">
+                                    <!-- Thumbnail / Image -->
+                                    <MudAvatar Square="true" Style="width:120px; height:80px; margin-right:16px;" Image="@(mod.ThumbnailUrl ?? "images/mod-placeholder.jpg")" />
+
+                                    <!-- Content -->
+                                    <div class="d-flex flex-column" Style="flex-grow:1;">
+                                        <!-- Header + Badges -->
+                                        <div class="d-flex justify-space-between align-center">
+                                            <div>
+                                                <MudText Typo="Typo.h6" Class="text-truncate mud-primary-text">@mod.Name</MudText>
+                                                <MudText Typo="Typo.body2" Class="text-truncate mud-text-secondary">par @mod.Author</MudText>
+                                            </div>
+                                            <div>
+                                                @if (mod.IsNew)
+                                                {
+                                                    <MudChip T="string" Color="Color.Info" Size="Size.Small" Class="new-badge mr-1">
+                                                        Nouveau
+                                                    </MudChip>
+                                                }
+                                                @if (mod.IsPremium)
+                                                {
+                                                    <MudChip T="string" Color="Color.Warning" Size="Size.Small" Class="premium-badge">
+                                                        Premium
+                                                    </MudChip>
+                                                }
+                                                <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="@(mod.IsFavorite ? Color.Error : Color.Default)" Size="Size.Small" />
+                                            </div>
+                                        </div>
+
+                                        <!-- Description + Stats -->
+                                        <div class="d-flex mt-2 justify-space-between">
+                                            <MudText Typo="Typo.body2" Class="mr-2 text-truncate" Style="max-width:70%;">@mod.Description</MudText>
+                                            <div class="d-flex align-center">
+                                                <MudRating ReadOnly="true" SelectedValue="(int)Math.Round(mod.Rating)" Size="Size.Small" />
+                                                <MudText Typo="Typo.caption" Class="ml-2 mr-4 mud-text-secondary">@mod.Rating.ToString("0.0")</MudText>
+                                                <MudIcon Icon="@Icons.Material.Filled.CloudDownload" Size="Size.Small" Class="mr-1" />
+                                                <MudText Typo="Typo.caption" Class="mud-text-secondary">@mod.DownloadCount.ToString("N0")</MudText>
+                                                <MudButton Class="ml-4" Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="@($"/mods/{mod.Id}")">
+                                                    Détails
+                                                </MudButton>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </MudPaper>
+                        }
+                    </MudPaper>
+                }
             }
         </MudItem>
     </MudGrid>
@@ -236,20 +338,12 @@
             selectedTags.Add(tagId);
     }
     
-    private void ApplyFilters()
+    private async void ApplyFilters()
     {
         isLoading = true;
-        // Simuler un chargement
-        // Dans une implémentation réelle, cela ferait un appel API
-        // LoadModsAsync(filter, selectedGames, selectedTags);
-        
-        // Pour la démonstration, on ajoute des mods factices après un délai
-        Task.Delay(500).ContinueWith(_ => 
-        {
-            LoadMockMods();
-            isLoading = false;
-            StateHasChanged();
-        });
+        await LoadModsFromApiAsync();
+        isLoading = false;
+        StateHasChanged();
     }
     
     private void ResetFilters()
@@ -258,6 +352,85 @@
         selectedGames.Clear();
         selectedTags.Clear();
         ApplyFilters();
+    }
+    
+    private async Task LoadModsFromApiAsync()
+    {
+        try
+        {
+            // Convert CatalogFilter to API parameters
+            string searchTerm = filter.SearchText;
+            string category = string.Empty;
+            if (selectedGames.Count > 0)
+            {
+                category = string.Join(",", selectedGames);
+            }
+            
+            // Map SortOption to API sortBy parameter
+            string sortBy = filter.SortBy switch
+            {
+                SortOption.Popularity => "popularity",
+                SortOption.RecentlyUpdated => "updated",
+                SortOption.NewReleases => "newest",
+                SortOption.TopRated => "rating",
+                SortOption.MostDownloaded => "downloads",
+                SortOption.AlphabeticalAZ => "nameAsc",
+                SortOption.AlphabeticalZA => "nameDesc",
+                _ => "recent"
+            };
+            
+            // Call API via ModService
+            var response = await ModService.GetModsAsync(1, 50, searchTerm, category, sortBy);
+            
+            if (response.Success && response.Data != null)
+            {
+                // Convert API response to ModItem list for display
+                mods = response.Data.Items.Select(m => new ModItem
+                {
+                    Id = m.Id,
+                    Name = m.Name,
+                    Description = m.Description,
+                    ThumbnailUrl = !string.IsNullOrEmpty(m.ThumbnailUrl) ? m.ThumbnailUrl : "images/mod-placeholder.jpg",
+                    Author = m.CreatorName,
+                    AuthorId = m.CreatorId,
+                    ReleaseDate = m.CreatedAt,
+                    LastUpdated = m.UpdatedAt != default ? m.UpdatedAt : m.CreatedAt,
+                    DownloadCount = (int)m.DownloadCount,
+                    Rating = m.AverageRating,
+                    ReviewCount = m.RatingCount,
+                    IsPremium = m.IsFeatured, // Using IsFeatured as premium indicator
+                    IsNew = (DateTime.UtcNow - m.CreatedAt).TotalDays <= 7,
+                    IsPopular = m.DownloadCount > 1000,  // Arbitrary threshold
+                    GameName = m.GameName,
+                    GameId = m.GameId,
+                    Tags = m.Tags ?? new List<string>(),
+                    IsFavorite = false  // TODO: Implement user favorites
+                }).ToList();
+                
+                if (filter.ShowPremiumOnly)
+                    mods = mods.Where(m => m.IsPremium).ToList();
+                
+                if (filter.ShowNewOnly)
+                    mods = mods.Where(m => m.IsNew).ToList();
+                
+                if (filter.ShowPopularOnly)
+                    mods = mods.Where(m => m.IsPopular).ToList();
+                
+                // Additional filtering for tags if needed
+                if (selectedTags.Count > 0)
+                    mods = mods.Where(m => m.Tags.Any(t => selectedTags.Contains(t))).ToList();
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "Échec de chargement des mods", Severity.Error);
+                mods = new List<ModItem>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+            mods = new List<ModItem>();
+        }
     }
     
     private void LoadMockMods()
@@ -319,10 +492,12 @@
         };
     }
     
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Charger les données initiales
-        LoadMockMods();
+        // Charger les données réelles depuis l'API
+        isLoading = true;
+        await LoadModsFromApiAsync();
+        isLoading = false;
     }
     
     // Utilisation de l'énumération SortOption définie dans CatalogModels.cs
