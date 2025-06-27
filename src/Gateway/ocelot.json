@@ -83,8 +83,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "modservice",
-          "Port": 80
+          "Host": "modsservice",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/api/v1/mods/{everything}",
