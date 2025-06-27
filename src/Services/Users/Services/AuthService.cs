@@ -132,6 +132,9 @@ public class AuthService : IAuthService
             TermsAcceptedAt = DateTime.UtcNow
         };
         
+        // Ajouter le rôle 'creator' par défaut (en plus du rôle 'User' déjà ajouté par défaut)
+        user.Roles.Add("creator");
+        
         // Ajouter les consentements RGPD
         if (request.ConsentMarketing.HasValue)
         {
