@@ -13,7 +13,7 @@ using Shared.Models;
 namespace ModsService.Controllers
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/mods")]
     public class ModsController : ControllerBase
     {
         private readonly ModService _modService;
