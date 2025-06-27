@@ -10,16 +10,30 @@ namespace Frontend.Services
     public class ModService : IModService
     {
         private readonly HttpClient _httpClient;
+        private readonly ILocalStorageService _localStorage;
 
-        public ModService(IHttpClientFactory httpClientFactory)
+        public ModService(IHttpClientFactory httpClientFactory, ILocalStorageService localStorage)
         {
             _httpClient = httpClientFactory.CreateClient("ModsService");
+            _localStorage = localStorage;
+        }
+        
+        private async Task SetAuthHeaderAsync()
+        {
+            var token = await _localStorage.GetItemAsync<string>("authToken");
+            if (!string.IsNullOrEmpty(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
         }
 
         public async Task<ApiResponse<PagedResult<ModDto>>> GetModsAsync(int page, int pageSize, string searchTerm = "", string category = "", string sortBy = "")
         {
             try
             {
+                // Ajouter l'en-tête d'authentification
+                await SetAuthHeaderAsync();
+                
                 // Debug URL complète
                 var query = $"api/v1/mods?page={page}&pageSize={pageSize}";
                 
@@ -54,6 +68,8 @@ namespace Frontend.Services
         {
             try
             {
+                await SetAuthHeaderAsync();
+                
                 var response = await _httpClient.GetFromJsonAsync<ApiResponse<ModDto>>($"api/v1/mods/{id}");
                 return response ?? new ApiResponse<ModDto> { Success = false, Message = "Mod non trouvé" };
             }
@@ -67,6 +83,8 @@ namespace Frontend.Services
         {
             try
             {
+                await SetAuthHeaderAsync();
+                
                 var response = await _httpClient.PostAsJsonAsync("api/v1/mods", request);
                 
                 if (response.IsSuccessStatusCode)
@@ -87,6 +105,8 @@ namespace Frontend.Services
         {
             try
             {
+                await SetAuthHeaderAsync();
+                
                 var response = await _httpClient.PutAsJsonAsync($"api/v1/mods/{id}", request);
                 
                 if (response.IsSuccessStatusCode)
@@ -107,6 +127,8 @@ namespace Frontend.Services
         {
             try
             {
+                await SetAuthHeaderAsync();
+                
                 var response = await _httpClient.DeleteAsync($"api/v1/mods/{id}");
                 
                 if (response.IsSuccessStatusCode)
@@ -127,7 +149,9 @@ namespace Frontend.Services
         {
             try
             {
-                var query = $"api/users/{userId}/mods?page={page}&pageSize={pageSize}";
+                await SetAuthHeaderAsync();
+                
+                var query = $"api/v1/users/{userId}/mods?page={page}&pageSize={pageSize}";
                 
                 var response = await _httpClient.GetFromJsonAsync<ApiResponse<PagedResult<ModDto>>>(query);
                 return response ?? new ApiResponse<PagedResult<ModDto>> { Success = false, Message = "Échec de la récupération des mods de l'utilisateur" };
@@ -151,6 +175,8 @@ namespace Frontend.Services
         {
             try
             {
+                await SetAuthHeaderAsync();
+                
                 var response = await _httpClient.PostAsJsonAsync($"api/v1/mods/{modId}/ratings", request);
                 
                 if (response.IsSuccessStatusCode)
@@ -171,6 +197,8 @@ namespace Frontend.Services
         {
             try
             {
+                await SetAuthHeaderAsync();
+                
                 var response = await _httpClient.GetFromJsonAsync<ApiResponse<DownloadStatsDto>>($"api/v1/mods/{modId}/statistics");
                 return response ?? new ApiResponse<DownloadStatsDto> { Success = false, Message = "Statistiques non trouvées" };
             }
@@ -184,6 +212,8 @@ namespace Frontend.Services
         {
             try
             {
+                await SetAuthHeaderAsync();
+                
                 var response = await _httpClient.GetFromJsonAsync<ApiResponse<DownloadStatsDto>>($"api/v1/mods/{modId}/versions/{versionId}/statistics");
                 return response ?? new ApiResponse<DownloadStatsDto> { Success = false, Message = "Statistiques de version non trouvées" };
             }
@@ -197,6 +227,8 @@ namespace Frontend.Services
         {
             try 
             {
+                await SetAuthHeaderAsync();
+                
                 // Récupérer les informations de base du mod
                 var modResponse = await GetModAsync(id);
                 
@@ -231,6 +263,8 @@ namespace Frontend.Services
         {
             try
             {
+                await SetAuthHeaderAsync();
+                
                 var response = await _httpClient.GetFromJsonAsync<ApiResponse<string>>($"api/v1/mods/{modId}/versions/{versionId}/changelog");
                 return response ?? new ApiResponse<string> { Success = false, Message = "Changelog non trouvé" };
             }
@@ -244,6 +278,8 @@ namespace Frontend.Services
         {
             try
             {
+                await SetAuthHeaderAsync();
+                
                 string url = versionId == null
                     ? $"api/v1/mods/{modId}/download"
                     : $"api/v1/mods/{modId}/versions/{versionId}/download";
