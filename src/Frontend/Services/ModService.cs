@@ -1,6 +1,7 @@
 using Frontend.Models;
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
@@ -10,16 +11,17 @@ namespace Frontend.Services
     {
         private readonly HttpClient _httpClient;
 
-        public ModService(HttpClient httpClient)
+        public ModService(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClientFactory.CreateClient("ModsService");
         }
 
         public async Task<ApiResponse<PagedResult<ModDto>>> GetModsAsync(int page, int pageSize, string searchTerm = "", string category = "", string sortBy = "")
         {
             try
             {
-                var query = $"/api/v1/mods?page={page}&pageSize={pageSize}";
+                // Debug URL complète
+                var query = $"api/v1/mods?page={page}&pageSize={pageSize}";
                 
                 if (!string.IsNullOrWhiteSpace(searchTerm))
                     query += $"&search={Uri.EscapeDataString(searchTerm)}";
