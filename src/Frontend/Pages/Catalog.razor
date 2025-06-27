@@ -7,13 +7,15 @@
 
 <PageTitle>Catalogue de mods - ModHub</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-    <MudText Typo="Typo.h4" Class="mb-4">Catalogue de mods</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 animate-fade-in">
+    <MudText Typo="Typo.h4" Class="gradient-title mb-4">Catalogue de mods</MudText>
+    <div class="title-underline mb-6"></div>
     
     <MudGrid>
         <!-- Filtres (colonne de gauche) -->
         <MudItem xs="12" md="3" Class="mb-4">
-            <MudPaper Class="pa-4 rounded-xl" Elevation="3" Style="background-color: #232634;">
+            <MudPaper Class="pa-4 rounded-xl filter-sidebar" Elevation="3">
+                <div class="glow-overlay"></div>
                 <MudText Typo="Typo.h6" Class="mb-3">Filtres</MudText>
                 
                 <MudTextField @bind-Value="filter.SearchText" 
@@ -73,16 +75,16 @@
                            Color="Color.Primary" 
                            FullWidth="true" 
                            OnClick="ApplyFilters"
-                           Class="filter-button mt-2">
-                    Appliquer les filtres
+                           Class="gradient-button filter-button mt-2">
+                    <span class="button-text">Appliquer les filtres</span>
                 </MudButton>
                 
                 <MudButton Variant="Variant.Text" 
                            Color="Color.Secondary" 
                            FullWidth="true" 
                            OnClick="ResetFilters"
-                           Class="mt-2">
-                    Réinitialiser
+                           Class="reset-button mt-2">
+                    <span>Réinitialiser</span>
                 </MudButton>
             </MudPaper>
         </MudItem>
@@ -90,9 +92,8 @@
         <!-- Contenu principal (colonne de droite) -->
         <MudItem xs="12" md="9">
             <!-- Barre d'outils (Tri, Vue grille/liste) -->
-            <MudPaper Class="pa-3 d-flex flex-column flex-sm-row gap-2 align-center rounded-xl mb-4" 
-                     Elevation="3"
-                     Style="background-color: #232634;">
+            <MudPaper Class="pa-3 d-flex flex-column flex-sm-row gap-2 align-center rounded-xl mb-4 toolbar-panel" 
+                     Elevation="3">
                 <MudSelect T="SortOption" 
                           @bind-Value="filter.SortBy"
                           Label="Trier par" 
@@ -131,7 +132,8 @@
             }
             else if (mods.Count == 0)
             {
-                <MudPaper Class="pa-6 text-center rounded-xl" Elevation="3" Style="background-color: #232634;">
+                <MudPaper Class="pa-6 text-center rounded-xl no-results-panel" Elevation="3">
+                    <div class="glow-overlay"></div>
                     <MudIcon Icon="@Icons.Material.Filled.SentimentDissatisfied" Size="Size.Large" Class="mb-4" />
                     <MudText Typo="Typo.h6">Aucun mod trouvé</MudText>
                     <MudText Typo="Typo.body2" Class="mt-2">Essayez de modifier vos filtres ou d'effectuer une recherche différente.</MudText>
@@ -152,7 +154,7 @@
                         @foreach (var mod in mods)
                         {
                             <MudItem xs="12" sm="6" md="4" lg="4" xl="3">
-                                <MudCard Class="mod-card rounded-xl" Elevation="3">
+                                <MudCard Class="mod-card rounded-xl animate-on-scroll" Elevation="3">
                                     <MudCardMedia Image="@(mod.ThumbnailUrl ?? "images/mod-placeholder.jpg")" Height="200" Style="background-size: cover; background-position: center;" />
                                     <div class="position-relative">
                                         @if (mod.IsNew)
@@ -170,7 +172,7 @@
                                     </div>
                                     <MudCardContent>
                                         <div class="d-flex justify-space-between align-center">
-                                            <MudText Typo="Typo.h6" Class="mt-n2 text-truncate mud-primary-text">@mod.Name</MudText>
+                                            <MudText Typo="Typo.h6" Class="mt-n2 text-truncate gradient-text-name">@mod.Name</MudText>
                                             <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="@(mod.IsFavorite ? Color.Error : Color.Default)" Size="Size.Small" />
                                         </div>
                                         <MudText Typo="Typo.body2" Class="mb-2 text-truncate mud-text-secondary">par @mod.Author</MudText>
@@ -182,7 +184,7 @@
                                     </MudCardContent>
                                     <MudCardActions Class="d-flex justify-space-between">
                                         <MudText Typo="Typo.caption" Class="mud-text-secondary"><MudIcon Icon="@Icons.Material.Filled.CloudDownload" Size="Size.Small" /> @mod.DownloadCount.ToString("N0")</MudText>
-                                        <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="@($"/mods/{mod.Id}")">
+                                        <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="@($"/mods/{mod.Id}")" Class="details-button">
                                             Détails
                                         </MudButton>
                                     </MudCardActions>
@@ -197,7 +199,8 @@
                     <MudPaper Class="pa-0" Elevation="0">
                         @foreach (var mod in mods)
                         {
-                            <MudPaper Class="pa-3 mb-3 rounded-xl d-flex" Elevation="3">
+                            <MudPaper Class="pa-3 mb-3 rounded-xl d-flex list-item-card animate-on-scroll" Elevation="3">
+                                <div class="glow-overlay-subtle"></div>
                                 <div class="d-flex" Style="width:100%">
                                     <!-- Thumbnail / Image -->
                                     <MudAvatar Square="true" Style="width:120px; height:80px; margin-right:16px;" Image="@(mod.ThumbnailUrl ?? "images/mod-placeholder.jpg")" />
@@ -207,7 +210,7 @@
                                         <!-- Header + Badges -->
                                         <div class="d-flex justify-space-between align-center">
                                             <div>
-                                                <MudText Typo="Typo.h6" Class="text-truncate mud-primary-text">@mod.Name</MudText>
+                                                <MudText Typo="Typo.h6" Class="text-truncate gradient-text-name">@mod.Name</MudText>
                                                 <MudText Typo="Typo.body2" Class="text-truncate mud-text-secondary">par @mod.Author</MudText>
                                             </div>
                                             <div>
@@ -252,40 +255,229 @@
 </MudContainer>
 
 <style>
-    /* Styles spécifiques pour la page catalogue */
-    ::deep .mud-input-control.mud-input-focused:not(.mud-input-error) .mud-input-border::after {
-        border-color: #00aaff !important;
+    /* Base Styles & Animations */
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-in-out;
     }
     
-    ::deep .mud-input-control.mud-input-focused:not(.mud-input-error) .mud-input-label.mud-input-label-inputcontrol {
-        color: #00aaff !important;
+    .animate-on-scroll {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease-out forwards;
     }
     
-    .filter-button:hover {
-        box-shadow: 0 0 12px #00aaff80;
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @@keyframes fadeInUp {
+        from { 
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to { 
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @@keyframes gradientMove {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    @@keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.9; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    /* Title Styles */
+    .gradient-title {
+        background: linear-gradient(90deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: inline-block;
+        font-weight: 700;
+    }
+    
+    .title-underline {
+        height: 3px;
+        width: 150px;
+        background: linear-gradient(90deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        animation: gradientMove 3s ease infinite;
+        background-size: 200% 100%;
+        border-radius: 2px;
+        margin-top: -8px;
+    }
+    
+    /* Panel Styles */
+    .filter-sidebar {
+        background-color: #232634;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .filter-sidebar:hover .glow-overlay {
+        opacity: 0.15;
+    }
+    
+    .toolbar-panel {
+        background-color: #232634;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .no-results-panel {
+        background-color: #232634;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    /* Glow Effects */
+    .glow-overlay {
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(var(--mud-palette-primary-rgb), 0.3) 0%, rgba(var(--mud-palette-primary-rgb), 0) 70%);
+        opacity: 0.1;
+        transition: all 0.3s ease;
+        pointer-events: none;
+        z-index: 0;
+    }
+    
+    .glow-overlay-subtle {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
+        pointer-events: none;
+        z-index: 0;
+    }
+    
+    /* Buttons Styles */
+    .gradient-button {
+        background: linear-gradient(90deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%) !important;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border: none !important;
+    }
+    
+    .gradient-button:hover {
         transform: translateY(-2px);
+        box-shadow: 0 0 15px rgba(var(--mud-palette-primary-rgb), 0.5);
     }
     
+    .gradient-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: 0.5s;
+    }
+    
+    .gradient-button:hover::before {
+        left: 100%;
+    }
+    
+    .reset-button:hover {
+        background-color: rgba(var(--mud-palette-secondary-rgb), 0.1) !important;
+    }
+    
+    .details-button:hover {
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.1) !important;
+    }
+    
+    /* Card Styles */
     .mod-card {
-        transition: all 0.2s ease-in-out;
+        transition: all 0.3s ease-in-out;
+        background-color: #232634;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        overflow: hidden;
     }
     
     .mod-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     }
     
+    .list-item-card {
+        transition: all 0.3s ease-in-out;
+        background-color: #232634;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .list-item-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Text Styles */
+    .gradient-text-name {
+        background: linear-gradient(90deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 600;
+    }
+    
+    /* Badge Styles */
     .premium-badge {
         background: linear-gradient(45deg, #FFD700, #FFA500);
         color: #000;
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
     }
     
     .new-badge {
         background: linear-gradient(45deg, #00aaff, #0077ff);
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
     }
     
     .popular-badge {
         background: linear-gradient(45deg, #25e398, #00cc66);
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .premium-badge:hover, .new-badge:hover, .popular-badge:hover {
+        transform: scale(1.05);
+    }
+    
+    /* Form Control Styles */
+    ::deep .mud-input-control.mud-input-focused:not(.mud-input-error) .mud-input-border::after {
+        border-color: var(--mud-palette-primary) !important;
+    }
+    
+    ::deep .mud-input-control.mud-input-focused:not(.mud-input-error) .mud-input-label.mud-input-label-inputcontrol {
+        color: var(--mud-palette-primary) !important;
+    }
+    
+    /* Responsive Adjustments */
+    @@media (max-width: 960px) {
+        .animate-on-scroll {
+            opacity: 1;
+            transform: translateY(0);
+            animation: none;
+        }
     }
 </style>
 
