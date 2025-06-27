@@ -79,6 +79,32 @@
       }
     },
     {
+      "DownstreamPathTemplate": "/api/v1/mods",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "modsservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/mods",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 10
+      },
+      "FileCacheOptions": {
+        "TtlSeconds": 30
+      }
+    },
+    {
       "DownstreamPathTemplate": "/api/v1/mods/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
