@@ -134,7 +134,7 @@ public class AuthService : IAuthService
         
         // Initialiser la liste des rôles avec seulement 'creator'
         // (au lieu d'ajouter 'creator' en plus du rôle 'user' ajouté par défaut)
-        user.Roles = new List<string> { "creator" };
+        user.Roles = new List<string> { "Creator" };
         
         // Ajouter les consentements RGPD
         if (request.ConsentMarketing.HasValue)
