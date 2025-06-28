@@ -13,9 +13,8 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 
-// Configure OpenAPI/Swagger
+// Configure API Explorer
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 // Configure authorization to make [AllowAnonymous] work correctly
 builder.Services.AddAuthorization(options =>
@@ -29,8 +28,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // Journal de débogage activé uniquement en développement
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseCors("CorsPolicy");
