@@ -33,11 +33,41 @@ namespace ModsService.Controllers
                 
                 _logger.LogInformation("Récupération de {Count} mods sur un total de {TotalCount}", mods.Count, totalCount);
                 
+                // Convertir les mods en format compatible avec le frontend ModDto
+                var modDtos = mods.Select(mod => new
+                {
+                    Id = mod.Id,
+                    Name = mod.Name,
+                    Slug = mod.Name.ToLowerInvariant().Replace(" ", "-"),  // Générer un slug basique
+                    Description = mod.Description,
+                    ShortDescription = mod.Description.Length > 100 ? mod.Description.Substring(0, 97) + "..." : mod.Description,
+                    CreatorId = mod.CreatorId,
+                    CreatorName = mod.Author,
+                    GameId = mod.GameId,
+                    GameName = mod.GameName,
+                    CategoryId = string.Empty,
+                    ThumbnailUrl = mod.ThumbnailUrl,
+                    ScreenshotUrls = new List<string>(),
+                    Version = "1.0",
+                    DownloadUrl = string.Empty,
+                    DocumentationUrl = string.Empty,
+                    DownloadCount = mod.DownloadCount,
+                    AverageRating = mod.Rating,
+                    RatingCount = mod.ReviewCount,
+                    CreatedAt = mod.CreatedAt,
+                    UpdatedAt = mod.UpdatedAt,
+                    Tags = mod.Tags ?? new List<string>(),
+                    Categories = new List<string>(),
+                    IsFeatured = false,
+                    IsApproved = true,
+                    Versions = new List<object>()
+                }).ToList();
+
                 return Ok(new { 
                     Success = true, 
                     Message = "Mods récupérés avec succès", 
                     Data = new { 
-                        Items = mods, 
+                        Items = modDtos, 
                         TotalCount = totalCount,
                         PageIndex = page,
                         PageSize = pageSize
