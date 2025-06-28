@@ -111,10 +111,6 @@
       ],
       "UpstreamPathTemplate": "/api/v1/mods/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
