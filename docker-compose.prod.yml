@@ -47,8 +47,8 @@ services:
 
   modsservice:
     build:
-      context: ./src
-      dockerfile: ModsService/Dockerfile
+      context: ./src/Services/Mods
+      dockerfile: Dockerfile
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
