@@ -1,3 +1,6 @@
+using ModsService.Models;
+using ModsService.Repositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -12,6 +15,17 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
+
+// Configure MongoDB
+var mongoDbSettings = builder.Configuration.GetSection("MongoDB").Get<MongoDbSettings>();
+if (mongoDbSettings == null)
+{
+    throw new InvalidOperationException("La configuration MongoDB est manquante dans appsettings.json");
+}
+builder.Services.AddSingleton(mongoDbSettings);
+
+// Register repositories
+builder.Services.AddSingleton<IModRepository, ModRepository>();
 
 // Configure API Explorer
 builder.Services.AddEndpointsApiExplorer();
