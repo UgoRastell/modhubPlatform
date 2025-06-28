@@ -36,7 +36,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                 builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? 
-                new[] { "http://localhost:5000", "https://modhub.com" })
+                new[] { "http://localhost:5000", "https://modhub.ovh" })
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
