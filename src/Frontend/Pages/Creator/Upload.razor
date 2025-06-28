@@ -60,8 +60,11 @@
                                         Fichier du mod (ZIP/RAR)
                                     </MudButton>
                                 </ActivatorContent>
-                                <SelectedTemplate Context="modFile">
-                                    <MudChip T="string" Color="Color.Info" Text="@modFile.Name" />
+                                <SelectedTemplate Context="selectedModFile">
+                                    @if (selectedModFile != null)
+                                    {
+                                        <MudChip T="string" Color="Color.Info" Text="@selectedModFile.Name" />
+                                    }
                                 </SelectedTemplate>
                             </MudFileUpload>
                             
@@ -82,8 +85,11 @@
                                         Image miniature
                                     </MudButton>
                                 </ActivatorContent>
-                                <SelectedTemplate Context="thumbnailFile">
-                                    <MudChip T="string" Color="Color.Success" Text="@thumbnailFile.Name" />
+                                <SelectedTemplate Context="selectedThumbnailFile">
+                                    @if (selectedThumbnailFile != null)
+                                    {
+                                        <MudChip T="string" Color="Color.Success" Text="@selectedThumbnailFile.Name" />
+                                    }
                                 </SelectedTemplate>
                             </MudFileUpload>
                             
