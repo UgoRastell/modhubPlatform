@@ -46,7 +46,7 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins(
                     builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ??
-                    new[] { "http://localhost:5000", "https://localhost:5000", "http://localhost:5001", "https://localhost:5001", "https://modhub.ovh", "https://vps-f63d8d2b.vps.ovh.net" })
+                    new[] { "http://localhost:5000", "https://localhost:5000", "http://localhost:5001", "https://localhost:5001", "https://modhub.ovh" })
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();

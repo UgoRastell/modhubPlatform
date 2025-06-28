@@ -48,7 +48,6 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IGameService, GameService>();
-// Configuration MongoDB n'est plus nécessaire (remplacée par API REST)
 
 // Services de modération et forum
 builder.Services.AddScoped<IModerationService, ModerationService>();
