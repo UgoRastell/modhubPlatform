@@ -7,14 +7,19 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copier le fichier projet et restaurer les dépendances
-COPY ["ModsService.csproj", "./"]
+# Copier les projets et restaurer les dépendances
+COPY ["ModsService.csproj", "ModsService/"]
+COPY ["../Shared/Shared.csproj", "Shared/"]
+WORKDIR /src/ModsService
 RUN dotnet restore "ModsService.csproj"
 
 # Copier le reste des fichiers
-COPY . .
+WORKDIR /src
+COPY [".", "ModsService/"]
+COPY ["../Shared/.", "Shared/"]
 
 # Publier l'application
+WORKDIR /src/ModsService
 RUN dotnet publish "ModsService.csproj" -c Release -o /app/publish
 
 FROM base AS final
