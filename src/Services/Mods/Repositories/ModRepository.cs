@@ -20,14 +20,28 @@ namespace ModsService.Repositories
                 var database = mongoClient.GetDatabase(settings.DatabaseName);
                 _modsCollection = database.GetCollection<Mod>(settings.ModsCollectionName);
                 
-                // Créer des index pour optimiser les requêtes courantes
-                var indexKeysName = Builders<Mod>.IndexKeys.Ascending(m => m.Name);
-                var indexKeysCreator = Builders<Mod>.IndexKeys.Ascending(m => m.CreatorId);
-                var indexKeysGame = Builders<Mod>.IndexKeys.Ascending(m => m.GameId);
-                
-                _modsCollection.Indexes.CreateOne(new CreateIndexModel<Mod>(indexKeysName));
-                _modsCollection.Indexes.CreateOne(new CreateIndexModel<Mod>(indexKeysCreator));
-                _modsCollection.Indexes.CreateOne(new CreateIndexModel<Mod>(indexKeysGame));
+                // Désactiver la création d'index en production pour éviter les erreurs d'authentification
+                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Production")
+                {
+                    try
+                    {
+                        // Créer des index pour optimiser les requêtes courantes (uniquement en développement)
+                        var indexKeysName = Builders<Mod>.IndexKeys.Ascending(m => m.Name);
+                        var indexKeysCreator = Builders<Mod>.IndexKeys.Ascending(m => m.CreatorId);
+                        var indexKeysGame = Builders<Mod>.IndexKeys.Ascending(m => m.GameId);
+                        
+                        _modsCollection.Indexes.CreateOne(new CreateIndexModel<Mod>(indexKeysName));
+                        _modsCollection.Indexes.CreateOne(new CreateIndexModel<Mod>(indexKeysCreator));
+                        _modsCollection.Indexes.CreateOne(new CreateIndexModel<Mod>(indexKeysGame));
+                        
+                        _logger.LogInformation("Index MongoDB créés avec succès");
+                    }
+                    catch (Exception indexEx)
+                    {
+                        // Ne pas faire échouer l'initialisation si la création d'index échoue
+                        _logger.LogWarning(indexEx, "Impossible de créer les index MongoDB");
+                    }
+                }
                 
                 _logger.LogInformation("Connection à MongoDB établie avec succès");
             }
