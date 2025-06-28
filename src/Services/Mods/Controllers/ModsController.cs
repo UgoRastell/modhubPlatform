@@ -14,11 +14,12 @@ namespace ModsService.Controllers
         public async Task<IActionResult> GetAllMods([FromQuery] int page = 1, [FromQuery] int pageSize = 50, [FromQuery] string sortBy = "recent")
         {
             // Implémentation simplifiée pour permettre l'accès public
+            // Structure exacte correspondant au type ApiResponse<PagedResult<ModDto>> attendu par le frontend
             return Ok(new { 
                 Success = true, 
                 Message = "Mods récupérés avec succès", 
                 Data = new { 
-                    Items = new List<object>(), 
+                    Items = new object[] {}, // Tableau vide au lieu de List
                     TotalCount = 0,
                     PageIndex = page,
                     PageSize = pageSize
