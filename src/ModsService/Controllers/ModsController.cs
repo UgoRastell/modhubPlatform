@@ -5,12 +5,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ModsService.Models;
 using ModsService.Services;
 using ModsService.Services.Download;
 using Shared.Models;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.FileProviders;
 
 namespace ModsService.Controllers
 {
@@ -22,19 +24,32 @@ namespace ModsService.Controllers
         private readonly ModVersioningService _versioningService;
         private readonly IDownloadService _downloadService;
         private readonly ILogger<ModsController> _logger;
-        
+        private readonly string _uploadsBasePath;
+        private readonly string _modsRelativePath;
+        private readonly string _imagesRelativePath;
+
         public ModsController(
             ModService modService,
             ModVersioningService versioningService,
             IDownloadService downloadService,
-            ILogger<ModsController> logger)
+            ILogger<ModsController> logger,
+            IOptions<FileStorageSettings> fileStorageSettings)
         {
             _modService = modService;
             _versioningService = versioningService;
             _downloadService = downloadService;
             _logger = logger;
+
+            // Configurer les chemins d'upload
+            _uploadsBasePath = fileStorageSettings.Value.UploadsBasePath ?? Path.Combine(Directory.GetCurrentDirectory(), "uploads");
+            _modsRelativePath = fileStorageSettings.Value.ModsRelativePath ?? "mods";
+            _imagesRelativePath = fileStorageSettings.Value.ImagesRelativePath ?? "images";
+
+            // S'assurer que les répertoires existent
+            EnsureDirectoryExists(Path.Combine(_uploadsBasePath, _modsRelativePath));
+            EnsureDirectoryExists(Path.Combine(_uploadsBasePath, _imagesRelativePath));
         }
-        
+
         /// <summary>
         /// Récupère tous les mods (avec pagination)
         /// </summary>
@@ -625,11 +640,8 @@ namespace ModsService.Controllers
             };
             
             // Créer le répertoire de stockage pour ce mod
-            string modDirectory = Path.Combine("uploads", "mods", mod.Id);
-            if (!Directory.Exists(modDirectory))
-            {
-                Directory.CreateDirectory(modDirectory);
-            }
+            string modDirectory = Path.Combine(_uploadsBasePath, _modsRelativePath, mod.Id);
+            EnsureDirectoryExists(modDirectory);
             
             // Ajouter une version initiale
             var version = new ModVersion
@@ -668,8 +680,8 @@ namespace ModsService.Controllers
                     await uploadDto.ThumbnailFile.CopyToAsync(fileStream);
                 }
                 
-                // URL relative pour la miniature
-                mod.ThumbnailUrl = $"/uploads/mods/{mod.Id}/thumbnail.jpg";
+                // URL relative pour la miniature (accessible via le middleware de fichiers statiques)
+                mod.ThumbnailUrl = $"/uploads/{_modsRelativePath}/{mod.Id}/thumbnail.jpg";
             }
             
             // Enregistrer le mod dans la base de données
@@ -698,6 +710,16 @@ namespace ModsService.Controllers
                 Message = $"Une erreur s'est produite lors de l'upload: {ex.Message}",
                 Data = null
             });
+        }
+    }
+    
+    // Méthode utilitaire pour s'assurer qu'un répertoire existe
+    private void EnsureDirectoryExists(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+            _logger.LogInformation("Répertoire créé : {Path}", path);
         }
     }
 }

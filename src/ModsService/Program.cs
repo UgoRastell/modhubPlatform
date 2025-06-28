@@ -34,6 +34,9 @@ builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IVersioningService, VersioningService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 
+// Configure FileStorage
+builder.Services.Configure<FileStorageSettings>(builder.Configuration.GetSection("FileStorage"));
+
 // Add RabbitMQ
 builder.Services.AddSingleton<IRabbitMQService>(sp =>
 {
@@ -115,6 +118,23 @@ app.UseHttpsRedirection();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Configuration pour servir les fichiers statiques uploadés
+var fileStorageSettings = app.Configuration.GetSection("FileStorage").Get<FileStorageSettings>();
+var uploadsPath = fileStorageSettings?.UploadsBasePath ?? Path.Combine(app.Environment.ContentRootPath, "uploads");
+
+// S'assurer que le répertoire existe
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+
+// Configurer le middleware de fichiers statiques pour servir les uploads
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+});
 
 // Map endpoints
 app.MapControllers();
