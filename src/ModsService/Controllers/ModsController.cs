@@ -9,6 +9,8 @@ using ModsService.Models;
 using ModsService.Services;
 using ModsService.Services.Download;
 using Shared.Models;
+using System.IO;
+using System.Linq;
 
 namespace ModsService.Controllers
 {
@@ -557,6 +559,144 @@ namespace ModsService.Controllers
             {
                 Success = true,
                 Data = stats
+            });
+        }
+    }
+    
+    /// <summary>
+    /// Upload un nouveau mod complet (fichier, métadonnées, image)
+    /// </summary>
+    [HttpPost("upload")]
+    [Authorize(Roles = "Creator")]
+    public async Task<IActionResult> UploadMod([FromForm] ModUploadDto uploadDto)
+    {
+        try
+        {
+            _logger.LogInformation("Tentative d'upload d'un mod");
+            
+            // Récupérer l'ID de l'utilisateur authentifié
+            var userId = User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "Utilisateur non authentifié",
+                    Data = null
+                });
+            }
+            
+            // Vérification de base des données
+            if (uploadDto.ModFile == null || uploadDto.ModFile.Length == 0)
+            {
+                return BadRequest(new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "Aucun fichier de mod fourni",
+                    Data = null
+                });
+            }
+            
+            if (string.IsNullOrEmpty(uploadDto.Name))
+            {
+                return BadRequest(new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "Le nom du mod est requis",
+                    Data = null
+                });
+            }
+            
+            // Créer un nouveau mod
+            var mod = new Mod
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = uploadDto.Name,
+                Description = uploadDto.Description,
+                GameId = uploadDto.GameId,
+                CreatorId = userId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                DownloadCount = 0,
+                Rating = 0,
+                ReviewCount = 0,
+                Tags = uploadDto.Tags ?? new List<string>(),
+                Versions = new List<ModVersion>()
+            };
+            
+            // Créer le répertoire de stockage pour ce mod
+            string modDirectory = Path.Combine("uploads", "mods", mod.Id);
+            if (!Directory.Exists(modDirectory))
+            {
+                Directory.CreateDirectory(modDirectory);
+            }
+            
+            // Ajouter une version initiale
+            var version = new ModVersion
+            {
+                Id = Guid.NewGuid().ToString(),
+                VersionNumber = uploadDto.Version ?? "1.0.0",
+                Name = "Initial Release",
+                CreatedAt = DateTime.UtcNow,
+                Changelog = "Version initiale",
+                Status = VersionStatus.Published,
+                MainFile = new ModFile
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    FileName = uploadDto.ModFile.FileName,
+                    FileSize = uploadDto.ModFile.Length,
+                    ContentType = uploadDto.ModFile.ContentType,
+                    StoragePath = Path.Combine(modDirectory, uploadDto.ModFile.FileName)
+                }
+            };
+            
+            mod.Versions.Add(version);
+            
+            // Sauvegarder le fichier du mod
+            string modFilePath = version.MainFile.StoragePath;
+            using (var fileStream = new FileStream(modFilePath, FileMode.Create))
+            {
+                await uploadDto.ModFile.CopyToAsync(fileStream);
+            }
+            
+            // Traiter l'image de miniature si présente
+            if (uploadDto.ThumbnailFile != null && uploadDto.ThumbnailFile.Length > 0)
+            {
+                string thumbnailPath = Path.Combine(modDirectory, "thumbnail.jpg");
+                using (var fileStream = new FileStream(thumbnailPath, FileMode.Create))
+                {
+                    await uploadDto.ThumbnailFile.CopyToAsync(fileStream);
+                }
+                
+                // URL relative pour la miniature
+                mod.ThumbnailUrl = $"/uploads/mods/{mod.Id}/thumbnail.jpg";
+            }
+            
+            // Enregistrer le mod dans la base de données
+            var response = await _modService.CreateModAsync(mod);
+            
+            if (response.Success)
+            {
+                return Ok(new ApiResponse<Mod>
+                {
+                    Success = true,
+                    Message = "Mod publié avec succès",
+                    Data = mod
+                });
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de l'upload d'un mod");
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<string>
+            {
+                Success = false,
+                Message = $"Une erreur s'est produite lors de l'upload: {ex.Message}",
+                Data = null
             });
         }
     }
