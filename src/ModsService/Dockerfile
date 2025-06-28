@@ -8,15 +8,15 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copier les projets et restaurer les dépendances
-COPY ["ModsService.csproj", "ModsService/"]
-COPY ["../Shared/Shared.csproj", "Shared/"]
+COPY ["ModsService/ModsService.csproj", "ModsService/"]
+COPY ["Shared/Shared.csproj", "Shared/"]
 WORKDIR /src/ModsService
 RUN dotnet restore "ModsService.csproj"
 
 # Copier le reste des fichiers
 WORKDIR /src
-COPY [".", "ModsService/"]
-COPY ["../Shared/.", "Shared/"]
+COPY ["ModsService/.", "ModsService/"]
+COPY ["Shared/.", "Shared/"]
 
 # Publier l'application
 WORKDIR /src/ModsService
