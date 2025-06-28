@@ -47,7 +47,7 @@ services:
 
   modsservice:
     build:
-      context: ./src/Services/Mods
+      context: ./src/ModsService
       dockerfile: Dockerfile
     restart: always
     environment:
