@@ -1,4 +1,6 @@
 @using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <style>
     .nav-menu-container {
@@ -141,7 +143,24 @@
         -webkit-text-fill-color: transparent;
         font-weight: 600;
     }
+    .logout-button:hover {
+        background-color: rgba(var(--mud-palette-error-rgb), 0.1);
+    }
 </style>
+
+@code {
+    private async Task LogoutUser()
+    {
+        // Supprimer le token d'authentification du localStorage
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
+        
+        // Supprimer également le token de rafraîchissement s'il existe
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "refreshToken");
+        
+        // Rediriger l'utilisateur vers la page de connexion
+        NavigationManager.NavigateTo("/", true);
+    }
+}
 
 <MudNavMenu Bordered="true" Class="mud-width-full py-4 nav-menu-container">
     <div class="d-flex justify-center mb-4">
@@ -199,6 +218,11 @@
             <MudNavLink Href="/account/settings">
                 <MudIcon Icon="@Icons.Material.Filled.Settings" Class="me-3 menu-icon" Color="Color.Primary"></MudIcon>
                 Paramètres
+            </MudNavLink>
+            
+            <MudNavLink OnClick="LogoutUser">
+                <MudIcon Icon="@Icons.Material.Filled.Logout" Class="me-3 menu-icon" Color="Color.Error"></MudIcon>
+                Déconnexion
             </MudNavLink>
             
             <AuthorizeView Roles="Creator">
