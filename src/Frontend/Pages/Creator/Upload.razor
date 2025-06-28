@@ -16,89 +16,135 @@
 @inject NavigationManager NavigationManager
 @attribute [Authorize(Roles = "Creator")]
 
+<PageTitle>ModHub - Publier un mod</PageTitle>
+
+<style>
+    .upload-section {
+        background: linear-gradient(180deg, rgba(21,21,35,0.95) 0%, rgba(42,45,80,0.85) 100%);
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 1px 6px rgba(0,0,0,0.1);
+        overflow: hidden;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+        pointer-events: none;
+    }
+    
+    .gradient-title {
+        background: linear-gradient(90deg, var(--mud-palette-primary), var(--mud-palette-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        font-weight: bold;
+        position: relative;
+    }
+    
+    .animated-gradient-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--mud-palette-primary), transparent);
+        position: relative;
+        overflow: hidden;
+        margin: 2rem 0;
+    }
+</style>
+
 <AuthorizeView Roles="Creator">
     <Authorized>
-        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
-            <MudPaper Elevation="3" Class="pa-6 mb-6">
-                <MudText Typo="Typo.h4" Class="mb-4" Color="Color.Primary">Publier un mod</MudText>
-                <MudText Typo="Typo.body1" Class="mb-6">Partagez vos créations avec la communauté ModHub</MudText>
-                
+        <MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
+            <MudText Typo="Typo.h2" Align="Align.Center" Class="gradient-title mb-8">Publier un nouveau mod</MudText>
+            
+            <MudPaper Elevation="3" Class="upload-section px-4 py-6 mb-8">
                 <MudGrid>
-                    <MudItem xs="12" md="8">
-                        <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+                    <MudItem xs="12" md="10" Class="mx-auto">
+                        <MudForm @ref="form" @bind-IsValid="@success">
                             <MudTextField @bind-Value="modName" Label="Nom du mod" 
                                 Required="true" RequiredError="Le nom est requis"
-                                Variant="Variant.Outlined" Class="mb-4" />
+                                Variant="Variant.Outlined" Class="mb-4" 
+                                HelperText="Un titre clair et descriptif pour votre mod"/>
                                 
-                            <MudTextField @bind-Value="description" Label="Description" 
-                                Required="true" RequiredError="La description est requise"
-                                Lines="4" Variant="Variant.Outlined" Class="mb-4" />
-                            
-                            <MudSelect @bind-Value="selectedGameId" Label="Jeu" 
-                                Required="true" RequiredError="Veuillez sélectionner un jeu"
+                            <MudSelect T="string" @bind-Value="selectedGame" Label="Jeu" 
+                                Required="true" RequiredError="Le jeu est requis"
                                 Variant="Variant.Outlined" Class="mb-4">
-                                @foreach(var game in games)
+                                @foreach (var game in games)
                                 {
                                     <MudSelectItem T="string" Value="@game.Id">@game.Name</MudSelectItem>
                                 }
                             </MudSelect>
                             
-                            <MudTextField @bind-Value="version" Label="Version" 
+                            <MudTextField @bind-Value="modDescription" Label="Description" 
+                                Required="true" RequiredError="La description est requise"
+                                Lines="5" Variant="Variant.Outlined" Class="mb-4" 
+                                HelperText="Décrivez votre mod en détail (fonctionnalités, installation, etc.)"/>
+                                
+                            <MudTextField @bind-Value="modVersion" Label="Version" 
                                 Required="true" RequiredError="La version est requise"
-                                Variant="Variant.Outlined" Class="mb-4" />
+                                Variant="Variant.Outlined" Class="mb-4" 
+                                HelperText="Format recommandé: X.Y.Z (ex: 1.0.0)"/>
                                 
                             <MudTextField @bind-Value="tagsInput" Label="Tags (séparés par des virgules)" 
-                                Variant="Variant.Outlined" Class="mb-4" />
+                                Variant="Variant.Outlined" Class="mb-4"
+                                HelperText="Facilitez la recherche avec des tags pertinents" />
+                                
+                            <div class="d-flex flex-column gap-4 mb-6">
+                                <MudFileUpload T="IBrowserFile" FilesChanged="OnModFileChanged" Accept=".zip,.rar" Class="upload-button">
+                                    <ActivatorContent>
+                                        <MudButton HtmlTag="label"
+                                            Variant="Variant.Filled"
+                                            Color="Color.Primary"
+                                            StartIcon="@Icons.Material.Filled.CloudUpload"
+                                            Class="upload-button"
+                                            for="@context">
+                                            Fichier du mod (ZIP/RAR)
+                                        </MudButton>
+                                    </ActivatorContent>
+                                    <SelectedTemplate Context="selectedModFile">
+                                        @if (selectedModFile != null)
+                                        {
+                                            <MudChip T="string" Color="Color.Info" Text="@selectedModFile.Name" />
+                                        }
+                                    </SelectedTemplate>
+                                </MudFileUpload>
+                                
+                                @if (!string.IsNullOrEmpty(modFileName))
+                                {
+                                    <MudText Typo="Typo.body2" Class="ml-2">@modFileName</MudText>
+                                }
                             
-                            <MudFileUpload T="IBrowserFile" FilesChanged="OnModFileChanged" Accept=".zip,.rar">
-                                <ActivatorContent>
-                                    <MudButton HtmlTag="label"
-                                        Variant="Variant.Filled"
-                                        Color="Color.Primary"
-                                        StartIcon="@Icons.Material.Filled.CloudUpload"
-                                        for="@context">
-                                        Fichier du mod (ZIP/RAR)
-                                    </MudButton>
-                                </ActivatorContent>
-                                <SelectedTemplate Context="selectedModFile">
-                                    @if (selectedModFile != null)
-                                    {
-                                        <MudChip T="string" Color="Color.Info" Text="@selectedModFile.Name" />
-                                    }
-                                </SelectedTemplate>
-                            </MudFileUpload>
+                                <MudFileUpload T="IBrowserFile" FilesChanged="OnThumbnailFileChanged" Accept=".jpg,.jpeg,.png" Class="mt-4 upload-button">
+                                    <ActivatorContent>
+                                        <MudButton HtmlTag="label"
+                                            Variant="Variant.Filled"
+                                            Color="Color.Secondary"
+                                            StartIcon="@Icons.Material.Filled.Image"
+                                            Class="upload-button"
+                                            for="@context">
+                                            Image miniature (JPG/PNG)
+                                        </MudButton>
+                                    </ActivatorContent>
+                                    <SelectedTemplate Context="selectedThumbnailFile">
+                                        @if (selectedThumbnailFile != null)
+                                        {
+                                            <MudChip T="string" Color="Color.Success" Text="@selectedThumbnailFile.Name" />
+                                        }
+                                    </SelectedTemplate>
+                                </MudFileUpload>
+                                
+                                @if (!string.IsNullOrEmpty(thumbnailFileName))
+                                {
+                                    <MudText Typo="Typo.body2" Class="ml-2">@thumbnailFileName</MudText>
+                                }
+                            </div>
                             
-                            @if (!string.IsNullOrEmpty(modFileName))
-                            {
-                                <MudText Typo="Typo.body2" Class="mt-2">@modFileName</MudText>
-                            }
-                            
-                            <div class="mt-4"></div>
-                            
-                            <MudFileUpload T="IBrowserFile" FilesChanged="OnThumbnailFileChanged" Accept=".jpg,.jpeg,.png">
-                                <ActivatorContent>
-                                    <MudButton HtmlTag="label"
-                                        Variant="Variant.Filled"
-                                        Color="Color.Secondary"
-                                        StartIcon="@Icons.Material.Filled.Image"
-                                        for="@context">
-                                        Image miniature
-                                    </MudButton>
-                                </ActivatorContent>
-                                <SelectedTemplate Context="selectedThumbnailFile">
-                                    @if (selectedThumbnailFile != null)
-                                    {
-                                        <MudChip T="string" Color="Color.Success" Text="@selectedThumbnailFile.Name" />
-                                    }
-                                </SelectedTemplate>
-                            </MudFileUpload>
-                            
-                            @if (!string.IsNullOrEmpty(thumbnailFileName))
-                            {
-                                <MudText Typo="Typo.body2" Class="mt-2">@thumbnailFileName</MudText>
-                            }
-                            
-                            <div class="d-flex justify-space-between mt-6">
+                            <div class="d-flex justify-space-between mt-6 gap-3">
                                 <MudButton Variant="Variant.Outlined"
                                     Color="Color.Error"
                                     OnClick="@(() => NavigationManager.NavigateTo("/creator/mods"))">
@@ -106,185 +152,172 @@
                                 </MudButton>
                                 <MudButton Variant="Variant.Filled"
                                     Color="Color.Primary"
+                                    OnClick="@(UploadMod)"
                                     Disabled="@(!success || isUploading)"
-                                    OnClick="UploadMod">
+                                    StartIcon="@Icons.Material.Filled.Publish"
+                                    Class="upload-button">
                                     @if (isUploading)
                                     {
-                                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                                        <MudText Class="ms-2">Publication en cours...</MudText>
+                                        <span>Publication en cours...</span>
+                                        <MudProgressCircular Class="ms-2" Size="Size.Small" Indeterminate="true" />
                                     }
                                     else
                                     {
-                                        <MudText>Publier le mod</MudText>
+                                        <span>Publier le mod</span>
                                     }
                                 </MudButton>
                             </div>
                         </MudForm>
-                    </MudItem>
-                    
-                    <MudItem xs="12" md="4">
-                        <MudPaper Elevation="0" Class="pa-4 mud-background-gray">
-                            <MudText Typo="Typo.h6" Class="mb-2">Conseils pour la publication</MudText>
-                            <MudText Typo="Typo.body2">
-                                <ul>
-                                    <li class="mb-2">Vérifiez que votre mod est compatible avec la version du jeu indiquée</li>
-                                    <li class="mb-2">Incluez des instructions d'installation claires dans votre description</li>
-                                    <li class="mb-2">Ajoutez des tags pertinents pour améliorer la visibilité</li>
-                                    <li class="mb-2">Utilisez une image miniature représentative (format recommandé: 16:9)</li>
-                                    <li class="mb-2">Assurez-vous que votre mod ne contient pas de contenu inapproprié</li>
-                                </ul>
-                            </MudText>
-                        </MudPaper>
                     </MudItem>
                 </MudGrid>
             </MudPaper>
         </MudContainer>
     </Authorized>
     <NotAuthorized>
-        <MudAlert Severity="Severity.Error" Class="ma-4">Vous devez être connecté avec un compte créateur pour accéder à cette page.</MudAlert>
+        <MudContainer MaxWidth="MaxWidth.Small" Class="py-8">
+            <MudPaper Elevation="3" Class="upload-section px-4 py-6">
+                <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">Accès restreint</MudText>
+                <MudText Align="Align.Center">Vous devez être authentifié et avoir le rôle "Creator" pour accéder à cette page.</MudText>
+                <div class="d-flex justify-center mt-4">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                        OnClick="@(() => NavigationManager.NavigateTo("/login"))">
+                        Se connecter
+                    </MudButton>
+                </div>
+            </MudPaper>
+        </MudContainer>
     </NotAuthorized>
 </AuthorizeView>
 
 @code {
     private MudForm form;
     private bool success;
-    private string[] errors = { };
     private bool isUploading = false;
     
-    // Formulaire
     private string modName = "";
-    private string description = "";
-    private string selectedGameId = "";
-    private string version = "1.0";
+    private string selectedGame = "";
+    private string modDescription = "";
+    private string modVersion = "";
     private string tagsInput = "";
     
-    // Fichiers
     private IBrowserFile modFile;
-    private string modFileName;
     private IBrowserFile thumbnailFile;
-    private string thumbnailFileName;
+    private string modFileName = "";
+    private string thumbnailFileName = "";
     
-    // Jeux disponibles (à charger depuis l'API)
     private List<GameDto> games = new List<GameDto>();
     
     protected override async Task OnInitializedAsync()
     {
-        // Chargement de la liste des jeux
-        try 
+        await LoadGames();
+    }
+    
+    private async Task LoadGames()
+    {
+        try
         {
-            var response = await Http.GetFromJsonAsync<ApiResponse<List<GameDto>>>("api/v1/games");
-            if (response != null && response.Success)
-            {
-                games = response.Data;
-            }
-            else
-            {
-                // Jeux par défaut si l'API échoue
-                games = new List<GameDto>
-                {
-                    new GameDto { Id = "1", Name = "Minecraft" },
-                    new GameDto { Id = "2", Name = "Skyrim" },
-                    new GameDto { Id = "3", Name = "Stardew Valley" }
-                };
-            }
-        }
-        catch
-        {
-            // Jeux par défaut si l'API échoue
+            // Simulation - à remplacer par un appel API
             games = new List<GameDto>
             {
-                new GameDto { Id = "1", Name = "Minecraft" },
-                new GameDto { Id = "2", Name = "Skyrim" },
-                new GameDto { Id = "3", Name = "Stardew Valley" }
+                new GameDto { Id = "1", Name = "Skyrim" },
+                new GameDto { Id = "2", Name = "Fallout 4" },
+                new GameDto { Id = "3", Name = "Cyberpunk 2077" },
+                new GameDto { Id = "4", Name = "Minecraft" },
+                new GameDto { Id = "5", Name = "The Witcher 3" }
             };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des jeux: {ex.Message}", Severity.Error);
         }
     }
     
     private void OnModFileChanged(IBrowserFile file)
     {
         modFile = file;
-        modFileName = file.Name;
+        modFileName = file?.Name ?? "";
+        StateHasChanged();
     }
     
     private void OnThumbnailFileChanged(IBrowserFile file)
     {
         thumbnailFile = file;
-        thumbnailFileName = file.Name;
+        thumbnailFileName = file?.Name ?? "";
+        StateHasChanged();
     }
     
     private async Task UploadMod()
     {
-        if (!success || modFile == null)
+        if (!form.IsValid)
         {
-            Snackbar.Add("Veuillez remplir tous les champs et sélectionner un fichier de mod", Severity.Warning);
+            Snackbar.Add("Veuillez remplir tous les champs requis", Severity.Warning);
             return;
         }
         
-        isUploading = true;
+        if (modFile == null)
+        {
+            Snackbar.Add("Veuillez sélectionner un fichier de mod", Severity.Warning);
+            return;
+        }
+        
+        if (thumbnailFile == null)
+        {
+            Snackbar.Add("Veuillez sélectionner une image miniature", Severity.Warning);
+            return;
+        }
         
         try
         {
-            // Obtenir le token d'authentification
-            var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
+            isUploading = true;
             
-            // Préparation du contenu multipart
-            using var content = new MultipartFormDataContent();
+            // Préparation des données
+            var content = new MultipartFormDataContent();
             
-            // Ajouter les données du formulaire
-            content.Add(new StringContent(modName), "Name");
-            content.Add(new StringContent(description), "Description");
-            content.Add(new StringContent(selectedGameId), "GameId");
-            content.Add(new StringContent(version), "Version");
+            // Ajout des métadonnées
+            content.Add(new StringContent(modName), "name");
+            content.Add(new StringContent(selectedGame), "gameId");
+            content.Add(new StringContent(modDescription), "description");
+            content.Add(new StringContent(modVersion), "version");
+            content.Add(new StringContent(tagsInput), "tags");
             
-            // Ajouter les tags
-            if (!string.IsNullOrWhiteSpace(tagsInput))
-            {
-                var tags = tagsInput.Split(',').Select(t => t.Trim()).ToArray();
-                foreach (var tag in tags)
-                {
-                    content.Add(new StringContent(tag), "Tags");
-                }
-            }
-            
-            // Ajouter le fichier du mod
-            var modStream = modFile.OpenReadStream(maxAllowedSize: 104857600); // 100 MB max
+            // Ajout des fichiers
+            var modStream = modFile.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024); // 50 MB max
             var modContent = new StreamContent(modStream);
-            modContent.Headers.ContentType = new MediaTypeHeaderValue(modFile.ContentType);
-            content.Add(modContent, "ModFile", modFile.Name);
+            modContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            content.Add(modContent, "modFile", modFile.Name);
             
-            // Ajouter l'image miniature si disponible
-            if (thumbnailFile != null)
-            {
-                var thumbnailStream = thumbnailFile.OpenReadStream(maxAllowedSize: 5242880); // 5 MB max
-                var thumbnailContent = new StreamContent(thumbnailStream);
-                thumbnailContent.Headers.ContentType = new MediaTypeHeaderValue(thumbnailFile.ContentType);
-                content.Add(thumbnailContent, "ThumbnailFile", thumbnailFile.Name);
-            }
-            
-            // Ajouter le token d'authentification à la requête
-            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var thumbnailStream = thumbnailFile.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024); // 5 MB max
+            var thumbnailContent = new StreamContent(thumbnailStream);
+            thumbnailContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+            content.Add(thumbnailContent, "thumbnailFile", thumbnailFile.Name);
             
             // Envoi de la requête
             var response = await Http.PostAsync("api/v1/mods/upload", content);
             
             if (response.IsSuccessStatusCode)
             {
-                Snackbar.Add("Mod publié avec succès !", Severity.Success);
+                Snackbar.Add("Mod publié avec succès!", Severity.Success);
                 NavigationManager.NavigateTo("/creator/mods");
             }
             else
             {
-                var errorResponse = await response.Content.ReadAsStringAsync();
-                Snackbar.Add($"Erreur lors de la publication : {errorResponse}", Severity.Error);
+                var error = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Échec de la publication: {error}", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Une erreur est survenue : {ex.Message}", Severity.Error);
+            Snackbar.Add($"Erreur lors de la publication: {ex.Message}", Severity.Error);
         }
         finally
         {
-            isUploading = true;
+            isUploading = false;
         }
+    }
+    
+    public class GameDto
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
     }
 }
