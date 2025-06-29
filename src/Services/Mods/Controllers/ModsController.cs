@@ -376,12 +376,64 @@ namespace ModsService.Controllers
                     Data = modDtos
                 });
             }
-            catch (Exception ex)
+            catch (MongoDB.Driver.MongoAuthenticationException maEx)
             {
-                _logger.LogError(ex, "Erreur lors de la récupération des mods du créateur");
+                // Erreur d'authentification MongoDB (sous-classe de MongoConnectionException, doit être avant)
+                _logger.LogError(maEx, "ERREUR D'AUTHENTIFICATION MONGODB (creator/mods): {Message}", maEx.Message);
+                
                 return StatusCode(500, new { 
                     Success = false, 
-                    Message = "Erreur lors de la récupération des mods du créateur", 
+                    Message = "Erreur d'authentification à la base de données", 
+                    Error = "DB_AUTH",
+                    Data = Array.Empty<object>() 
+                });
+            }
+            catch (MongoDB.Driver.MongoConnectionException mcEx)
+            {
+                // Erreur spécifique de connexion MongoDB
+                string serverInfo = "<unknown>";
+                if (mcEx.ConnectionId?.ServerId != null)
+                {
+                    serverInfo = mcEx.ConnectionId.ServerId.ToString();
+                }
+                
+                _logger.LogError(mcEx, "ERREUR DE CONNEXION MONGODB (creator/mods): {Message}, ServerInfo: {ServerInfo}", 
+                    mcEx.Message, serverInfo);
+                
+                // Log des détails de configuration
+                _logger.LogWarning("Détails config: Tentative de connexion à la base '{DatabaseName}', collection '{CollectionName}'",
+                    _modRepository.GetType().GetProperty("DatabaseName")?.GetValue(_modRepository, null) ?? "<unknown>",
+                    _modRepository.GetType().GetProperty("CollectionName")?.GetValue(_modRepository, null) ?? "<unknown>");
+                    
+                return StatusCode(500, new { 
+                    Success = false, 
+                    Message = $"Erreur de connexion à la base de données: {mcEx.Message}", 
+                    Error = "DB_CONNECTION",
+                    Data = Array.Empty<object>() 
+                });
+            }
+            catch (NullReferenceException nrEx)
+            {
+                _logger.LogError(nrEx, "ERREUR NULL REFERENCE: {Message}, StackTrace: {StackTrace}", 
+                    nrEx.Message, nrEx.StackTrace);
+                    
+                return StatusCode(500, new { 
+                    Success = false, 
+                    Message = "Erreur technique: données nulles ou manquantes", 
+                    Error = "NULL_DATA",
+                    Data = Array.Empty<object>() 
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ERREUR GÉNÉRALE (creator/mods): {Type} - {Message}", 
+                    ex.GetType().Name, ex.Message);
+                _logger.LogDebug("Stack trace: {StackTrace}", ex.StackTrace);
+                
+                return StatusCode(500, new { 
+                    Success = false, 
+                    Message = $"Erreur lors de la récupération des mods du créateur: {ex.Message}", 
+                    Error = "GENERAL",
                     Data = Array.Empty<object>() 
                 });
             }
