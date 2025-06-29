@@ -318,16 +318,23 @@ namespace ModsService.Controllers
         {
             try
             {
-                // Récupérer l'ID du créateur depuis le token JWT (claim 'sub' pour subject)
-                var creatorIdClaim = User.FindFirst("sub")?.Value;
+                // Récupérer l'ID du créateur depuis le token JWT en essayant différents claims possibles
+                // Récupérer tous les claims disponibles pour aider au diagnostic
+                var availableClaims = User.Claims.Select(c => $"{c.Type}={c.Value}").ToList();
+                string claimsString = string.Join(", ", availableClaims);
+                _logger.LogInformation("Claims disponibles dans le token JWT: {Claims}", claimsString);
+                
+                // Essayer différents noms de claims couramment utilisés pour l'ID utilisateur
+                var creatorIdClaim = User.FindFirst("sub")?.Value ?? 
+                                   User.FindFirst("nameid")?.Value ?? 
+                                   User.FindFirst("userId")?.Value ?? 
+                                   User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value ?? 
+                                   User.FindFirst("id")?.Value;
                 
                 if (string.IsNullOrEmpty(creatorIdClaim))
                 {
-                    // Log des claims disponibles pour aider au diagnostic
-                    _logger.LogWarning("ID créateur manquant dans le token JWT. Claims disponibles: {Claims}", 
-                        string.Join(", ", User.Claims.Select(c => $"{c.Type}={c.Value}")));
-                    
-                    return BadRequest(new { Success = false, Message = "ID créateur non trouvé" });
+                    _logger.LogWarning("ID créateur manquant dans le token JWT. Claims disponibles: {Claims}", claimsString);
+                    return BadRequest(new { Success = false, Message = "ID créateur non trouvé dans le token. Claims: " + claimsString });
                 }
                 
                 _logger.LogInformation("ID créateur trouvé dans le token JWT (claim 'sub'): {CreatorId}", creatorIdClaim);
