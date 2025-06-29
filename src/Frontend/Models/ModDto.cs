@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Frontend.Models
 {
@@ -21,14 +22,34 @@ namespace Frontend.Models
         public string DownloadUrl { get; set; } = string.Empty;
         public string DocumentationUrl { get; set; } = string.Empty;
         public long DownloadCount { get; set; }
+        
+        // Compatible avec Rating du backend
+        [JsonPropertyName("rating")]
         public double AverageRating { get; set; }
+        
+        // Compatible avec ReviewCount du backend
+        [JsonPropertyName("reviewCount")]
         public int RatingCount { get; set; }
+        
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public List<string> Tags { get; set; } = new List<string>();
         public List<string> Categories { get; set; } = new List<string>();
+        
+        // Compatible avec IsFeatured du frontend et isPremium du backend
+        [JsonPropertyName("isPremium")]
         public bool IsFeatured { get; set; }
+        
+        // Compatible avec isApproved du backend
+        [JsonPropertyName("isApproved")]
         public bool IsApproved { get; set; }
+        
+        // Propriété supplémentaire pour la rétrocompatibilité
+        [JsonPropertyName("versions")]
         public List<ModVersionDto> Versions { get; set; } = new List<ModVersionDto>();
+        
+        // Propriété supplémentaire présente dans la réponse backend
+        [JsonPropertyName("isNew")]
+        public bool IsNew { get; set; }
     }
 }
