@@ -1,7 +1,12 @@
 using ModsService.Models;
-using ModsService.Repositories;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using ModsService.Models;
+using ModsService.Repositories;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);

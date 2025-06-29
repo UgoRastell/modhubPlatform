@@ -318,16 +318,19 @@ namespace ModsService.Controllers
         {
             try
             {
-                // Récupérer l'ID du créateur depuis le token JWT
-                var creatorIdClaim = User.FindFirst("UserId")?.Value;
+                // Récupérer l'ID du créateur depuis le token JWT (claim 'sub' pour subject)
+                var creatorIdClaim = User.FindFirst("sub")?.Value;
                 
                 if (string.IsNullOrEmpty(creatorIdClaim))
                 {
-                    _logger.LogWarning("ID créateur manquant dans le token JWT");
+                    // Log des claims disponibles pour aider au diagnostic
+                    _logger.LogWarning("ID créateur manquant dans le token JWT. Claims disponibles: {Claims}", 
+                        string.Join(", ", User.Claims.Select(c => $"{c.Type}={c.Value}")));
+                    
                     return BadRequest(new { Success = false, Message = "ID créateur non trouvé" });
                 }
-
-                _logger.LogInformation("Récupération des mods du créateur {CreatorId}", creatorIdClaim);
+                
+                _logger.LogInformation("ID créateur trouvé dans le token JWT (claim 'sub'): {CreatorId}", creatorIdClaim);
                 
                 // Récupérer les mods du créateur depuis le repository
                 var creatorMods = await _modRepository.GetByCreatorIdAsync(creatorIdClaim);
