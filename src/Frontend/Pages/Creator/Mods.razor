@@ -139,7 +139,7 @@
                                 <MudCard Class="mod-card">
                                     @if (mod.IsPremium)
                                     {
-                                        <MudChip Color="Color.Warning" Size="Size.Small" Class="premium-badge">Premium</MudChip>
+                                        <MudChip T="string" Color="Color.Warning" Size="Size.Small" Class="premium-badge">Premium</MudChip>
                                     }
                                     <MudCardMedia Image="@(string.IsNullOrEmpty(mod.ThumbnailUrl) ? "/images/default-mod-thumbnail.jpg" : mod.ThumbnailUrl)" 
                                                   Class="mod-card-image" />
@@ -154,16 +154,16 @@
                                                 <span class="mud-text-primary">v@(mod.Version)</span> • 
                                                 <span>@mod.DownloadCount téléch.</span>
                                             </MudText>
-                                            <MudRating ReadOnly="true" SelectedValue="@(mod.Rating)" />
+                                            <MudRating ReadOnly="true" SelectedValue="@((int)Math.Round(mod.Rating))" />
                                         </div>
                                         <div class="mt-2">
                                             @foreach (var tag in mod.Tags.Take(3))
                                             {
-                                                <MudChip Size="Size.Small" Color="Color.Default">@tag</MudChip>
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Default">@tag</MudChip>
                                             }
                                             @if (mod.Tags.Count > 3)
                                             {
-                                                <MudChip Size="Size.Small" Color="Color.Default">+@(mod.Tags.Count - 3)</MudChip>
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Default">+@(mod.Tags.Count - 3)</MudChip>
                                             }
                                         </div>
                                     </MudCardContent>
