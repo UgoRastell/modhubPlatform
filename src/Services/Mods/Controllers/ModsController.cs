@@ -295,6 +295,81 @@ namespace ModsService.Controllers
             }
         }
         
+        [HttpGet("creator")]
+        [Authorize(Roles = "Creator")]
+        public async Task<IActionResult> GetModsByCreator()
+        {
+            try
+            {
+                // Récupérer l'ID du créateur depuis le token JWT
+                var creatorIdClaim = User.FindFirst("UserId")?.Value;
+                
+                if (string.IsNullOrEmpty(creatorIdClaim))
+                {
+                    _logger.LogWarning("ID créateur manquant dans le token JWT");
+                    return BadRequest(new { Success = false, Message = "ID créateur non trouvé" });
+                }
+
+                _logger.LogInformation("Récupération des mods du créateur {CreatorId}", creatorIdClaim);
+                
+                // Récupérer les mods du créateur depuis le repository
+                var creatorMods = await _modRepository.GetByCreatorIdAsync(creatorIdClaim);
+                
+                if (creatorMods == null)
+                {
+                    creatorMods = new List<Mod>();
+                }
+                
+                _logger.LogInformation("{Count} mods trouvés pour le créateur {CreatorId}", creatorMods.Count, creatorIdClaim);
+                
+                // Convertir les mods en format compatible avec le frontend ModDto
+                var modDtos = creatorMods.Select(mod => new
+                {
+                    Id = mod.Id,
+                    Name = mod.Name,
+                    Slug = mod.Name.ToLowerInvariant().Replace(" ", "-"),  // Générer un slug basique
+                    Description = mod.Description,
+                    ShortDescription = mod.Description.Length > 100 ? mod.Description.Substring(0, 97) + "..." : mod.Description,
+                    CreatorId = mod.CreatorId,
+                    CreatorName = mod.Author,
+                    GameId = mod.GameId,
+                    GameName = mod.GameName,
+                    CategoryId = string.Empty,
+                    ThumbnailUrl = mod.ThumbnailUrl,
+                    ScreenshotUrls = new List<string>(),
+                    Version = mod.Version ?? "1.0",
+                    DownloadUrl = string.Empty,
+                    DocumentationUrl = string.Empty,
+                    DownloadCount = mod.DownloadCount,
+                    Rating = mod.Rating,
+                    ReviewCount = mod.ReviewCount,
+                    CreatedAt = mod.CreatedAt,
+                    UpdatedAt = mod.UpdatedAt,
+                    Tags = mod.Tags ?? new List<string>(),
+                    Categories = new List<string>(),
+                    IsFeatured = false,
+                    IsApproved = true,
+                    IsPremium = mod.IsPremium,
+                    Versions = new List<object>()
+                }).ToList();
+
+                return Ok(new { 
+                    Success = true, 
+                    Message = "Mods récupérés avec succès", 
+                    Data = modDtos
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de la récupération des mods du créateur");
+                return StatusCode(500, new { 
+                    Success = false, 
+                    Message = "Erreur lors de la récupération des mods du créateur", 
+                    Data = Array.Empty<object>() 
+                });
+            }
+        }
+
         // Méthode utilitaire pour s'assurer qu'un répertoire existe
         private void EnsureDirectoryExists(string path)
         {
