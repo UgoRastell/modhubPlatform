@@ -4,8 +4,12 @@ using ModsService.Models;
 using ModsService.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -136,11 +140,13 @@ namespace ModsService.Controllers
         _logger.LogInformation("Claims disponibles dans le token JWT pour upload: {Claims}", claimsString);
         
         // Essayer différents noms de claims couramment utilisés pour l'ID utilisateur
-        var userId = User.FindFirst("sub")?.Value ?? 
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? 
                    User.FindFirst("nameid")?.Value ?? 
                    User.FindFirst("userId")?.Value ?? 
                    User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value ?? 
-                   User.FindFirst("id")?.Value;
+                   User.FindFirst("id")?.Value ?? 
+                   User.FindFirst("sub")?.Value ?? 
+                   string.Empty;
         
         if (string.IsNullOrEmpty(userId))
         {

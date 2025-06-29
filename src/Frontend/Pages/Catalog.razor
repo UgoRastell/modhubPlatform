@@ -1,9 +1,11 @@
 @page "/catalog"
 @using Frontend.Models
 @using Frontend.Services
+@using System.Threading
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject IModService ModService
+@inject IDialogService DialogService
 
 <PageTitle>Catalogue de mods - ModHub</PageTitle>
 
@@ -156,8 +158,18 @@
                         @foreach (var mod in mods)
                         {
                             <MudItem xs="12" sm="6" md="4" lg="4" xl="3">
-                                <MudCard Class="mod-card rounded-xl animate-on-scroll" Elevation="3">
-                                    <MudCardMedia Image="@(mod.ThumbnailUrl ?? "images/mod-placeholder.jpg")" Height="200" Style="background-size: cover; background-position: center;" />
+                                <MudCard Class="mod-card rounded-xl animate-on-scroll" Elevation="3" @onclick="() => ViewModDetails(mod.Id)">
+                                    @* Optimisation de l'affichage des miniatures avec gestion d'erreurs *@
+                                    <div class="mod-card-media" style="height: 200px; position: relative; overflow: hidden;">
+                                        <MudImage Src="@GetSafeThumbnailUrl(mod.ThumbnailUrl)" 
+                                                 Class="rounded-t-xl" 
+                                                 Style="object-fit: cover; width: 100%; height: 100%;" 
+                                                 ObjectFit="ObjectFit.Cover"
+                                                 Elevation="0"
+                                                 ObjectPosition="ObjectPosition.Center"
+                                                 ErrorContent="@GetPlaceholderImage()" />
+                                    </div>
+                                    
                                     <div class="position-relative">
                                         @if (mod.IsNew)
                                         {
@@ -165,7 +177,7 @@
                                                 Nouveau
                                             </MudChip>
                                         }
-                                        @if (mod.IsPremium)
+                                        @if (mod.IsPremium) @* Mod premium *@
                                         {
                                             <MudChip T="string" Color="Color.Warning" Size="Size.Small" Class="position-absolute premium-badge" Style="top: -16px; right: 12px;">
                                                 Premium
@@ -174,15 +186,24 @@
                                     </div>
                                     <MudCardContent>
                                         <div class="d-flex justify-space-between align-center">
-                                            <MudText Typo="Typo.h6" Class="mt-n2 text-truncate gradient-text-name">@mod.Name</MudText>
-                                            <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="@(mod.IsFavorite ? Color.Error : Color.Default)" Size="Size.Small" />
+                                            <MudText Typo="Typo.h6" Class="mod-title">@mod.Name</MudText>
+                                            <MudRating ReadOnly="true" Value="@GetSafeRating(mod.Rating)" MaxValue="5" Size="Size.Small" />    
                                         </div>
-                                        <MudText Typo="Typo.body2" Class="mb-2 text-truncate mud-text-secondary">par @mod.Author</MudText>
-                                        <div class="d-flex align-center mb-2">
-                                            <MudRating ReadOnly="true" SelectedValue="(int)Math.Round(mod.Rating)" Size="Size.Small" />
-                                            <MudText Typo="Typo.body2" Class="ml-2 mud-text-secondary">@mod.Rating.ToString("0.0") (@mod.ReviewCount avis)</MudText>
+                                        <div class="d-flex align-center mud-text-secondary my-1">
+                                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-1" />
+                                            <MudText Typo="Typo.body2">@mod.Author</MudText>
                                         </div>
-                                        <MudText Typo="Typo.body2" Class="mod-description">@mod.Description</MudText>
+                                        <MudText Typo="Typo.body2" Class="mod-description text-truncate-3">
+                                            @(string.IsNullOrEmpty(mod.Description) ? "Aucune description disponible" : mod.Description)
+                                        </MudText>
+                                        <div class="d-flex align-center mt-2">
+                                            <MudIcon Icon="@Icons.Material.Filled.VideogameAsset" Size="Size.Small" Class="mr-1" />
+                                            <MudText Typo="Typo.caption">@mod.GameName</MudText>
+                                        </div>
+                                        <div class="d-flex align-center mt-1">
+                                            <MudIcon Icon="@Icons.Material.Filled.Download" Size="Size.Small" Class="mr-1" />
+                                            <MudText Typo="Typo.caption">@FormatDownloadCount(mod.DownloadCount) téléchargements</MudText>
+                                        </div>
                                     </MudCardContent>
                                     <MudCardActions Class="d-flex justify-space-between">
                                         <MudText Typo="Typo.caption" Class="mud-text-secondary"><MudIcon Icon="@Icons.Material.Filled.CloudDownload" Size="Size.Small" /> @mod.DownloadCount.ToString("N0")</MudText>
@@ -205,7 +226,7 @@
                                 <div class="glow-overlay-subtle"></div>
                                 <div class="d-flex" Style="width:100%">
                                     <!-- Thumbnail / Image -->
-                                    <MudAvatar Square="true" Style="width:120px; height:80px; margin-right:16px;" Image="@(mod.ThumbnailUrl ?? "images/mod-placeholder.jpg")" />
+                                    <MudAvatar Square="true" Style="width:120px; height:80px; margin-right:16px;" Image="@GetSafeThumbnailUrl(mod.ThumbnailUrl)" ErrorContent="@GetPlaceholderImage()" />
 
                                     <!-- Content -->
                                     <div class="d-flex flex-column" Style="flex-grow:1;">
@@ -236,7 +257,7 @@
                                         <div class="d-flex mt-2 justify-space-between">
                                             <MudText Typo="Typo.body2" Class="mr-2 text-truncate" Style="max-width:70%;">@mod.Description</MudText>
                                             <div class="d-flex align-center">
-                                                <MudRating ReadOnly="true" SelectedValue="(int)Math.Round(mod.Rating)" Size="Size.Small" />
+                                                <MudRating ReadOnly="true" Value="@GetSafeRating(mod.Rating)" MaxValue="5" Size="Size.Small" />
                                                 <MudText Typo="Typo.caption" Class="ml-2 mr-4 mud-text-secondary">@mod.Rating.ToString("0.0")</MudText>
                                                 <MudIcon Icon="@Icons.Material.Filled.CloudDownload" Size="Size.Small" Class="mr-1" />
                                                 <MudText Typo="Typo.caption" Class="mud-text-secondary">@mod.DownloadCount.ToString("N0")</MudText>
@@ -519,7 +540,57 @@
     private List<ModItem> mods = new();
     private ViewMode viewMode = ViewMode.Grid;
     
-    // Options pour les sélecteurs
+    // Méthode pour garantir un URL de miniature valide
+    private string GetSafeThumbnailUrl(string url)
+    {
+        if (string.IsNullOrEmpty(url))
+            return "images/mod-placeholder.jpg";
+            
+        // Si l'URL est déjà complète (http:// ou https://) on la retourne telle quelle
+        if (url.StartsWith("http://") || url.StartsWith("https://"))
+            return url;
+            
+        // Si l'URL est relative et commence déjà par '/', on la retourne telle quelle
+        if (url.StartsWith("/"))
+            return url;
+            
+        // Dans tous les autres cas, on s'assure que le chemin commence par '/'
+        return $"/{url}";
+    }
+    
+    // Méthode pour gérer les erreurs de chargement d'images
+    private RenderFragment GetPlaceholderImage() => builder =>
+    {
+        builder.OpenElement(0, "img");
+        builder.AddAttribute(1, "src", "images/mod-placeholder.jpg");
+        builder.AddAttribute(2, "style", "object-fit: cover; width: 100%; height: 100%;");
+        builder.AddAttribute(3, "class", "rounded-t-xl");
+        builder.CloseElement();
+    };
+    
+    // Méthode pour assurer que la note est valide
+    private double GetSafeRating(double rating)
+    {
+        return rating > 0 ? Math.Min(rating, 5.0) : 0;
+    }
+    
+    // Méthode pour formater les nombres de téléchargements
+    private string FormatDownloadCount(long count)
+    {
+        if (count >= 1_000_000)
+            return $"{count / 1_000_000.0:0.#}M";
+        if (count >= 1_000)
+            return $"{count / 1_000.0:0.#}K";
+        return count.ToString("N0");
+    }
+    
+    // Méthode pour naviguer vers les détails du mod
+    private void ViewModDetails(string modId)
+    {
+        if (!string.IsNullOrEmpty(modId))
+            NavigationManager.NavigateTo($"/mods/{modId}");
+    }
+    
     private List<GameOption> games = new()
     {
         new GameOption { Id = "game1", Name = "Minecraft" },
