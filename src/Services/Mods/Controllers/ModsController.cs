@@ -122,17 +122,33 @@ namespace ModsService.Controllers
         /// Upload un nouveau mod complet (fichier, métadonnées, image)
         /// </summary>
         [HttpPost("upload")]
-        [AllowAnonymous] // Temporairement autorisé sans authentification pour résoudre l'erreur 500
+        [Authorize(Roles = "Creator")] // Protection de l'endpoint par authentification JWT
         public async Task<IActionResult> UploadMod([FromForm] ModUploadDto uploadDto)
         {
             try
             {
                 _logger.LogInformation("Tentative d'upload d'un mod");
                 
-                // Bypass temporaire d'authentification pour tests
-                // TODO: Réactiver l'authentification après déploiement de la configuration complète
-                string userId = "test-creator-id";
-                _logger.LogWarning("Authentification bypassée pour les tests, userId fixé = {UserId}", userId);
+                // Récupérer l'ID du créateur depuis le token JWT en essayant différents claims possibles
+        // Récupérer tous les claims disponibles pour aider au diagnostic
+        var availableClaims = User.Claims.Select(c => $"{c.Type}={c.Value}").ToList();
+        string claimsString = string.Join(", ", availableClaims);
+        _logger.LogInformation("Claims disponibles dans le token JWT pour upload: {Claims}", claimsString);
+        
+        // Essayer différents noms de claims couramment utilisés pour l'ID utilisateur
+        var userId = User.FindFirst("sub")?.Value ?? 
+                   User.FindFirst("nameid")?.Value ?? 
+                   User.FindFirst("userId")?.Value ?? 
+                   User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value ?? 
+                   User.FindFirst("id")?.Value;
+        
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogWarning("ID créateur manquant dans le token JWT pour upload. Claims disponibles: {Claims}", claimsString);
+            return BadRequest(new { Success = false, Message = "ID créateur non trouvé dans le token pour upload. Claims: " + claimsString });
+        }
+        
+        _logger.LogInformation("ID créateur trouvé dans le token JWT pour upload: {CreatorId}", userId);
                 
                 // Vérification de base des données
                 if (uploadDto.ModFile == null || uploadDto.ModFile.Length == 0)
@@ -276,9 +292,10 @@ namespace ModsService.Controllers
                     // Construire un objet de réponse similaire à mod pour la cohérence d'API
                     var modMetadata = CreateModMetadataResponse(mod);
                     
-                    return Ok(new {
-                        Success = true,
-                        Message = $"Mod uploadé avec succès (fichiers uniquement - erreur de connexion MongoDB: {mcEx.Message})",
+                    return StatusCode(500, new {
+                        Success = false,
+                        Message = $"Erreur de connexion MongoDB lors de l'upload: {mcEx.Message}",
+                        Error = "DB_CONNECTION",
                         Data = modMetadata
                     });
                 }
@@ -294,9 +311,10 @@ namespace ModsService.Controllers
                     // Construire un objet de réponse similaire à mod pour la cohérence d'API
                     var modMetadata = CreateModMetadataResponse(mod);
                     
-                    return Ok(new {
-                        Success = true,
-                        Message = $"Mod uploadé avec succès (fichiers uniquement - erreur base de données: {dbEx.Message})",
+                    return StatusCode(500, new {
+                        Success = false,
+                        Message = $"Erreur lors de la sauvegarde en base de données: {dbEx.Message}",
+                        Error = "DB_ERROR",
                         Data = modMetadata
                     });
                 }
