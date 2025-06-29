@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
 
 namespace ModsService.Controllers
 {
@@ -155,7 +156,7 @@ namespace ModsService.Controllers
                 // Créer un nouveau mod
                 var mod = new Mod
                 {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = ObjectId.GenerateNewId().ToString(),
                     Name = uploadDto.Name,
                     Description = uploadDto.Description,
                     GameId = uploadDto.GameId,
