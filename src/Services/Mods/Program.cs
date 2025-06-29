@@ -1,5 +1,8 @@
 using ModsService.Models;
 using ModsService.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,12 +33,36 @@ builder.Services.AddSingleton<IModRepository, ModRepository>();
 // Configure API Explorer
 builder.Services.AddEndpointsApiExplorer();
 
-// Configure authorization to make [AllowAnonymous] work correctly
+// Configuration JWT pour l'authentification
+var jwtKey = builder.Configuration["JwtSettings:Key"] ?? 
+    "Super_Secret_Key_With_At_Least_32_Characters_For_Production_Use_Environment_Variable";
+var issuer = builder.Configuration["JwtSettings:Issuer"] ?? "ModsGamingPlatform";
+var audience = builder.Configuration["JwtSettings:Audience"] ?? "ModsGamingPlatformUsers";
+
+builder.Services.AddAuthentication(options => 
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options => 
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = issuer,
+        ValidAudience = audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+});
+
+// Configure authorization pour permettre [AllowAnonymous]
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = null; // Désactive la politique d'autorisation par défaut
 });
-builder.Services.AddAuthentication();
 
 var app = builder.Build();
 
