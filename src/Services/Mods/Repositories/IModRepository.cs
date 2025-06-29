@@ -11,5 +11,6 @@ namespace ModsService.Repositories
         Task<Mod> GetByIdAsync(string id);
         Task<List<Mod>> GetByCreatorIdAsync(string creatorId);
         Task<int> GetTotalCountAsync();
+        Task CreateAsync(Mod mod);
     }
 }

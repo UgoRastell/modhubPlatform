@@ -2,8 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ModsService.Models;
 using ModsService.Repositories;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace ModsService.Controllers
 {
@@ -109,6 +114,127 @@ namespace ModsService.Controllers
             {
                 _logger.LogError(ex, "Erreur lors de la récupération du mod {ModId}", id);
                 return StatusCode(500, new { Success = false, Message = "Erreur lors de la récupération du mod" });
+            }
+        }
+        
+        /// <summary>
+        /// Upload un nouveau mod complet (fichier, métadonnées, image)
+        /// </summary>
+        [HttpPost("upload")]
+        [Authorize(Roles = "Creator")]
+        public async Task<IActionResult> UploadMod([FromForm] ModUploadDto uploadDto)
+        {
+            try
+            {
+                _logger.LogInformation("Tentative d'upload d'un mod");
+                
+                // Récupérer l'ID de l'utilisateur authentifié
+                var userId = User.FindFirst("sub")?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { 
+                        Success = false, 
+                        Message = "Utilisateur non authentifié", 
+                        Data = (string)null 
+                    });
+                }
+                
+                // Vérification de base des données
+                if (uploadDto.ModFile == null || uploadDto.ModFile.Length == 0)
+                {
+                    return BadRequest(new { 
+                        Success = false, 
+                        Message = "Aucun fichier de mod fourni", 
+                        Data = (string)null 
+                    });
+                }
+                
+                if (string.IsNullOrEmpty(uploadDto.Name))
+                {
+                    return BadRequest(new { 
+                        Success = false, 
+                        Message = "Le nom du mod est requis", 
+                        Data = (string)null 
+                    });
+                }
+                
+                // Créer un nouveau mod
+                var mod = new Mod
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = uploadDto.Name,
+                    Description = uploadDto.Description,
+                    GameId = uploadDto.GameId,
+                    CreatorId = userId,
+                    Author = User.Identity.Name ?? "Créateur inconnu",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    DownloadCount = 0,
+                    Rating = 0,
+                    ReviewCount = 0,
+                    Tags = uploadDto.Tags ?? new List<string>(),
+                }
+                ;
+                
+                // Créer le répertoire de stockage pour ce mod
+                string uploadsBasePath = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
+                string modsRelativePath = "mods";
+                string modDirectory = Path.Combine(uploadsBasePath, modsRelativePath, mod.Id);
+                EnsureDirectoryExists(modDirectory);
+                
+                // Traiter le fichier du mod
+                if (uploadDto.ModFile != null && uploadDto.ModFile.Length > 0)
+                {
+                    string modFilePath = Path.Combine(modDirectory, uploadDto.ModFile.FileName);
+                    using (var fileStream = new FileStream(modFilePath, FileMode.Create))
+                    {
+                        await uploadDto.ModFile.CopyToAsync(fileStream);
+                    }
+                    
+                    // URL relative pour le fichier (accessible via le middleware de fichiers statiques)
+                    string downloadUrl = $"/uploads/{modsRelativePath}/{mod.Id}/{uploadDto.ModFile.FileName}";
+                }
+                
+                // Traiter l'image de miniature si présente
+                if (uploadDto.ThumbnailFile != null && uploadDto.ThumbnailFile.Length > 0)
+                {
+                    string thumbnailPath = Path.Combine(modDirectory, "thumbnail.jpg");
+                    using (var fileStream = new FileStream(thumbnailPath, FileMode.Create))
+                    {
+                        await uploadDto.ThumbnailFile.CopyToAsync(fileStream);
+                    }
+                    
+                    // URL relative pour la miniature (accessible via le middleware de fichiers statiques)
+                    mod.ThumbnailUrl = $"/uploads/{modsRelativePath}/{mod.Id}/thumbnail.jpg";
+                }
+                
+                // Enregistrer le mod dans la base de données
+                await _modRepository.CreateAsync(mod);
+                
+                return Ok(new {
+                    Success = true,
+                    Message = "Mod publié avec succès",
+                    Data = mod
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de l'upload d'un mod");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { 
+                    Success = false, 
+                    Message = $"Une erreur s'est produite lors de l'upload: {ex.Message}", 
+                    Data = (string)null 
+                });
+            }
+        }
+        
+        // Méthode utilitaire pour s'assurer qu'un répertoire existe
+        private void EnsureDirectoryExists(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+                _logger.LogInformation("Répertoire créé : {Path}", path);
             }
         }
     }

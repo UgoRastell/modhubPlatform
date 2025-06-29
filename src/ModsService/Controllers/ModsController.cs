@@ -581,7 +581,7 @@ namespace ModsService.Controllers
     /// <summary>
     /// Upload un nouveau mod complet (fichier, métadonnées, image)
     /// </summary>
-    [HttpPost("/api/v1/mods/upload")]
+    [HttpPost("upload")]
     [Authorize(Roles = "Creator")]
     public async Task<IActionResult> UploadMod([FromForm] ModUploadDto uploadDto)
     {

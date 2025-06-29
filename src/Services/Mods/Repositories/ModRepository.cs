@@ -112,6 +112,21 @@ namespace ModsService.Repositories
             }
         }
 
+        public async Task CreateAsync(Mod mod)
+        {
+            try
+            {
+                _logger.LogInformation("Création d'un nouveau mod : {ModName}", mod.Name);
+                await _modsCollection.InsertOneAsync(mod);
+                _logger.LogInformation("Mod créé avec succès : {ModId}", mod.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de la création du mod {ModName}", mod.Name);
+                throw;
+            }
+        }
+
         private SortDefinition<Mod> GetSortDefinition(string sortBy)
         {
             return sortBy?.ToLower() switch
