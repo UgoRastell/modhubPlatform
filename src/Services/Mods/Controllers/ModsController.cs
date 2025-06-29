@@ -169,25 +169,37 @@ namespace ModsService.Controllers
                 string modDirectory = Path.Combine(modsPath, modId);
                 EnsureDirectoryExists(modDirectory);
                 
-                // Créer un objet de métadonnées pour la réponse (pas sauvegardé en base)
-                var modMetadata = new
+                // Créer un objet Mod pour la persistance MongoDB
+                var mod = new Mod
                 {
                     Id = modId,
                     Name = uploadDto.Name,
-                    Description = uploadDto.Description,
+                    Description = uploadDto.Description ?? "",
+                    Author = uploadDto.Author ?? "Créateur inconnu",
+                    CreatorId = userId,
+                    GameId = uploadDto.GameId ?? "",
+                    GameName = uploadDto.GameName ?? "",
+                    Rating = 0,
+                    ReviewCount = 0,
+                    DownloadCount = 0,
+                    Tags = !string.IsNullOrEmpty(uploadDto.Tags) 
+                        ? uploadDto.Tags.Split(',').Select(t => t.Trim()).ToList() 
+                        : new List<string>(),
+                    IsPremium = uploadDto.IsPremium,
+                    IsNew = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    Status = "published",
+                    // Métadonnées du fichier
                     FileName = uploadDto.ModFile.FileName,
                     FileSize = uploadDto.ModFile.Length,
-                    ContentType = uploadDto.ModFile.ContentType,
-                    UploadDate = DateTime.UtcNow,
-                    FileLocation = $"/uploads/{modsRelativePath}/{modId}/{uploadDto.ModFile.FileName}",
-                    ThumbnailUrl = uploadDto.ThumbnailFile != null ? $"/uploads/{modsRelativePath}/{modId}/thumbnail.jpg" : null,
-                    Tags = !string.IsNullOrEmpty(uploadDto.Tags) ? uploadDto.Tags.Split(',').Select(t => t.Trim()).ToArray() : Array.Empty<string>(),
-                    Author = uploadDto.Author,
-                    CreatorId = userId,
-                    GameId = uploadDto.GameId,
-                    GameName = uploadDto.GameName,
-                    IsPremium = uploadDto.IsPremium
+                    MimeType = uploadDto.ModFile.ContentType,
+                    Version = uploadDto.Version ?? "1.0"
                 };
+                
+                // Variables pour les chemins d'accès aux fichiers
+                string thumbnailRelativePath = null;
+                string fileRelativePath = null;
                 
                 // Sauvegarder le fichier du mod
                 if (uploadDto.ModFile != null && uploadDto.ModFile.Length > 0)
@@ -199,6 +211,10 @@ namespace ModsService.Controllers
                     {
                         await uploadDto.ModFile.CopyToAsync(fileStream);
                     }
+                    
+                    // URL relative pour le fichier (accessible via le middleware de fichiers statiques)
+                    fileRelativePath = $"/uploads/{modsRelativePath}/{modId}/{uploadDto.ModFile.FileName}";
+                    mod.FileLocation = fileRelativePath;
                 }
                 
                 // Traiter l'image de miniature si présente
@@ -211,16 +227,62 @@ namespace ModsService.Controllers
                     {
                         await uploadDto.ThumbnailFile.CopyToAsync(fileStream);
                     }
+                    
+                    // URL relative pour la miniature
+                    thumbnailRelativePath = $"/uploads/{modsRelativePath}/{modId}/thumbnail.jpg";
+                    mod.ThumbnailUrl = thumbnailRelativePath;
+                }
+                else
+                {
+                    // URL par défaut pour la miniature si non fournie
+                    mod.ThumbnailUrl = "/images/default-mod-thumbnail.jpg";
                 }
                 
-                // BYPASS COMPLET: Aucune interaction avec MongoDB
-                _logger.LogWarning("BYPASS COMPLET: Aucune tentative d'accès à MongoDB - uniquement sauvegarde des fichiers sur disque");
-                
-                return Ok(new {
-                    Success = true,
-                    Message = "Mod uploadé avec succès (fichiers uniquement, métadonnées non enregistrées en base)",
-                    Data = modMetadata
-                });
+                try
+                {
+                    // RÉACTIVER: Sauvegarde MongoDB des métadonnées
+                    _logger.LogInformation("Tentative de sauvegarde des métadonnées en base MongoDB");
+                    await _modRepository.CreateAsync(mod);
+                    _logger.LogInformation("Métadonnées sauvegardées en base MongoDB avec succès");
+                    
+                    return Ok(new {
+                        Success = true,
+                        Message = "Mod uploadé avec succès (fichiers + métadonnées)",
+                        Data = mod
+                    });
+                }
+                catch (Exception dbEx)
+                {
+                    // Sauvegarde MongoDB a échoué, mais les fichiers sont bien sauvegardés
+                    _logger.LogError(dbEx, "ERREUR: Sauvegarde MongoDB échouée, mais les fichiers sont sauvegardés: {Message}", dbEx.Message);
+                    
+                    // Construire un objet de réponse similaire à mod pour la cohérence d'API
+                    var modMetadata = new
+                    {
+                        mod.Id,
+                        mod.Name,
+                        mod.Description,
+                        mod.FileName,
+                        mod.FileSize,
+                        MimeType = mod.MimeType,
+                        UploadDate = mod.CreatedAt,
+                        FileLocation = mod.FileLocation,
+                        mod.ThumbnailUrl,
+                        Tags = mod.Tags.ToArray(),
+                        mod.Author,
+                        mod.CreatorId,
+                        mod.GameId,
+                        mod.GameName,
+                        mod.IsPremium,
+                        mod.Version
+                    };
+                    
+                    return Ok(new {
+                        Success = true,
+                        Message = $"Mod uploadé avec succès (fichiers uniquement - erreur base de données: {dbEx.Message})",
+                        Data = modMetadata
+                    });
+                }
             }
             catch (Exception ex)
             {

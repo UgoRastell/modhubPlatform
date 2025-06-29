@@ -42,5 +42,16 @@ namespace ModsService.Models
         public DateTime UpdatedAt { get; set; }
         
         public string Status { get; set; } = "published";
+        
+        // Métadonnées du fichier
+        public string FileLocation { get; set; } = null!;
+        
+        public string FileName { get; set; } = null!;
+        
+        public string MimeType { get; set; } = null!;
+        
+        public long FileSize { get; set; }
+        
+        public string Version { get; set; } = "1.0";
     }
 }
