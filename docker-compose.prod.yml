@@ -60,7 +60,7 @@ services:
     depends_on:
       - mongodb
     volumes:
-      - mod_files:/app/mod-files
+      - mod_files:/app/uploads
     networks:
       - modhub_network
 
