@@ -153,66 +153,73 @@ namespace ModsService.Controllers
                     });
                 }
                 
-                // Créer un nouveau mod
-                var mod = new Mod
-                {
-                    Id = ObjectId.GenerateNewId().ToString(),
-                    Name = uploadDto.Name,
-                    Description = uploadDto.Description,
-                    GameId = uploadDto.GameId,
-                    CreatorId = userId,
-                    Author = User.Identity.Name ?? "Créateur inconnu",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    DownloadCount = 0,
-                    Rating = 0,
-                    ReviewCount = 0,
-                    Tags = uploadDto.Tags ?? new List<string>(),
-                }
-                ;
+                // Générer un ID unique pour le mod
+                string modId = ObjectId.GenerateNewId().ToString();
                 
-                // Créer le répertoire de stockage pour ce mod
-                string uploadsBasePath = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
+                // Définir le chemin où les fichiers seront stockés
+                string uploadsRootPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
                 string modsRelativePath = "mods";
-                string modDirectory = Path.Combine(uploadsBasePath, modsRelativePath, mod.Id);
+                string modsPath = Path.Combine(uploadsRootPath, modsRelativePath);
+                
+                // S'assurer que le répertoire existe
+                EnsureDirectoryExists(uploadsRootPath);
+                EnsureDirectoryExists(modsPath);
+                
+                // Créer un répertoire spécifique pour ce mod (basé sur son ID)
+                string modDirectory = Path.Combine(modsPath, modId);
                 EnsureDirectoryExists(modDirectory);
                 
-                // Traiter le fichier du mod
+                // Créer un objet de métadonnées pour la réponse (pas sauvegardé en base)
+                var modMetadata = new
+                {
+                    Id = modId,
+                    Name = uploadDto.Name,
+                    Description = uploadDto.Description,
+                    FileName = uploadDto.ModFile.FileName,
+                    FileSize = uploadDto.ModFile.Length,
+                    ContentType = uploadDto.ModFile.ContentType,
+                    UploadDate = DateTime.UtcNow,
+                    FileLocation = $"/uploads/{modsRelativePath}/{modId}/{uploadDto.ModFile.FileName}",
+                    ThumbnailUrl = uploadDto.ThumbnailFile != null ? $"/uploads/{modsRelativePath}/{modId}/thumbnail.jpg" : null,
+                    Tags = !string.IsNullOrEmpty(uploadDto.Tags) ? uploadDto.Tags.Split(',').Select(t => t.Trim()).ToArray() : Array.Empty<string>(),
+                    Author = uploadDto.Author,
+                    CreatorId = userId,
+                    GameId = uploadDto.GameId,
+                    GameName = uploadDto.GameName,
+                    IsPremium = uploadDto.IsPremium
+                };
+                
+                // Sauvegarder le fichier du mod
                 if (uploadDto.ModFile != null && uploadDto.ModFile.Length > 0)
                 {
                     string modFilePath = Path.Combine(modDirectory, uploadDto.ModFile.FileName);
+                    _logger.LogInformation("Sauvegarde du fichier mod vers: {ModFilePath}", modFilePath);
+                    
                     using (var fileStream = new FileStream(modFilePath, FileMode.Create))
                     {
                         await uploadDto.ModFile.CopyToAsync(fileStream);
                     }
-                    
-                    // URL relative pour le fichier (accessible via le middleware de fichiers statiques)
-                    string downloadUrl = $"/uploads/{modsRelativePath}/{mod.Id}/{uploadDto.ModFile.FileName}";
                 }
                 
                 // Traiter l'image de miniature si présente
                 if (uploadDto.ThumbnailFile != null && uploadDto.ThumbnailFile.Length > 0)
                 {
                     string thumbnailPath = Path.Combine(modDirectory, "thumbnail.jpg");
+                    _logger.LogInformation("Sauvegarde de la vignette vers: {ThumbnailPath}", thumbnailPath);
+                    
                     using (var fileStream = new FileStream(thumbnailPath, FileMode.Create))
                     {
                         await uploadDto.ThumbnailFile.CopyToAsync(fileStream);
                     }
-                    
-                    // URL relative pour la miniature (accessible via le middleware de fichiers statiques)
-                    mod.ThumbnailUrl = $"/uploads/{modsRelativePath}/{mod.Id}/thumbnail.jpg";
                 }
                 
-                // TEMPORAIRE: Bypass de la sauvegarde en base de données qui échoue à cause de l'authentification MongoDB
-                _logger.LogWarning("Sauvegarde MongoDB bypassée pour résoudre temporairement l'erreur d'authentification");
-                
-                // Générer un ID fictif
-                string modId = ObjectId.GenerateNewId().ToString();
+                // BYPASS COMPLET: Aucune interaction avec MongoDB
+                _logger.LogWarning("BYPASS COMPLET: Aucune tentative d'accès à MongoDB - uniquement sauvegarde des fichiers sur disque");
                 
                 return Ok(new {
                     Success = true,
-                    Message = "Mod uploadé avec succès (fichiers uniquement, pas en base)",
-                    Data = modId
+                    Message = "Mod uploadé avec succès (fichiers uniquement, métadonnées non enregistrées en base)",
+                    Data = modMetadata
                 });
             }
             catch (Exception ex)
