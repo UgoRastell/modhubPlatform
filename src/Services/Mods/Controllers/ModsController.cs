@@ -240,10 +240,16 @@ namespace ModsService.Controllers
                 
                 try
                 {
-                    // RÉACTIVER: Sauvegarde MongoDB des métadonnées
+                    // Sauvegarde MongoDB des métadonnées (réactivée)
                     _logger.LogInformation("Tentative de sauvegarde des métadonnées en base MongoDB");
+                    
+                    // Log de la configuration MongoDB utilisée
+                    _logger.LogDebug("Configuration MongoDB: DatabaseName={DatabaseName}, CollectionName={CollectionName}", 
+                        _modRepository.GetType().GetProperty("DatabaseName")?.GetValue(null, null) ?? "<unknown>", 
+                        _modRepository.GetType().GetProperty("CollectionName")?.GetValue(null, null) ?? "<unknown>");
+                    
                     await _modRepository.CreateAsync(mod);
-                    _logger.LogInformation("Métadonnées sauvegardées en base MongoDB avec succès");
+                    _logger.LogInformation("Métadonnées sauvegardées en base MongoDB avec succès: {ModId}", mod.Id);
                     
                     return Ok(new {
                         Success = true,
@@ -251,31 +257,42 @@ namespace ModsService.Controllers
                         Data = mod
                     });
                 }
-                catch (Exception dbEx)
+                catch (MongoDB.Driver.MongoConnectionException mcEx)
                 {
-                    // Sauvegarde MongoDB a échoué, mais les fichiers sont bien sauvegardés
-                    _logger.LogError(dbEx, "ERREUR: Sauvegarde MongoDB échouée, mais les fichiers sont sauvegardés: {Message}", dbEx.Message);
+                    // Erreur spécifique de connexion MongoDB
+                    string serverInfo = "<unknown>";
+                    if (mcEx.ConnectionId?.ServerId != null)
+                    {
+                        serverInfo = mcEx.ConnectionId.ServerId.ToString();
+                    }
+                    
+                    _logger.LogError(mcEx, "ERREUR DE CONNEXION MONGODB: {Message}, ServerInfo: {ServerInfo}", 
+                        mcEx.Message, serverInfo);
+                    
+                    // Log des détails de configuration
+                    _logger.LogWarning("Détails config: {ConnectionDetails}", 
+                        "Tentative de connexion à mongodb://[credentials]@mongodb:27017/modhub?authSource=admin");
                     
                     // Construire un objet de réponse similaire à mod pour la cohérence d'API
-                    var modMetadata = new
-                    {
-                        mod.Id,
-                        mod.Name,
-                        mod.Description,
-                        mod.FileName,
-                        mod.FileSize,
-                        MimeType = mod.MimeType,
-                        UploadDate = mod.CreatedAt,
-                        FileLocation = mod.FileLocation,
-                        mod.ThumbnailUrl,
-                        Tags = mod.Tags.ToArray(),
-                        mod.Author,
-                        mod.CreatorId,
-                        mod.GameId,
-                        mod.GameName,
-                        mod.IsPremium,
-                        mod.Version
-                    };
+                    var modMetadata = CreateModMetadataResponse(mod);
+                    
+                    return Ok(new {
+                        Success = true,
+                        Message = $"Mod uploadé avec succès (fichiers uniquement - erreur de connexion MongoDB: {mcEx.Message})",
+                        Data = modMetadata
+                    });
+                }
+                catch (Exception dbEx)
+                {
+                    // Autre erreur MongoDB
+                    _logger.LogError(dbEx, "ERREUR: Sauvegarde MongoDB échouée: {Type} - {Message}", 
+                        dbEx.GetType().Name, dbEx.Message);
+                    
+                    // Essayer de logger la stack trace pour plus de détails
+                    _logger.LogDebug("Stack trace: {StackTrace}", dbEx.StackTrace);
+                    
+                    // Construire un objet de réponse similaire à mod pour la cohérence d'API
+                    var modMetadata = CreateModMetadataResponse(mod);
                     
                     return Ok(new {
                         Success = true,
@@ -378,6 +395,37 @@ namespace ModsService.Controllers
                 Directory.CreateDirectory(path);
                 _logger.LogInformation("Répertoire créé : {Path}", path);
             }
+        }
+        
+        /// <summary>
+        /// Crée un objet anonyme contenant les métadonnées du mod pour les réponses API
+        /// </summary>
+        private object CreateModMetadataResponse(Mod mod)
+        {
+            if (mod == null)
+            {
+                return null;
+            }
+            
+            return new
+            {
+                mod.Id,
+                mod.Name,
+                mod.Description,
+                mod.FileName,
+                mod.FileSize,
+                MimeType = mod.MimeType,
+                UploadDate = mod.CreatedAt,
+                FileLocation = mod.FileLocation,
+                mod.ThumbnailUrl,
+                Tags = mod.Tags?.ToArray() ?? Array.Empty<string>(),
+                mod.Author,
+                mod.CreatorId,
+                mod.GameId,
+                mod.GameName,
+                mod.IsPremium,
+                mod.Version
+            };
         }
     }
 }
