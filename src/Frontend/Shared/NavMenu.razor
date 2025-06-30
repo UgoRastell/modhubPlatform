@@ -4,44 +4,100 @@
 
 <style>
     .nav-menu-container {
-        background: linear-gradient(180deg, rgba(21,21,35,0.9) 0%, rgba(42,45,80,0.7) 100%);
-        border-radius: 12px;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.15), 0 1px 6px rgba(0,0,0,0.1);
-        overflow: hidden;
-        position: relative;
-    }
-    
-    /* Subtle glass effect overlay */
-    .nav-menu-container:before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
+        background-color: #1e1e2d;
         height: 100%;
-        background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
-        pointer-events: none;
+        display: flex;
+        flex-direction: column;
     }
     
-    .menu-header-icon {
-        background: linear-gradient(45deg, var(--mud-palette-primary) 30%, var(--mud-palette-secondary) 90%);
-        border-radius: 50%;
-        padding: 12px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.2), 0 0 15px rgba(var(--mud-palette-primary-rgb), 0.3);
-        transform: scale(1);
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    
-    .menu-header-icon:hover {
-        transform: scale(1.1) rotate(5deg);
+    .nav-section {
+        padding: 8px 0;
     }
     
     .section-header {
-        text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        letter-spacing: 1.5px;
-        font-weight: 700;
-        position: relative;
-        display: inline-block;
+        color: #a0a0c9;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        padding: 10px 16px;
+        text-transform: uppercase;
+    }
+    
+    .nav-menu-logo {
+        display: flex;
+        justify-content: center;
+        margin: 12px 0;
+    }
+    
+    .menu-logo-icon {
+        background: linear-gradient(45deg, #6157ff 0%, #ee49fd 100%);
+        border-radius: 50%;
+        padding: 10px;
+        color: white;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 10px 16px;
+        color: #c8c8db;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        margin: 2px 8px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    
+    .nav-link:hover {
+        background-color: rgba(97, 87, 255, 0.1);
+        color: white;
+    }
+    
+    .nav-link.active {
+        background-color: rgba(97, 87, 255, 0.15);
+        color: white;
+    }
+    
+    .nav-link-icon {
+        margin-right: 12px;
+        font-size: 20px;
+        display: flex;
+    }
+    
+    .nav-link-text {
+        font-size: 14px;
+    }
+    
+    .nav-group {
+        cursor: pointer;
+    }
+    
+    .community-group {
+        padding-top: 8px;
+    }
+    
+    .community-items {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    .community-expanded {
+        max-height: 200px;
+    }
+    
+    .arrow-icon {
+        margin-left: auto;
+        transition: transform 0.3s ease;
+    }
+    
+    .arrow-rotated {
+        transform: rotate(90deg);
     }
     
     .mud-nav-link {
@@ -85,29 +141,57 @@
     }
     
     .auth-prompt {
-        background: linear-gradient(135deg, rgba(var(--mud-palette-primary-rgb), 0.05) 0%, rgba(var(--mud-palette-secondary-rgb), 0.03) 100%);
-        border-radius: 8px;
-        padding: 20px;
-        margin: 12px 16px;
-        border: 1px solid rgba(var(--mud-palette-primary-rgb), 0.1);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        padding: 16px;
+        margin: 10px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    
+    .auth-text {
+        color: #a26cf8;
+        margin-bottom: 16px;
+        font-size: 14px;
+        text-align: center;
     }
     
     .auth-button {
-        transition: all 0.3s ease;
-        overflow: hidden;
-        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 12px;
+        border-radius: 25px;
+        margin-bottom: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
     }
     
-    .auth-button::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: all 0.6s ease;
+    .login-button {
+        background-color: #00bcd5;
+        color: white;
+    }
+    
+    .login-button:hover {
+        background-color: #00aac2;
+        box-shadow: 0 0 15px rgba(0, 188, 213, 0.4);
+    }
+    
+    .register-button {
+        background-color: #fc5185;
+        color: white;
+    }
+    
+    .register-button:hover {
+        background-color: #e84a7a;
+        box-shadow: 0 0 15px rgba(252, 81, 133, 0.4);
+    }
+    
+    .button-icon {
+        margin-right: 8px;
+        font-size: 18px;
     }
     
     .auth-button:hover::after {
@@ -120,14 +204,36 @@
         padding: 4px;
     }
     
+    .footer-section {
+        margin-top: auto;
+        padding: 8px 0;
+    }
+    
     .footer-link {
-        opacity: 0.8;
+        display: flex;
+        align-items: center;
+        padding: 8px 16px;
+        color: #8a8aa5;
         transition: all 0.2s ease;
+        text-decoration: none;
+        font-size: 13px;
     }
     
     .footer-link:hover {
-        opacity: 1;
+        color: #a0a0c9;
     }
+    
+    .footer-icon {
+        margin-right: 12px;
+        font-size: 16px;
+    }
+    
+    /* Icônes colorées */
+    .home-icon { color: #00b7ff; }
+    .mods-icon { color: #2ecc71; }
+    .games-icon { color: #f39c12; }
+    .premium-icon { color: #fc5185; }
+    .community-icon { color: #9b59b6; }
     
     /* Styles pour le menu déroulable */
     .nav-menu-wrapper {
@@ -193,11 +299,17 @@
 </style>
 
 @code {
-    private bool isMenuOpen = true;
+    private bool isOpen = true;
+    private bool isCommunityExpanded = false;
     
     private void ToggleMenu()
     {
-        isMenuOpen = !isMenuOpen;
+        isOpen = !isOpen;
+    }
+    
+    private void ToggleCommunity()
+    {
+        isCommunityExpanded = !isCommunityExpanded;
     }
     
     private async Task LogoutUser()
@@ -213,25 +325,57 @@
     }
 }
 
-@inject IJSRuntime JsRuntime
-
-<div class="nav-menu-wrapper @(isMenuOpen ? "" : "menu-collapsed")">
+<div class="nav-menu-container @(isOpen ? "" : "menu-collapsed")">
     <div class="menu-toggle-button" @onclick="ToggleMenu">
-        <MudIcon Icon="@(isMenuOpen ? Icons.Material.Filled.KeyboardArrowLeft : Icons.Material.Filled.KeyboardArrowRight)" />
+        <MudIcon Icon="@(isOpen ? Icons.Material.Filled.KeyboardArrowLeft : Icons.Material.Filled.KeyboardArrowRight)" />
     </div>
-    <MudNavMenu Bordered="true" Class="mud-width-full py-4 nav-menu-container">
-    <div class="d-flex justify-center mb-4">
-        <MudIcon Icon="@Icons.Custom.Brands.MudBlazor" Size="Size.Large" Class="menu-header-icon" />
+    
+    <div class="nav-menu-logo">
+        <div class="menu-logo-icon">
+            <MudIcon Icon="@Icons.Material.Filled.Settings" />
+        </div>
     </div>
-
-    <div class="animated-gradient-divider mb-5"></div>
     
-    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="px-4 py-2 section-header">EXPLORER</MudText>
-    
-    <MudNavLink Href="/">
-        <MudIcon Icon="@Icons.Material.Filled.Home" Class="me-3 menu-icon" Color="Color.Info"></MudIcon>
-        <span class="gradient-text">Accueil</span>
-    </MudNavLink>
+    <div class="nav-section">
+        <div class="section-header">EXPLORER</div>
+        
+        <a href="/" class="nav-link @(NavigationManager.Uri.EndsWith("/") ? "active" : "")">
+            <span class="nav-link-icon home-icon">
+                <MudIcon Icon="@Icons.Material.Filled.Home" />
+            </span>
+            <span class="nav-link-text">Accueil</span>
+        </a>
+        
+        <a href="/catalog" class="nav-link @(NavigationManager.Uri.Contains("/catalog") ? "active" : "")">
+            <span class="nav-link-icon mods-icon">
+                <MudIcon Icon="@Icons.Material.Filled.Extension" />
+            </span>
+            <span class="nav-link-text">Mods</span>
+        </a>
+        
+        <a href="/games" class="nav-link @(NavigationManager.Uri.Contains("/games") ? "active" : "")">
+            <span class="nav-link-icon games-icon">
+                <MudIcon Icon="@Icons.Material.Filled.SportsEsports" />
+            </span>
+            <span class="nav-link-text">Jeux supportés</span>
+        </a>
+        
+        <a href="/payment" class="nav-link @(NavigationManager.Uri.Contains("/payment") ? "active" : "")">
+            <span class="nav-link-icon premium-icon">
+                <MudIcon Icon="@Icons.Material.Filled.Payment" />
+            </span>
+            <span class="nav-link-text">Premium</span>
+        </a>
+        
+        <div class="nav-group">
+            <div class="nav-link" @onclick="ToggleCommunity">
+                <span class="nav-link-icon community-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Groups" />
+                </span>
+                <span class="nav-link-text">Communauté</span>
+                <span class="arrow-icon @(isCommunityExpanded ? "arrow-rotated" : "")">
+                    <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" />
+                </span>
     
     <MudNavLink Href="/catalog">
         <MudIcon Icon="@Icons.Material.Filled.Extension" Class="me-3 menu-icon" Color="Color.Success"></MudIcon>
