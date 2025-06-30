@@ -315,9 +315,220 @@
     }
 </style>
 
+<div class="nav-menu-container @(isOpen ? "" : "menu-collapsed")">
+    <div class="menu-toggle-button" @onclick="ToggleMenu">
+        <MudIcon Icon="@(isOpen ? Icons.Material.Filled.KeyboardArrowLeft : Icons.Material.Filled.KeyboardArrowRight)" />
+    </div>
+    
+    <div class="nav-menu-logo">
+        <div class="menu-logo-icon">
+            <MudIcon Icon="@Icons.Material.Filled.Settings" />
+        </div>
+    </div>
+    
+    <div class="nav-section">
+        <div class="section-header">EXPLORER</div>
+        
+        <a href="/" class="nav-link @(NavigationManager.Uri.EndsWith("/") ? "active" : "")">
+            <span class="nav-link-icon home-icon">
+                <MudIcon Icon="@Icons.Material.Filled.Home" />
+            </span>
+            <span class="nav-link-text">Accueil</span>
+        </a>
+        
+        <a href="/catalog" class="nav-link @(NavigationManager.Uri.Contains("/catalog") ? "active" : "")">
+            <span class="nav-link-icon mods-icon">
+                <MudIcon Icon="@Icons.Material.Filled.Extension" />
+            </span>
+            <span class="nav-link-text">Mods</span>
+        </a>
+        
+        <a href="/games" class="nav-link @(NavigationManager.Uri.Contains("/games") ? "active" : "")">
+            <span class="nav-link-icon games-icon">
+                <MudIcon Icon="@Icons.Material.Filled.SportsEsports" />
+            </span>
+            <span class="nav-link-text">Jeux supportés</span>
+        </a>
+        
+        <a href="/payment" class="nav-link @(NavigationManager.Uri.Contains("/payment") ? "active" : "")">
+            <span class="nav-link-icon premium-icon">
+                <MudIcon Icon="@Icons.Material.Filled.Payment" />
+            </span>
+            <span class="nav-link-text">Premium</span>
+        </a>
+        
+        <div class="nav-group">
+            <div class="nav-link" @onclick="ToggleCommunity">
+                <span class="nav-link-icon community-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Groups" />
+                </span>
+                <span class="nav-link-text">Communauté</span>
+                <span class="arrow-icon @(isCommunityExpanded ? "arrow-rotated" : "")">
+                    <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" />
+                </span>
+            </div>
+            
+            <div class="community-items @(isCommunityExpanded ? "community-expanded" : "")">
+                <a href="/forum" class="nav-link">
+                    <span class="nav-link-icon" style="margin-left: 20px;">
+                        <MudIcon Icon="@Icons.Material.Filled.Forum" />
+                    </span>
+                    <span class="nav-link-text">Forum</span>
+                </a>
+                
+                <a href="/events" class="nav-link">
+                    <span class="nav-link-icon" style="margin-left: 20px;">
+                        <MudIcon Icon="@Icons.Material.Filled.Event" />
+                    </span>
+                    <span class="nav-link-text">Événements</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <AuthorizeView>
+        <Authorized>
+            <div class="nav-section">
+                <div class="section-header">COMPTE</div>
+                
+                <a href="/profile" class="nav-link">
+                    <span class="nav-link-icon">
+                        <MudIcon Icon="@Icons.Material.Filled.Person" />
+                    </span>
+                    <span class="nav-link-text">Mon profil</span>
+                </a>
+                
+                <a href="/settings" class="nav-link">
+                    <span class="nav-link-icon">
+                        <MudIcon Icon="@Icons.Material.Filled.Settings" />
+                    </span>
+                    <span class="nav-link-text">Paramètres</span>
+                </a>
+                
+                <div class="nav-link" @onclick="LogoutUser">
+                    <span class="nav-link-icon" style="color: #e74c3c;">
+                        <MudIcon Icon="@Icons.Material.Filled.Logout" />
+                    </span>
+                    <span class="nav-link-text">Déconnexion</span>
+                </div>
+            </div>
+            
+            <AuthorizeView Roles="Creator" Context="creatorContext">
+                <div class="nav-section">
+                    <div class="section-header" style="color: #fc5185;">CRÉATEUR</div>
+                    
+                    <a href="/creator/dashboard" class="nav-link">
+                        <span class="nav-link-icon" style="color: #fc5185;">
+                            <MudIcon Icon="@Icons.Material.Filled.Dashboard" />
+                        </span>
+                        <span class="nav-link-text">Tableau de bord</span>
+                    </a>
+                    
+                    <a href="/creator/mods" class="nav-link">
+                        <span class="nav-link-icon" style="color: #fc5185;">
+                            <MudIcon Icon="@Icons.Material.Filled.Extension" />
+                        </span>
+                        <span class="nav-link-text">Mes mods</span>
+                    </a>
+                    
+                    <a href="/creator/upload" class="nav-link">
+                        <span class="nav-link-icon" style="color: #fc5185;">
+                            <MudIcon Icon="@Icons.Material.Filled.FileUpload" />
+                        </span>
+                        <span class="nav-link-text">Publier un mod</span>
+                    </a>
+                </div>
+            </AuthorizeView>
+            
+            <AuthorizeView Roles="Admin" Context="adminContext">
+                <div class="nav-section">
+                    <div class="section-header" style="color: #e74c3c;">ADMINISTRATION</div>
+                    
+                    <a href="/admin/dashboard" class="nav-link">
+                        <span class="nav-link-icon" style="color: #e74c3c;">
+                            <MudIcon Icon="@Icons.Material.Filled.Speed" />
+                        </span>
+                        <span class="nav-link-text">Tableau de bord</span>
+                    </a>
+                    
+                    <a href="/admin/users" class="nav-link">
+                        <span class="nav-link-icon" style="color: #e74c3c;">
+                            <MudIcon Icon="@Icons.Material.Filled.People" />
+                        </span>
+                        <span class="nav-link-text">Utilisateurs</span>
+                    </a>
+                    
+                    <a href="/admin/mods" class="nav-link">
+                        <span class="nav-link-icon" style="color: #e74c3c;">
+                            <MudIcon Icon="@Icons.Material.Filled.Extension" />
+                        </span>
+                        <span class="nav-link-text">Mods</span>
+                    </a>
+                </div>
+            </AuthorizeView>
+        </Authorized>
+        <NotAuthorized>
+            <div class="auth-prompt">
+                <div class="auth-text">
+                    Connectez-vous pour accéder à toutes les fonctionnalités
+                </div>
+                
+                <a href="/login" class="auth-button login-button">
+                    <span class="button-icon">
+                        <MudIcon Icon="@Icons.Material.Filled.Login" />
+                    </span>
+                    CONNEXION
+                </a>
+                
+                <a href="/register" class="auth-button register-button">
+                    <span class="button-icon">
+                        <MudIcon Icon="@Icons.Material.Filled.PersonAdd" />
+                    </span>
+                    INSCRIPTION
+                </a>
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+    
+    <div class="footer-section">
+        <a href="/about" class="footer-link">
+            <span class="footer-icon">
+                <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" />
+            </span>
+            À propos
+        </a>
+        
+        <a href="/contact" class="footer-link">
+            <span class="footer-icon">
+                <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" />
+            </span>
+            Contact
+        </a>
+        
+        <a href="/terms" class="footer-link">
+            <span class="footer-icon">
+                <MudIcon Icon="@Icons.Material.Filled.Gavel" Size="Size.Small" />
+            </span>
+            Conditions d'utilisation
+        </a>
+    </div>
+</div>
+
 @code {
     private bool isOpen = true;
     private bool isCommunityExpanded = false;
+    
+    [Inject] 
+    public IAuthService AuthService { get; set; }
+    
+    [Inject] 
+    public NavigationManager NavigationManager { get; set; }
+    
+    [Inject]
+    public ISnackbar Snackbar { get; set; }
+    
+    [Inject]
+    public IJSRuntime JSRuntime { get; set; }
     
     private void ToggleMenu()
     {
@@ -331,13 +542,15 @@
     
     private async Task LogoutUser()
     {
-        // Supprimer le token d'authentification du localStorage
-        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
+        // Utiliser le service d'authentification pour se déconnecter
+        await AuthService.Logout();
         
-        // Supprimer également le token de rafraîchissement s'il existe
+        // Nettoyer les tokens stockés localement
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
         await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "refreshToken");
         
-        // Rediriger l'utilisateur vers la page de connexion
+        // Notification et redirection
+        Snackbar.Add("Vous avez été déconnecté avec succès", Severity.Success);
         NavigationManager.NavigateTo("/", true);
     }
 }
@@ -548,5 +761,6 @@
             Conditions d'utilisation
         </MudNavLink>
     </div>
-    </MudNavMenu>
+</div>
+</div>
 </div>
