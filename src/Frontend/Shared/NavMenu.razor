@@ -8,6 +8,23 @@
         height: 100%;
         display: flex;
         flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,0.2) transparent;
+    }
+    
+    .nav-menu-container::-webkit-scrollbar {
+        width: 5px;
+    }
+    
+    .nav-menu-container::-webkit-scrollbar-thumb {
+        background-color: rgba(255,255,255,0.2);
+        border-radius: 10px;
+    }
+    
+    .nav-menu-container::-webkit-scrollbar-track {
+        background: transparent;
     }
     
     .nav-section {
