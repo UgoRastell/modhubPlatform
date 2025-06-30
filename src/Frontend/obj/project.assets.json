@@ -3301,19 +3301,19 @@
   },
   "packageFolders": {
     "C:\\Users\\ugora\\.nuget\\packages\\": {},
-    "D:\\Visual Studio\\SDK\\NuGetPackages": {}
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Frontend\\Frontend.csproj",
+      "projectUniqueName": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\Frontend.csproj",
       "projectName": "Frontend",
-      "projectPath": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Frontend\\Frontend.csproj",
+      "projectPath": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\Frontend.csproj",
       "packagesPath": "C:\\Users\\ugora\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Frontend\\obj\\",
+      "outputPath": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "D:\\Visual Studio\\SDK\\NuGetPackages"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
         "C:\\Users\\ugora\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -3325,14 +3325,15 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Shared\\Shared.csproj": {
-              "projectPath": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Shared\\Shared.csproj"
+            "c:\\Users\\ugora\\Desktop\\modhub\\src\\Shared\\Shared.csproj": {
+              "projectPath": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Shared\\Shared.csproj"
             }
           }
         }
