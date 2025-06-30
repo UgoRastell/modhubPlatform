@@ -1,0 +1,258 @@
+@using Frontend.Models
+@using Frontend.Services
+@inject ISnackbar Snackbar
+@inject IModService ModService
+
+<style>
+    .rating-dialog {
+        min-width: 450px;
+    }
+    
+    .rating-stars-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        margin: 20px 0;
+    }
+    
+    .rating-star {
+        font-size: 2.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #e0e0e0;
+    }
+    
+    .rating-star:hover {
+        transform: scale(1.1);
+    }
+    
+    .rating-star.selected {
+        color: #ffc107;
+        text-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+    }
+    
+    .rating-star.hover {
+        color: #ffb300;
+    }
+    
+    .current-rating-info {
+        text-align: center;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .current-rating-stars {
+        color: #ffc107;
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+    }
+    
+    .comment-section {
+        margin-top: 20px;
+    }
+    
+    .rating-label {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .dialog-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .submit-btn {
+        background: linear-gradient(45deg, #28a745, #20c997);
+        color: white;
+        font-weight: 600;
+        border-radius: 25px;
+        padding: 10px 30px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    }
+    
+    .cancel-btn {
+        background: linear-gradient(45deg, #6c757d, #adb5bd);
+        color: white;
+        font-weight: 600;
+        border-radius: 25px;
+        padding: 10px 30px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .cancel-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+    }
+</style>
+
+<MudDialog Class="rating-dialog">
+    <DialogContent>
+        <div class="current-rating-info">
+            <MudText Typo="Typo.h6" Class="mb-2">@ModName</MudText>
+            <div class="current-rating-stars">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <MudIcon Icon="@(i <= Math.Round(CurrentRating) ? Icons.Material.Filled.Star : Icons.Material.Outlined.Star)"
+                             Size="Size.Small" />
+                }
+            </div>
+            <MudText Typo="Typo.body2" Color="Color.Default">
+                Note actuelle: @CurrentRating.ToString("F1")/5 (@RatingCount.ToString("N0") avis)
+            </MudText>
+        </div>
+        
+        <MudText Typo="Typo.h6" Class="text-center mb-3">Votre évaluation</MudText>
+        
+        <div class="rating-stars-container">
+            @for (int i = 1; i <= 5; i++)
+            {
+                int starIndex = i; // Variable locale pour éviter les problèmes de closure
+                <div class="rating-star @(starIndex <= selectedRating ? "selected" : "") @(starIndex <= hoveredRating ? "hover" : "")"
+                     @onclick="@(() => SelectRating(starIndex))"
+                     @onmouseover="@(() => HoverRating(starIndex))"
+                     @onmouseleave="@(() => HoverRating(0))">
+                    <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Large" />
+                </div>
+            }
+        </div>
+        
+        <div class="rating-label">
+            @GetRatingLabel(selectedRating)
+        </div>
+        
+        <div class="comment-section">
+            <MudTextField @bind-Value="comment"
+                          Label="Commentaire (optionnel)"
+                          Placeholder="Partagez votre expérience avec ce mod..."
+                          Lines="4"
+                          Variant="Variant.Outlined"
+                          MaxLength="500"
+                          Counter="500"
+                          HelperText="Décrivez ce que vous avez aimé ou n'avez pas aimé" />
+        </div>
+    </DialogContent>
+    
+    <DialogActions>
+        <div class="dialog-actions" style="width: 100%;">
+            <MudButton Class="cancel-btn"
+                       OnClick="Cancel"
+                       StartIcon="@Icons.Material.Filled.Cancel">
+                Annuler
+            </MudButton>
+            
+            <MudButton Class="submit-btn"
+                       OnClick="SubmitRating"
+                       Disabled="@(selectedRating == 0 || isSubmitting)"
+                       StartIcon="@(isSubmitting ? Icons.Material.Filled.HourglassEmpty : Icons.Material.Filled.Send)">
+                @(isSubmitting ? "Envoi..." : "Soumettre l'avis")
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    MudDialogInstance MudDialog { get; set; } = default!;
+    
+    [Parameter] 
+    public string ModId { get; set; } = string.Empty;
+    
+    [Parameter] 
+    public string ModName { get; set; } = string.Empty;
+    
+    [Parameter] 
+    public double CurrentRating { get; set; }
+    
+    [Parameter] 
+    public int RatingCount { get; set; }
+    
+    private int selectedRating = 0;
+    private int hoveredRating = 0;
+    private string comment = string.Empty;
+    private bool isSubmitting = false;
+    
+    private void SelectRating(int rating)
+    {
+        selectedRating = rating;
+    }
+    
+    private void HoverRating(int rating)
+    {
+        hoveredRating = rating;
+    }
+    
+    private string GetRatingLabel(int rating)
+    {
+        return rating switch
+        {
+            1 => "⭐ Très décevant",
+            2 => "⭐⭐ Décevant",
+            3 => "⭐⭐⭐ Correct",
+            4 => "⭐⭐⭐⭐ Très bien",
+            5 => "⭐⭐⭐⭐⭐ Excellent",
+            _ => "Cliquez sur les étoiles pour noter"
+        };
+    }
+    
+    private async Task SubmitRating()
+    {
+        if (selectedRating == 0)
+        {
+            Snackbar.Add("Veuillez sélectionner une note", Severity.Warning);
+            return;
+        }
+        
+        isSubmitting = true;
+        StateHasChanged();
+        
+        try
+        {
+            var ratingRequest = new ModRatingRequest
+            {
+                Rating = selectedRating,
+                Comment = comment
+            };
+            
+            var response = await ModService.RateModAsync(ModId, ratingRequest);
+            
+            if (response.Success)
+            {
+                Snackbar.Add("Votre avis a été enregistré avec succès !", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "Erreur lors de l'enregistrement de votre avis", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+    
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}
