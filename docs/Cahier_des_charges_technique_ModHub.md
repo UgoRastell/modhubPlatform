@@ -1,5 +1,5 @@
-# 🚀 Cahier des Charges Technique
-## 🎮 Plateforme ModHub - Solution SaaS pour Mods Gaming
+# Cahier des Charges Technique
+## Plateforme ModHub - Solution SaaS pour Mods Gaming
 
 ![ModHub](https://img.shields.io/badge/ModHub-Platform-6157ff?style=for-the-badge&logo=gamepad)
 ![Version](https://img.shields.io/badge/Version-1.0-ee49fd?style=for-the-badge)
@@ -10,336 +10,206 @@
 
 ---
 
-> 📋 **Informations du Document**  
-> **Version :** 1.0  
-> **📅 Date :** 30 juin 2025  
-> **👥 Auteur :** Équipe Technique ModHub (Ugo Rastell)
-> **📊 Statut :** Document de référence  
+> **Document v1.0** | 30/06/2025 | Équipe Technique ModHub
 
 ---
 
-## 📋 Table des Matières
+## Table des Matières
 
-### 🏗️ **Architecture & Conception**
-
-| Section | Description | Status |
-|---------|-------------|--------|
-| 📖 [1. Introduction et Contexte](#1-introduction-et-contexte) | Vue d'ensemble du projet | ✅ |
-| 🏛️ [2. Architecture Générale](#2-architecture-générale) | Design système global | ✅ |
-| ⚙️ [3. Spécifications Techniques](#3-spécifications-techniques) | Technologies et frameworks | ✅ |
-| 🔧 [4. Microservices et APIs](#4-microservices-et-apis) | Services et endpoints | ✅ |
-| 🗄️ [5. Base de Données et Modèles](#5-base-de-données-et-modèles) | Modélisation des données | ✅ |
-
-### 🔐 **Sécurité & Infrastructure**
+### **Architecture & Conception**
 
 | Section | Description | Status |
 |---------|-------------|--------|
-| 🛡️ [6. Sécurité et Authentification](#6-sécurité-et-authentification) | Stratégie de sécurité | ✅ |
-| 🚀 [7. Infrastructure et Déploiement](#7-infrastructure-et-déploiement) | DevOps et déploiement | ✅ |
-| 📊 [8. Monitoring et Observabilité](#8-monitoring-et-observabilité) | Surveillance système | ✅ |
-| 🎨 [9. Interface Utilisateur](#9-interface-utilisateur) | Design et UX/UI | ✅ |
-| 📐 [10. Diagrammes UML et Architecture](#10-diagrammes-uml-et-architecture) | Modélisation visuelle | ✅ |
+| [1. Introduction et Contexte](#1-introduction-et-contexte) | Vue d'ensemble du projet | ✅ |
+| [2. Architecture Générale](#2-architecture-générale) | Design système global | ✅ |
+| [3. Spécifications Techniques](#3-spécifications-techniques) | Technologies et frameworks | ✅ |
+| [4. Microservices et APIs](#4-microservices-et-apis) | Services et endpoints | ✅ |
+| [5. Base de Données et Modèles](#5-base-de-données-et-modèles) | Modélisation des données | ✅ |
 
-### 📈 **Performance & Qualité**
+### **Sécurité & Infrastructure**
 
 | Section | Description | Status |
 |---------|-------------|--------|
-| ⚡ [11. Performances et Scalabilité](#11-performances-et-scalabilité) | Optimisation système | ✅ |
-| 🧪 [12. Tests et Qualité](#12-tests-et-qualité) | Stratégie de test | ✅ |
-| ⚖️ [13. Conformité RGPD](#13-conformité-rgpd) | Protection des données | ✅ |
-| 🗺️ [14. Roadmap Technique](#14-roadmap-technique) | Évolution future | ✅ |
-| 📚 [15. Annexes](#15-annexes) | Ressources additionnelles | ✅ |
+| [6. Sécurité et Authentification](#6-sécurité-et-authentification) | Stratégie de sécurité | ✅ |
+| [7. Infrastructure et Déploiement](#7-infrastructure-et-déploiement) | DevOps et déploiement | ✅ |
+| [8. Monitoring et Observabilité](#8-monitoring-et-observabilité) | Surveillance système | ✅ |
+| [9. Interface Utilisateur](#9-interface-utilisateur) | Design et UX/UI | ✅ |
+| [10. Diagrammes UML et Architecture](#10-diagrammes-uml-et-architecture) | Modélisation visuelle | ✅ |
+
+### **Performance & Qualité**
+
+| Section | Description | Status |
+|---------|-------------|--------|
+| [11. Performances et Scalabilité](#11-performances-et-scalabilité) | Optimisation système | ✅ |
+| [12. Tests et Qualité](#12-tests-et-qualité) | Stratégie de test | ✅ |
+| [13. Conformité RGPD](#13-conformité-rgpd) | Protection des données | ✅ |
+| [14. Roadmap Technique](#14-roadmap-technique) | Évolution future | ✅ |
+| [15. Annexes](#15-annexes) | Ressources additionnelles | ✅ |
 
 ---
 
-## 📖 1. Introduction et Contexte
+## 1. Introduction et Contexte
 
-### 🎯 **Vision du Projet ModHub**
+### **Vision et Objectifs**
 
-*Révolutionner l'écosystème des mods gaming avec une plateforme moderne, sécurisée et communautaire*
+*ModHub: référence mondiale pour la distribution et création de mods gaming*
 
-> 💡 **Mission Statement**  
-> ModHub vise à devenir la référence mondiale pour la distribution, la découverte et la création de mods gaming, en offrant une expérience utilisateur premium et des outils avancés pour les créateurs.
+**Plateforme SaaS** dédiée au partage, à la découverte et à la monétisation de mods de jeux vidéo, offrant:
+- **Architecture scalable**: Microservices, millions d'utilisateurs potentiels
+- **Sécurité**: JWT, RGPD, scan antivirus, WAF
+- **Performance**: Support fichiers volumineux (2 Go/mod), cache intelligent
+- **Monétisation**: Intégration Stripe, abonnements et mods premium
+- **Communauté**: Notation, commentaires, modération avancée
 
-### 🚀 1.1 Présentation du Projet
+### **Phases de Développement**
 
-**ModHub** est une plateforme SaaS innovante dédiée au partage, à la découverte et à la monétisation de mods de jeux vidéo. Elle permet aux créateurs de publier leurs modifications de jeux et aux joueurs de les découvrir, télécharger et évaluer facilement.
-
-### 1.2 Objectifs Techniques
-
-- **Scalabilité** : Architecture microservices capable de supporter des millions d'utilisateurs
-- **Performance** : Temps de réponse optimisés avec mise en cache intelligente
-- **Sécurité** : Conformité RGPD et protection des données utilisateurs
-- **Disponibilité** : Uptime de 99.9% avec redondance et monitoring continu
-- **Expérience Utilisateur** : Interface moderne et responsive avec Blazor WebAssembly
-
-### 1.3 Contraintes et Exigences
-
-- **Conformité RGPD** : Gestion complète des données personnelles
-- **Sécurité renforcée** : Authentification JWT, scan antivirus, WAF
-- **Performance** : Support de fichiers volumineux (jusqu'à 2 Go par mod)
-- **Monétisation** : Intégration Stripe pour les paiements
-- **Communauté** : Système de notation, commentaires et modération
-
-### 1.4 Périmètre Technique
-
-**Phase 1 - Infrastructure** ✅ *Complétée*
-- Déploiement containerisé avec Docker
-- Gateway API avec Ocelot
-- Services de base (Auth, Mods, Payments, Community)
-- Monitoring ELK + Prometheus/Grafana
-
-**Phase 2 - Développement** 🔄 *En cours*
-- Frontend Blazor WebAssembly
-- APIs REST complètes
-- Système de fichiers et storage
-- Tests automatisés
-
-**Phase 3 - Production** 📋 *Planifiée*
-- Optimisations performances
-- CDN et cache distribué
-- Backup et disaster recovery
+| Phase | Statut | Éléments clés |
+|-------|--------|---------------|
+| **Infrastructure** | ✅ | Docker, Ocelot, MongoDB, JWT |
+| **Features Core** | ✅ | Auth, Upload/download, Recherche |
+| **Premium** | ⏳ | Paiements, Abonnements, Analytics |
+| **Évolution** | 🔮 | IA, Social, Marketplace, Intégrations |
 
 ---
 
-## 🏛️ 2. Architecture Générale
+## 2. Architecture Générale
 
 ![Architecture](https://img.shields.io/badge/Architecture-Microservices-ff6b6b?style=for-the-badge&logo=microgenetics)
 ![Pattern](https://img.shields.io/badge/Pattern-Domain%20Driven-4ecdc4?style=for-the-badge)
-![Cloud](https://img.shields.io/badge/Cloud-Ready-45b7d1?style=for-the-badge&logo=cloud)
 
-> 📜 **Principes Architecturaux**  
-> **Scalabilité** | **Modularité** | **Sécurité** | **Performance** | **Maintenabilité**
-
-### 🔍 2.1 Vue d'Ensemble Architecture Microservices
+### 2.1 Vue d'Ensemble
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│                 │    │                 │    │                 │
-│  Frontend SPA   │◄───┤  API Gateway    │◄───┤  Load Balancer  │
-│ Blazor WASM     │    │    (Ocelot)     │    │     (Nginx)     │
-│                 │    │                 │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │
-                ┌───────────────┼───────────────┐
-                │               │               │
-        ┌───────▼────┐  ┌──────▼──────┐ ┌─────▼─────┐
-        │            │  │             │ │           │
-        │ UsersService│  │ ModsService │ │PaymentSvc │
-        │   :8080    │  │   :8080     │ │   :80     │
-        │            │  │             │ │           │
-        └────────────┘  └─────────────┘ └───────────┘
-                │               │               │
-        ┌───────▼────┐  ┌──────▼──────┐ ┌─────▼─────┐
-        │Community   │  │ FileService │ │Notification│
-        │Service     │  │   :80       │ │Service    │
-        │  :8080     │  │             │ │   :80     │
-        └────────────┘  └─────────────┘ └───────────┘
-                │
-        ┌───────▼────────────────────────────────────┐
-        │              Data Layer                    │
-        │  MongoDB   RabbitMQ   Redis   Elasticsearch│
-        │   :27017    :5672    :6379      :9200     │
-        └────────────────────────────────────────────┘
+┌────────────┐   ┌────────────┐   ┌────────────┐
+│ Frontend   │◄──┤ API Gateway│◄──┤ Load       │
+│ Blazor WASM│   │ (Ocelot)   │   │ Balancer   │
+└────────────┘   └────────────┘   └────────────┘
+                       │
+        ┌──────────────┼──────────────┐
+        │              │              │
+  ┌─────▼────┐   ┌────▼─────┐   ┌────▼────┐
+  │Users     │   │Mods      │   │Payment  │
+  │Service   │   │Service   │   │Service  │
+  └─────┬────┘   └────┬─────┘   └────┬────┘
+        │             │              │
+  ┌─────▼────┐   ┌────▼─────┐   ┌────▼────┐
+  │Community │   │File      │   │Notif    │
+  │Service   │   │Service   │   │Service  │
+  └─────┬────┘   └──────────┘   └─────────┘
+        │
+  ┌─────▼────────────────────────────────┐
+  │  MongoDB  │
+  └──────────────────────────────────────┘
 ```
 
-### 2.2 Patterns Architecturaux
+### 2.2 Patterns et Communications
 
-**Domain-Driven Design (DDD)**
-- Séparation claire des domaines métier
-- Modèles riches avec logique métier encapsulée
-- Repositories pour l'abstraction des données
+**Patterns Clés**
 
-**CQRS (Command Query Responsibility Segregation)**
-- Séparation commandes/requêtes dans les services critiques
-- Optimisation des performances de lecture
-- Événements pour la synchronisation
+| Pattern | Caractéristiques principales |
+|---------|------------------------------|
+| **DDD** | • Domaines métier séparés<br>• Modèles riches avec logique encapsulée |
+| **CQRS** | • Séparation lecture/écriture<br>• Optimisation performances |
+| **Event Sourcing** | • Audit trail pour opérations critiques |
 
-**Event Sourcing (Partiel)**
-- Historique des modifications critiques (mods, paiements)
-- Audit trail complet
-- Replay d'événements pour debug
-
-### 2.3 Communication Inter-Services
-
-**Synchrone (HTTP/REST)**
-- APIs REST pour les opérations CRUD
-- Authentification JWT Bearer
-- Documentation OpenAPI/Swagger
-
-**Asynchrone (Message Queues)**
-- RabbitMQ pour les événements métier
-- Traitement différé des fichiers
-- Notifications push et email
-
-**Patterns de Résilience**
-- Circuit Breaker (Ocelot)
-- Retry policies
-- Timeout configuration
-- Health checks
+**Communication**
+- **REST/HTTP**: Opérations CRUD, JWT Bearer, OpenAPI
+- **Asynchrone**: RabbitMQ, traitement fichiers, notifications
+- **Résilience**: Circuit Breaker, retry policies, health checks
 
 ---
 
-## ⚙️ 3. Spécifications Techniques
+## 3. Spécifications Techniques
 
-### 🎯 **Stack Technologique ModHub**
+### 3.1 Stack & Technologies
 
-![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?style=for-the-badge&logo=dotnet)
-![Blazor](https://img.shields.io/badge/Blazor-WebAssembly-blue?style=for-the-badge&logo=blazor)
-![MongoDB](https://img.shields.io/badge/MongoDB-7.0-47A248?style=for-the-badge&logo=mongodb)
-![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker)
+| Composant | Technologie | Caractéristiques |
+|-----------|-------------|------------------|
+| **Runtime** | .NET 9.0 | LTS, performances optimales |
+| **Frontend** | Blazor WebAssembly 8.0 | SPA moderne C# |
+| **UI** | MudBlazor 8.7.0 | Material Design |
+| **API Gateway** | Ocelot 23.3+ | Routage centralisé |
+| **Database** | MongoDB 7.0+ | NoSQL scalable |
+| **Sécurité** | JWT, Identity, Argon2id | Authentification sécurisée |
+| **Paiements** | Stripe API 4.0+ | Intégration complète |
+| **Ops** | Docker 27.0+, Nginx 1.26+ | Containerisation, load balancing |
+| **Monitoring** | Prometheus/Grafana, ELK | Métriques et logs centralizés |
 
-> ⚡ **Technologies de Pointe**  
-> Stack moderne et performante conçue pour la **scalabilité**, la **sécurité** et l'**expérience utilisateur optimale**
+### 3.2 Performances & Sécurité
 
-### 🛠️ 3.1 Stack Technologique
+**Exigences Performance**
 
-| Composant | Technologie | Version | Justification |
-|-----------|-------------|---------|---------------|
-| **Runtime** | .NET | 9.0 | LTS, performances optimales |
-| **Frontend** | Blazor WebAssembly | 8.0 | SPA moderne C# |
-| **UI Framework** | MudBlazor | 8.7.0 | Material Design |
-| **API Gateway** | Ocelot | 23.3+ | Routing centralisé |
-| **Base de Données** | MongoDB | 7.0+ | NoSQL scalable |
-| **Authentification** | JWT + Identity | - | Sécurité standard |
-| **Paiements** | Stripe API | 4.0+ | Solution éprouvée |
-| **Containerisation** | Docker | 27.0+ | Déploiement uniforme |
-| **Proxy** | Nginx | 1.26+ | Load balancing, SSL termination |
-| **Monitoring** | Prometheus/Grafana | Latest | Métriques et alerting |
-| **Logs** | ELK Stack | 8.15+ | Centralisation logs |
+| Métrique | Objectif | Capacité |
+|-----------|----------|-----------|
+| **Temps de réponse** | API < 50ms, Web < 2s | Support haute disponibilité |
+| **Throughput** | 10,000 req/sec | 1,000 uploads simultanés |
+| **SLA** | 99.9% | RTO < 15min, RPO < 5min |
 
-### 3.2 Exigences Performances
+**Sécurité**
+- **Accès**: JWT + refresh tokens, MFA (TOTP), Rôles hiérarchiques
+- **Données**: AES-256 (repos), TLS 1.3 (transit), Conformité RGPD
+- **Fichiers**: Scanning antivirus, validation MIME, signatures numériques
 
-**Temps de Réponse**
-- API Gateway : < 50ms (95th percentile)
-- Pages web : < 2s (First Contentful Paint)
-- Recherche : < 100ms pour 10k résultats
-- Téléchargement : 10 MB/s minimum
+### 3.3 Contraintes & Compatibilité
 
-**Throughput**
-- 10,000 req/sec sur l'API Gateway
-- 1,000 uploads simultanés
-- 100,000 utilisateurs connectés
+**Fichiers & Formats**
+- Mods: max 2 Go/fichier, 5 Go/projet
+- Archives: .zip, .7z, .rar, .tar.gz
+- Média: .jpg, .png, .webp, .svg (.mp4, .gif limités)
 
-**Disponibilité**
-- SLA 99.9% (8h46min downtime/an max)
-- RTO (Recovery Time Objective) : < 15 minutes
-- RPO (Recovery Point Objective) : < 5 minutes
-
-### 3.3 Exigences Sécurité
-
-**Authentification/Autorisation**
-- JWT avec refresh tokens
-- Rôles : Admin, Moderator, Creator, User
-- MFA optionnelle (TOTP)
-- Rate limiting par IP/utilisateur
-
-**Protection des Données**
-- Chiffrement AES-256 au repos
-- TLS 1.3 en transit
-- Hashage mot de passe (Argon2id)
-- Anonymisation/pseudonymisation RGPD
-
-**Sécurité Fichiers**
-- Scan antivirus (ClamAV)
-- Validation type MIME
-- Quarantaine temporaire
-- Signature numérique des releases
-
-### 3.4 Contraintes Techniques
-
-**Taille Fichiers**
-- Mod maximum : 2 Go
-- Images : 10 Mo max
-- Assets totaux par mod : 5 Go
-
-**Formats Supportés**
-- Archives : .zip, .7z, .rar, .tar.gz
-- Images : .jpg, .png, .webp, .svg
-- Docs : .md, .txt, .pdf
-
-**Compatibilité Navigateurs**
-- Chrome 120+, Firefox 121+, Safari 17+
-- Edge 120+
-- Support mobile responsive
+**Support Navigateurs**
+- Chrome/Edge 120+, Firefox 121+, Safari 17+
+- Design responsive mobile/tablette
 
 ---
 
 ## 4. Microservices et APIs
 
-### 4.1 Gateway API (Ocelot)
+### 4.1 Architecture API
 
-**Responsabilités :**
-- Routage des requêtes vers les microservices
-- Authentification et autorisation centralisées
-- Rate limiting et monitoring
-- Load balancing et fail-over
+**Gateway (Ocelot)**
 
-**Endpoints Gateway :**
+| Route | Service | Fonctionnalités principales |
+|-------|---------|-------------------------|
+| `/api/v1/users/*` | **UsersService** | Authentification, profils utilisateurs, rôles |
+| `/api/v1/mods/*` | **ModsService** | Publication, recherche, téléchargement |
+| `/api/v1/payments/*` | **PaymentsService** | Abonnements, transactions, webhooks Stripe |
+| `/api/v1/community/*` | **CommunityService** | Forums, notation, modération |
 
-| Route | Service Cible | Description |
-|-------|---------------|-------------|
-| `/api/v1/users/*` | UsersService | Gestion utilisateurs |
-| `/api/v1/mods/*` | ModsService | Gestion mods |
-| `/api/v1/payments/*` | PaymentsService | Gestion paiements |
-| `/api/v1/community/*` | CommunityService | Features communautaires |
+### 4.2 Services Principaux
 
-### 4.2 UsersService (Port :8080)
+**UsersService**
+```http
+POST /api/auth/register     # Création compte
+POST /api/auth/login        # Authentification
+GET  /api/users/profile     # Profil utilisateur
+POST /api/passwordreset     # Reset sécurisé
+```
 
-**Endpoints Principaux :**
-- `POST /api/auth/register` - Inscription utilisateur
-- `POST /api/auth/login` - Connexion utilisateur
-- `POST /api/auth/refresh` - Rafraîchissement token
-- `GET /api/users/profile` - Récupération profil
-- `PUT /api/users/profile` - Mise à jour profil
-- `POST /api/passwordreset` - Réinitialisation mot de passe
+**ModsService**
+```http
+GET  /api/mods              # Recherche avancée + filtres
+POST /api/mods              # Upload avec validation
+GET  /api/mods/{id}         # Détails complets
+POST /api/mods/{id}/download # Téléchargement sécurisé
+POST /api/mods/{id}/rate    # Notation communautaire
+```
 
-**Modèles :** User, UserProfile, AuthTokens
+**PaymentsService**
+- Intégration Stripe PCI DSS conforme
+- Gestion abonnements, transactions one-time
+- Webhooks pour événements de paiement
 
-### 4.3 ModsService (Port :8080)
+### 4.3 Services Support
 
-**Endpoints Principaux :**
-- `GET /api/mods` - Liste des mods avec pagination
-- `POST /api/mods` - Upload nouveau mod
-- `GET /api/mods/{id}` - Détails d'un mod
-- `PUT /api/mods/{id}` - Mise à jour mod
-- `DELETE /api/mods/{id}` - Suppression mod
-- `GET /api/mods/{id}/download` - Téléchargement mod
-- `POST /api/mods/{id}/rate` - Note et commentaire
+**Services auxiliaires** assurant des fonctions essentielles:
 
-### 4.4 PaymentsService (Port :80)
-
-**Endpoints Principaux :**
-- `POST /api/payments/subscribe` - Création abonnement
-- `POST /api/payments/cancel` - Annulation abonnement
-- `GET /api/payments/history` - Historique transactions
-- `POST /api/webhooks/stripe` - Webhooks Stripe
-
-### 4.5 CommunityService (Port :80)
-
-**Endpoints Principaux :**
-- `GET /api/community/forums` - Liste des forums
-- `POST /api/community/posts` - Création post
-- `GET /api/community/notifications` - Notifications utilisateur
-- `POST /api/community/reports` - Signalement contenu
-- Modération automatique (filtres)
-- Signalements et sanctions
-
-### 4.6 Services Annexes
-
-**FileService** (Port :80)
-- Stockage et serving fichiers
-- CDN et cache
-- Compression et optimisation
-
-**NotificationService** (Port :80)
-- Push notifications
-- Emails transactionnels
-- Webhooks tiers
-
-**SearchService** (Port :80)
-- Recherche full-text Elasticsearch
-- Suggestions et autocomplétion
+| Service | Fonctions clés |
+|---------|---------------|
+| **FileService** | Gestion fichiers volumineux, CDN, optimisations |
+| **CommunityService** | Forums, commentaires, signalements |
+| **ModerationService** | Dashboard modération, gestion signalements, sanctions utilisateurs |
+| **NotificationService** | Temps réel (SignalR), emails, push notifications |
 - Analytics de recherche
 
 **AdminService** (Port :80)
@@ -353,106 +223,152 @@
 
 ### 5.1 Architecture de Données
 
-**MongoDB** - Base principale NoSQL
-- Collections par domaine métier
-- Réplication Master-Slave (3 nodes)
-- Sharding par région géographique
-- Index optimisés pour les requêtes fréquentes
-
-**Redis** - Cache et sessions
-- Cache L2 pour les données fréquemment accédées
-- Sessions utilisateurs
-- Rate limiting compteurs
-- Job queues temporaires
-
-**Elasticsearch** - Recherche et analytics
-- Index full-text des mods
-- Logs centralisés
-- Métriques d'usage
+| Stockage | Rôle principal | Caractéristiques |
+|----------|--------------|------------------|
+| **MongoDB** | Base principale | • Collections par domaine<br>• Réplication (3 nodes)<br>• Sharding géographique |
+| **Redis** | Cache et sessions | • Cache L2<br>• Sessions<br>• Rate limiting |
+| **Elasticsearch** | Recherche | • Index full-text<br>• Logs<br>• Analytics |
 
 ### 5.2 Modèle Conceptuel de Données (MCD)
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│      User       │     │      Mod        │     │    Comment      │
-├─────────────────┤     ├─────────────────┤     ├─────────────────┤
-│ Id (ObjectId)   │────┐│ Id (ObjectId)   │────┐│ Id (ObjectId)   │
-│ Email           │    ││ Title           │    ││ Content         │
-│ Username        │    ││ Description     │    ││ Rating (1-5)    │
-│ PasswordHash    │    ││ Version         │    ││ CreatedAt       │
-│ Roles[]         │    ││ FileSize        │    ││ UpdatedAt       │
-│ CreatedAt       │    ││ DownloadCount   │    ││ UserId (FK)     │
-│ Profile         │    ││ Rating          │    ││ ModId (FK)      │
-│ IsActive        │    ││ Tags[]          │    ││ ParentId (FK)   │
-└─────────────────┘    ││ CreatedAt       │    │└─────────────────┘
-                       ││ UpdatedAt       │    │        │
-┌─────────────────┐    ││ UserId (FK)     │    │        │
-│    Payment      │    ││ CategoryId (FK) │    │        │
-├─────────────────┤    │└─────────────────┘    │        │
-│ Id (ObjectId)   │    │        │              │        │
-│ Amount          │    │        │              │        │
-│ Currency        │    │        │              │        │
-│ Status          │    │        │              │        │
-│ StripeId        │    │        │              │        │
-│ CreatedAt       │    │        │              │        │
-│ UserId (FK)     │────┘        │              │        │
-│ ModId (FK)      │─────────────┘              │        │
-└─────────────────┘                            │        │
-                                               │        │
-┌─────────────────┐     ┌─────────────────┐   │        │
-│    Category     │     │    ModFile      │   │        │
-├─────────────────┤     ├─────────────────┤   │        │
-│ Id (ObjectId)   │────┐│ Id (ObjectId)   │   │        │
-│ Name            │    ││ FileName        │   │        │
-│ Description     │    ││ FilePath        │   │        │
-│ IconUrl         │    ││ FileSize        │   │        │
-│ Color           │    ││ MimeType        │   │        │
-│ IsActive        │    ││ UploadedAt      │   │        │
-└─────────────────┘    ││ ModId (FK)      │───┘        │
-                       │└─────────────────┘            │
-                       │                               │
-┌─────────────────┐    │ ┌─────────────────┐          │
-│   Notification  │    │ │      Tag        │          │
-├─────────────────┤    │ ├─────────────────┤          │
-│ Id (ObjectId)   │    │ │ Id (ObjectId)   │          │
-│ Title           │    │ │ Name            │          │
-│ Content         │    │ │ Color           │          │
-│ Type            │    │ │ Usage Count     │          │
-│ IsRead          │    │ │ CreatedAt       │          │
-│ CreatedAt       │    │ └─────────────────┘          │
-│ UserId (FK)     │────┘                              │
-│ RelatedId       │                                   │
-└─────────────────┘                                   │
-                                                      │
-┌─────────────────┐                                   │
-│    AuditLog     │                                   │
-├─────────────────┤                                   │
-│ Id (ObjectId)   │                                   │
-│ EntityType      │                                   │
-│ EntityId        │                                   │
-│ Action          │                                   │
-│ Changes         │                                   │
-│ UserId (FK)     │───────────────────────────────────┘
-│ Timestamp       │
-│ IPAddress       │
-└─────────────────┘
+```mermaid
+erDiagram
+    USER {
+        string id PK
+        string email
+        string username
+        string passwordHash
+        array roles
+        bool isActive
+    }
+    MOD {
+        string id PK
+        string title
+        string description
+        string version
+        number downloads
+        number rating
+        string userId FK
+        string categoryId FK
+    }
+    MODFILE {
+        string id PK
+        string fileName
+        string path
+        number fileSize
+        string version
+        string contentType
+        string checksum
+        string modId FK
+    }
+    CATEGORY {
+        string id PK
+        string name
+        string slug
+        string description
+        string iconUrl
+    }
+    TAG {
+        string id PK
+        string name
+        string slug
+    }
+    PAYMENT {
+        string id PK
+        number amount
+        string status
+        string stripeId
+        string userId FK
+        string modId FK
+    }
+    COMMENT {
+        string id PK
+        string content
+        number rating
+        string userId FK
+        string modId FK
+    }
+    USER ||--o{ MOD : creates
+    USER ||--o{ COMMENT : writes
+    USER ||--o{ PAYMENT : makes
+    MOD ||--o{ COMMENT : receives
+    MOD ||--o{ PAYMENT : generates
 ```
 
 ### 5.3 Collections MongoDB
 
-**Collections Principales :**
-- **Users** : Informations utilisateur, profil, préférences, statistiques
-- **Mods** : Métadonnées des mods, fichiers, images, statistiques
-- **Comments** : Commentaires et ratings des mods
-- **Payments** : Transactions et abonnements
-- **Categories** : Classification des mods
-- **Notifications** : Système de notifications
+| **Collections Principales** | **Collections Secondaires** |
+|----------------------------|-----------------------------|
+| - Users                     | - Sessions                 |
+| - Mods                      | - Reports                  |
+| - Categories                | - Analytics                |
+| - Comments                  | - MessageThreads           |
+| - Payments                  | - Messages                 |
+| - ModFiles                  |                            |
+| - Notifications             |                            |
 
-**Structure des données simplifiée :**
-- Collections normalisées avec relations via ObjectId
-- Index optimisés pour les requêtes fréquentes
-- Validation des schémas côté application
-- Gestion des versions et du cache
+**Exemples de Documents :**
+
+```json
+// Users
+{
+  "_id": "ObjectId('60d21b4667d0d8992e610c85')",
+  "email": "user@modhub.ovh",
+  "username": "modmaster",
+  "passwordHash": "$argon2id$v=19$m=65536,t=3,p=4$...",
+  "roles": ["user", "creator"],
+  "profile": { 
+    "displayName": "Mod Master", 
+    "avatarUrl": "/images/avatars/user1.webp", 
+    "socialLinks": ["https://github.com/modmaster"]
+  },
+  "preferences": { 
+    "emailNotifications": true, 
+    "theme": "dark"
+  },
+  "createdAt": "2025-06-15T10:23:54Z",
+  "isActive": true
+}
+
+// Mods
+{
+  "_id": "ObjectId('60d21b9c67d0d8992e610c86')",
+  "title": "Enhanced Graphics Pack",
+  "description": "Améliore les textures et effets visuels du jeu",
+  "version": "2.1.5",
+  "versionHistory": [
+    { 
+      "version": "2.1.5", 
+      "changes": "Optimisation des performances", 
+      "fileId": "ObjectId('60d21bb567d0d8992e610c87')" 
+    }
+  ],
+  "downloads": 15426,
+  "rating": { "average": 4.7, "count": 342 },
+  "tags": ["graphics", "visuals", "performance"],
+  "price": { "amount": 5.99, "currency": "EUR", "type": "onetime" },
+  "userId": "ObjectId('60d21b4667d0d8992e610c85')",
+  "categoryId": "ObjectId('60d21b2667d0d8992e610c84')",
+  "status": "published"
+}
+
+// ModFiles
+{
+  "_id": "ObjectId('60d21bb567d0d8992e610c87')",
+  "fileName": "enhanced-graphics-v2.1.5.zip",
+  "path": "/storage/mods/60d21b9c/enhanced-graphics-v2.1.5.zip",
+  "fileSize": 157483982,
+  "version": "2.1.5",
+  "contentType": "application/zip",
+  "checksum": "sha256:8a9d3e4e57f35db232f0e7c3b922cda9b07f4e7c114334ea45",
+  "modId": "ObjectId('60d21b9c67d0d8992e610c86')"
+}
+```
+
+**Structure des données:**
+- Relations via ObjectId entre collections
+- Index optimisés pour recherches fréquentes
+- Validation des schémas (JSON Schema)
 
 ### 5.4 Index et Optimisations
 
@@ -470,17 +386,17 @@
 
 ---
 
-## 🛡️ 6. Sécurité et Authentification
+## 6. Sécurité et Authentification
 
 ![Security](https://img.shields.io/badge/Security-OWASP%20Compliant-red?style=for-the-badge&logo=security)
 ![JWT](https://img.shields.io/badge/JWT-Authentication-black?style=for-the-badge&logo=jsonwebtokens)
 ![HTTPS](https://img.shields.io/badge/HTTPS-Enforced-green?style=for-the-badge&logo=letsencrypt)
 ![GDPR](https://img.shields.io/badge/GDPR-Compliant-blue?style=for-the-badge&logo=european-union)
 
-> 🎯 **Sécurité de Niveau Entreprise**  
+> **Sécurité de Niveau Entreprise**  
 > Implémentation des **meilleures pratiques OWASP**, **authentification multi-facteurs** et **chiffrement bout-en-bout**
 
-### 🔐 6.1 Architecture de Sécurité
+### 6.1 Architecture de Sécurité
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -754,13 +670,22 @@ Admin (Superadmin)
 - **Stockage** : 400 GB NVMe SSD
 - **OS** : Ubuntu 22.04 LTS + Docker
 
-### 7.5 Stratégie de Backup
+### 7.5 Stratégie de Backup et Récupération
 
 **Backup automatisé :**
 - **MongoDB** : Backup toutes les 4h, rétention 30 jours
 - **Fichiers** : Backup quotidien, stockage S3
 - **Système** : Backup hebdomadaire complet
 - **RTO/RPO** : Recovery < 15 minutes, perte max 4h
+
+**Plan de récupération MongoDB :**
+- **Corruption WiredTiger** : Détection automatisée et alerte
+- **Procédure de restauration** : 
+  1. Isolation du node corrompu
+  2. Utilisation de backups incrémentiels `/docker/data/mongo_backup_*`
+  3. Réinitialisation clean avec `docker-compose down` puis `up`
+  4. Vérification intégrité post-restauration avec `db.runCommand({dbHash:1})`
+- **Documentation** : Procédure détaillée dans `/ops/recovery/mongodb.md`
 
 ### 7.6 Haute Disponibilité
 
@@ -1437,7 +1362,6 @@ REPORT (Signalement)
 | **MongoDB** | Base de données NoSQL orientée documents |
 | **MudBlazor** | Framework UI pour Blazor avec composants Material Design |
 | **OWASP** | Organisation de référence pour la sécurité des applications web |
-| **Redis** | Base de données en mémoire utilisée pour le cache et les sessions |
 | **RGPD** | Règlement Général sur la Protection des Données |
 | **SaaS** | Software as a Service - Logiciel en tant que service |
 | **SignalR** | Bibliothèque pour ajouter des fonctionnalités temps réel aux applications |
@@ -1445,13 +1369,13 @@ REPORT (Signalement)
 ### 15.2 Configuration d'Environnement
 
 **Variables d'Environnement Essentielles :**
-- **Base de données** : MongoDB, Redis
+- **Base de données** : MongoDB, 
 - **Authentification** : JWT (Secret, Issuer, Audience)
 - **Services externes** : Stripe (Secret/Publishable Key), Azure Storage
 - **SMTP** : Configuration email (Host, Port, Credentials)
 - **Monitoring** : Seq Server, Application Name, Environment
 
-**Docker Compose** : MongoDB 7.0, Redis 7.2, Seq Logging
+**Docker Compose** : MongoDB 7.0
 
 ### 15.3 Déploiement et Maintenance
 
