@@ -518,5 +518,58 @@ namespace ModsService.Services
                 };
             }
         }
+
+        public async Task<ApiResponse<bool>> AddRatingAsync(string modId, string userId, int rating)
+        {
+            try
+            {
+                // Vérifier que le mod existe
+                var modResponse = await GetModByIdAsync(modId);
+                
+                if (!modResponse.Success || modResponse.Data == null)
+                {
+                    return new ApiResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Mod non trouvé",
+                        Data = false
+                    };
+                }
+                
+                // Ajouter la note via le repository
+                var result = await _modRepository.AddRatingAsync(modId, userId, rating);
+                
+                if (result.Success)
+                {
+                    // Invalider le cache du mod pour forcer la mise à jour
+                    await _cacheService.RemoveAsync($"MOD_{modId}");
+                    
+                    return new ApiResponse<bool>
+                    {
+                        Success = true,
+                        Message = "Note ajoutée avec succès",
+                        Data = true
+                    };
+                }
+                else
+                {
+                    return new ApiResponse<bool>
+                    {
+                        Success = false,
+                        Message = result.Message ?? "Erreur lors de l'ajout de la note",
+                        Data = false
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = $"Une erreur est survenue lors de l'ajout de la note: {ex.Message}",
+                    Data = false
+                };
+            }
+        }
     }
 }

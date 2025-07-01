@@ -81,6 +81,11 @@ namespace ModsService.Services
         /// Génère le changelog entre deux versions d'un mod
         /// </summary>
         Task<string> GenerateChangelogAsync(string modId, string fromVersion, string toVersion);
+        
+        /// <summary>
+        /// Ajoute une note à un mod
+        /// </summary>
+        Task<ApiResponse<bool>> AddRatingAsync(string modId, string userId, int rating);
     }
     
     /// <summary>
