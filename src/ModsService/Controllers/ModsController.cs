@@ -576,7 +576,6 @@ namespace ModsService.Controllers
                 Data = stats
             });
         }
-    }
     
     /// <summary>
     /// Upload un nouveau mod complet (fichier, métadonnées, image)

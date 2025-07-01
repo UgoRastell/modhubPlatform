@@ -33,6 +33,8 @@ builder.Services.AddScoped<IModService, ModService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IVersioningService, VersioningService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddScoped<IAntivirusService, AntivirusService>();
+builder.Services.AddScoped<ModsService.Services.Download.IDownloadService, ModsService.Services.Download.DownloadService>();
 
 // Configure FileStorage
 builder.Services.Configure<FileStorageSettings>(builder.Configuration.GetSection("FileStorage"));

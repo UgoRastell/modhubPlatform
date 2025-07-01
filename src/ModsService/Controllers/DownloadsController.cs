@@ -43,8 +43,8 @@ namespace ModsService.Controllers
         /// Télécharge un mod spécifique selon les spécifications du cahier des charges
         /// Support HTTP Range requests, validation sécurisée, streaming optimisé
         /// </summary>
-        [HttpPost("/api/mods/{modId}/download")]
-        [HttpGet("/api/mods/{modId}/download")] // Backward compatibility
+        [HttpPost("/api/v1/mods/{modId}/download")]
+        [HttpGet("/api/v1/mods/{modId}/download")] // Endpoint principal
         public async Task<IActionResult> DownloadMod(string modId, [FromQuery] string? version = null)
         {
             try
