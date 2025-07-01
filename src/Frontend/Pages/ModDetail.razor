@@ -27,7 +27,7 @@
     }
     else
     {
-        <MudBreadcrumbs Items="@breadcrumbs" Separator="/" Class="mb-4"></MudBreadcrumbs>
+        <MudBreadcrumbs T="BreadcrumbItem" Items="@breadcrumbs" Separator="/" Class="mb-4"></MudBreadcrumbs>
         <MudGrid>
             <MudItem xs="12" md="8">
                 <MudPaper Elevation="2" Class="pa-4 mb-4">
@@ -35,29 +35,29 @@
                         <MudText Typo="Typo.h4" Class="mb-2">@mod.Title</MudText>
                         @if (mod.Price == 0)
                         {
-                            <MudChip Color="Color.Success" Size="Size.Medium">Gratuit</MudChip>
+                            <MudChip T="string" Color="Color.Success" Size="Size.Medium">Gratuit</MudChip>
                         }
                         else
                         {
-                            <MudChip Color="Color.Default" Size="Size.Medium">@mod.Price.ToString("C2", new CultureInfo("fr-FR"))</MudChip>
+                            <MudChip T="string" Color="Color.Default" Size="Size.Medium">@mod.Price.ToString("C2", new CultureInfo("fr-FR"))</MudChip>
                         }
                     </div>
 
                     <MudDivider Class="my-4" />
 
                     <div class="d-flex gap-2 mb-4">
-                        <MudChip Color="Color.Primary">@mod.Game</MudChip>
-                        <MudChip Color="Color.Default">@mod.Category</MudChip>
+                        <MudChip T="string" Color="Color.Primary">@mod.Game</MudChip>
+                        <MudChip T="string" Color="Color.Default">@mod.Category</MudChip>
                         @if (mod.IsFeatured)
                         {
-                            <MudChip Color="Color.Secondary">Mis en avant</MudChip>
+                            <MudChip T="string" Color="Color.Secondary">Mis en avant</MudChip>
                         }
                     </div>
 
                     <MudText Class="mb-6">@mod.Description</MudText>
 
                     <MudText Typo="Typo.h6" Class="mb-2">Images</MudText>
-                    <MudCarousel Class="mud-width-full mb-6" Style="height:400px;" ShowArrows="true" ShowDelimiters="true" AutoCycle="true" TData="object">
+                    <MudCarousel TData="object" Class="mud-width-full mb-6" Style="height:400px;" ShowArrows="true" ShowDelimiters="true" AutoCycle="true">
                         <MudCarouselItem Transition="Transition.Slide">
                             <div class="d-flex justify-center" style="height:100%">
                                 <img src="@mod.ThumbnailUrl" style="max-height:100%; max-width:100%; object-fit:contain" alt="@mod.Title" />
@@ -73,10 +73,10 @@
                     <MudText Typo="Typo.h6" Class="mb-2">Contenu du mod</MudText>
                     <MudExpansionPanels Class="mb-6">
                         <MudExpansionPanel Text="Fichiers inclus">
-                            <MudList Dense="true">
-                                <MudListItem Icon="@Icons.Material.Filled.InsertDriveFile">main.pak (52 MB)</MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.InsertDriveFile">textures.pak (128 MB)</MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.InsertDriveFile">README.txt (4 KB)</MudListItem>
+                            <MudList T="string" Dense="true">
+                                <MudListItem T="string" Icon="@Icons.Material.Filled.InsertDriveFile">main.pak (52 MB)</MudListItem>
+                                <MudListItem T="string" Icon="@Icons.Material.Filled.InsertDriveFile">textures.pak (128 MB)</MudListItem>
+                                <MudListItem T="string" Icon="@Icons.Material.Filled.InsertDriveFile">README.txt (4 KB)</MudListItem>
                             </MudList>
                         </MudExpansionPanel>
                         <MudExpansionPanel Text="Instructions d'installation">
@@ -131,14 +131,14 @@
                     <MudDivider Class="my-4" />
 
                     <MudText Typo="Typo.h6" Class="mb-2">Informations</MudText>
-                    <MudList Dense="true">
-                        <MudListItem Icon="@Icons.Material.Filled.Person">
+                    <MudList T="string" Dense="true">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Person">
                             Créateur: <MudLink Href="#" Color="Color.Primary">@mod.Author</MudLink>
                         </MudListItem>
-                        <MudListItem Icon="@Icons.Material.Filled.Update">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Update">
                             Dernière mise à jour: @mod.UpdatedDate.ToString("dd/MM/yyyy")
                         </MudListItem>
-                        <MudListItem Icon="@Icons.Material.Filled.GetApp">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.GetApp">
                             Téléchargements: @mod.Downloads.ToString("N0", new CultureInfo("fr-FR"))
                         </MudListItem>
                     </MudList>

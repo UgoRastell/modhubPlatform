@@ -34,7 +34,7 @@
                             <MudText Typo="Typo.h3" Color="Color.Success" Style="font-weight: 600;">
                                 @revenueData.CurrentBalance.ToString("C", CultureInfo.CurrentCulture)
                             </MudText>
-                            <MudChip Color="Color.Success" Size="Size.Small" Class="ml-4" Style="height: 24px;">
+                            <MudChip T="string" Color="Color.Success" Size="Size.Small" Class="ml-4" Style="height: 24px;">
                                 Disponible
                             </MudChip>
                         </div>
@@ -125,7 +125,7 @@
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent>
-                        <MudTable Items="@modRevenues" Hover="true" Striped="false" Dense="true" 
+                        <MudTable T="ModRevenue" Items="@modRevenues" Hover="true" Striped="false" Dense="true" 
                                  Bordered="false" Filter="new Func<ModRevenue,bool>(FilterFunc1)">
                             <ToolBarContent>
                                 <MudTextField @bind-Value="searchString" Placeholder="Rechercher un mod"
@@ -189,7 +189,7 @@
                     <MudCardContent>
                         @if (paymentHistory.Count > 0)
                         {
-                            <MudTable Items="@paymentHistory" Hover="true" Bordered="false" Dense="true">
+                            <MudTable T="PaymentHistoryItem" Items="@paymentHistory" Hover="true" Bordered="false" Dense="true">
                                 <HeaderContent>
                                     <MudTh>Date</MudTh>
                                     <MudTh>Montant</MudTh>
@@ -203,7 +203,7 @@
                                     <MudTd DataLabel="Montant">@context.Amount.ToString("C", CultureInfo.CurrentCulture)</MudTd>
                                     <MudTd DataLabel="Méthode">@context.Method</MudTd>
                                     <MudTd DataLabel="Statut">
-                                        <MudChip Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                                        <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
                                             @context.Status
                                         </MudChip>
                                     </MudTd>

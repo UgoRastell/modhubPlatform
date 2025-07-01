@@ -1,5 +1,9 @@
 using Frontend.Models;
+using Frontend.Models.ModManagement;
+using Frontend.Services.Interfaces;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -158,7 +162,7 @@ namespace Frontend.Services
             }
         }
 
-        public async Task<ApiResponse<PagedResult<ModDto>>> GetUserModsAsync(string userId, int page, int pageSize)
+        public async Task<ApiResponse<PagedResult<ModDto>>> GetUserModsPagedAsync(string userId, int page, int pageSize)
         {
             try
             {
@@ -310,6 +314,175 @@ namespace Frontend.Services
             catch (Exception ex)
             {
                 return new ApiResponse<string> { Success = false, Message = $"Erreur: {ex.Message}" };
+            }
+        }
+        
+        public async Task<List<Mod>> GetUserFavoritesAsync(string userId)
+        {
+            try
+            {
+                await SetAuthHeaderAsync();
+                
+                var apiResponse = await _httpClient.GetFromJsonAsync<ApiResponse<List<ModDto>>>($"api/v1/users/{userId}/favorites");
+                
+                if (apiResponse != null && apiResponse.Success && apiResponse.Data != null)
+                {
+                    return apiResponse.Data.Select(dto => new Mod
+                    {
+                        Id = dto.Id,
+                        Title = dto.Name,
+                        Description = dto.Description,
+                        ThumbnailUrl = dto.ThumbnailUrl,
+                        Game = dto.GameName,
+                        Version = dto.Version,
+                        CreatedDate = dto.CreatedAt,
+                        UpdatedDate = dto.UpdatedAt,
+                        Downloads = (int)dto.DownloadCount,
+                        Rating = dto.AverageRating,
+                        RatingCount = dto.RatingCount,
+                        Price = 0, // Prix par défaut, non disponible directement dans ModDto
+                        IsFeatured = dto.IsFeatured,
+                        Status = dto.IsApproved ? "Published" : "Draft", // Status dérivé de IsApproved
+                        Category = dto.Categories?.FirstOrDefault() ?? string.Empty,
+                        CreatorName = dto.CreatorName,
+                        CreatorId = dto.CreatorId,
+                        IsFavorite = true
+                    }).ToList();
+                }
+                
+                return new List<Mod>();
+            }
+            catch (Exception)
+            {
+                return new List<Mod>();
+            }
+        }
+        
+        public async Task<ApiResponse<PagedResult<ModDto>>> GetUserModsAsync(string userId, int page = 1, int pageSize = 20)
+        {
+            try
+            {
+                await SetAuthHeaderAsync();
+                
+                // Appel API avec pagination
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<PagedResult<ModDto>>>($"api/v1/users/{userId}/mods?page={page}&pageSize={pageSize}");
+                
+                return response ?? new ApiResponse<PagedResult<ModDto>>
+                {
+                    Success = false,
+                    Message = "Échec de récupération des mods de l'utilisateur",
+                    Data = new PagedResult<ModDto>
+                    {
+                        Items = new List<ModDto>(),
+                        TotalCount = 0,
+                        PageIndex = page,
+                        PageSize = pageSize
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<PagedResult<ModDto>>
+                {
+                    Success = false,
+                    Message = $"Erreur lors de la récupération des mods: {ex.Message}",
+                    Data = new PagedResult<ModDto>
+                    {
+                        Items = new List<ModDto>(),
+                        TotalCount = 0,
+                        PageIndex = page,
+                        PageSize = pageSize
+                    }
+                };
+            }
+        }
+        
+        public async Task<List<ModInfo>> GetCreatorModsAsync(string creatorId, string status = null)
+        {
+            try
+            {
+                await SetAuthHeaderAsync();
+                
+                string endpoint = $"api/v1/creators/{creatorId}/mods";
+                if (!string.IsNullOrEmpty(status))
+                {
+                    endpoint += $"?status={Uri.EscapeDataString(status)}";
+                }
+                
+                var apiResponse = await _httpClient.GetFromJsonAsync<ApiResponse<List<ModDto>>>(endpoint);
+                
+                if (apiResponse != null && apiResponse.Success && apiResponse.Data != null)
+                {
+                    return apiResponse.Data.Select(dto => new ModInfo
+                    {
+                        Id = dto.Id,
+                        Title = dto.Name,
+                        Description = dto.Description,
+                        ThumbnailUrl = dto.ThumbnailUrl,
+                        Game = dto.GameName,
+                        Version = dto.Version,
+                        CreatedDate = dto.CreatedAt,
+                        UpdatedDate = dto.UpdatedAt,
+                        Downloads = (int)dto.DownloadCount,
+                        Rating = dto.AverageRating,
+                        RatingCount = dto.RatingCount,
+                        Price = 0, // Default as Price is not in ModDto
+                        IsFeatured = dto.IsFeatured,
+                        Status = dto.IsApproved ? "Published" : "Draft", // Derive status from IsApproved
+                        Category = dto.Categories?.FirstOrDefault() ?? string.Empty
+                    }).ToList();
+                }
+                
+                return new List<ModInfo>();
+            }
+            catch (Exception)
+            {
+                return new List<ModInfo>();
+            }
+        }
+        
+        public async Task<bool> AddToFavoritesAsync(string userId, string modId)
+        {
+            try
+            {
+                await SetAuthHeaderAsync();
+                
+                var response = await _httpClient.PostAsync($"api/v1/users/{userId}/favorites/{modId}", null);
+                
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        
+        public async Task<bool> RemoveFromFavoritesAsync(string userId, string modId)
+        {
+            try
+            {
+                await SetAuthHeaderAsync();
+                
+                var response = await _httpClient.DeleteAsync($"api/v1/users/{userId}/favorites/{modId}");
+                
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        
+        public async Task<string> DownloadModAsync(string modId)
+        {
+            try
+            {
+                var result = await DownloadModAsync(modId, null);
+                return result.Success ? result.Data : null;
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
     }

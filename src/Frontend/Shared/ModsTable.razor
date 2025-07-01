@@ -1,8 +1,10 @@
 @using System.Globalization
 @using Frontend.Models
+@using Frontend.Models.ModManagement
+@using MudBlazor
 
 <MudTable Items="@Mods" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@(Mods == null)" 
-         LoadingProgressColor="Color.Info" Filter="new Func<ModManagement.ModInfo, bool>(FilterFunc)">
+         LoadingProgressColor="Color.Info" Filter="new Func<ModInfo, bool>(FilterFunc)">
     <ToolBarContent>
         <MudText Typo="Typo.h6" Class="mud-text-secondary">@Status (@Mods.Count)</MudText>
         <MudSpacer />
@@ -82,21 +84,21 @@
     private string searchString = "";
 
     [Parameter]
-    public List<ModManagement.ModInfo> Mods { get; set; }
+    public List<ModInfo> Mods { get; set; }
     
     [Parameter]
     public string Status { get; set; }
     
     [Parameter]
-    public EventCallback<ModManagement.ModInfo> OnEdit { get; set; }
+    public EventCallback<ModInfo> OnEdit { get; set; }
     
     [Parameter]
-    public EventCallback<ModManagement.ModInfo> OnView { get; set; }
+    public EventCallback<ModInfo> OnView { get; set; }
     
     [Parameter]
-    public EventCallback<ModManagement.ModInfo> OnDelete { get; set; }
+    public EventCallback<ModInfo> OnDelete { get; set; }
     
-    private bool FilterFunc(ModManagement.ModInfo mod)
+    private bool FilterFunc(ModInfo mod)
     {
         if (string.IsNullOrWhiteSpace(searchString))
             return true;

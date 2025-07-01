@@ -98,10 +98,10 @@
                     
                     @if (popularMods.Count > 0)
                     {
-                        <MudList Clickable="true" Class="py-0">
+                        <MudList T="string" Clickable="true" Class="py-0">
                             @foreach (var mod in popularMods)
                             {
-                                <MudListItem Icon="@Icons.Material.Filled.Extension" 
+                                <MudListItem T="string" Icon="@Icons.Material.Filled.Extension" 
                                             OnClick="@(() => NavigationManager.NavigateTo($"/mods/{mod.Id}"))" 
                                             Class="pa-0 mb-2">
                                     <div class="d-flex align-center justify-space-between w-100">

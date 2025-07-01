@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
 @using Frontend.Models
+@using Frontend.Models.ModManagement
 @inject IModService ModService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
@@ -242,21 +243,5 @@
             Snackbar.Add($"Erreur lors de la suppression: {ex.Message}", Severity.Error);
         }
     }
-    
-    // Modèles locaux
-    public class ModInfo
-    {
-        public string Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string Version { get; set; }
-        public string Status { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime UpdatedDate { get; set; }
-        public int Downloads { get; set; }
-        public double Rating { get; set; }
-        public int RatingCount { get; set; }
-        public string ThumbnailUrl { get; set; }
-        public string Game { get; set; }
-    }
+    // Local ModInfo class has been removed in favor of using Frontend.Models.ModManagement.ModInfo
 }

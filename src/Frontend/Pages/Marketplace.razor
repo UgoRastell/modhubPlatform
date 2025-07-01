@@ -9,21 +9,21 @@
 
 <PageTitle>Marketplace | ModHub</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-    <MudText Typo="Typo.h4" Class="mb-4">Découvrir des mods</MudText>
-    <MudDivider Class="mb-4" />
+<MudContainer T="object" MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText T="string" Typo="Typo.h4" Class="mb-4">Découvrir des mods</MudText>
+    <MudDivider T="object" Class="mb-4" />
 
     @if (loading)
     {
-        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" Class="my-7 d-flex mx-auto" />
+        <MudProgressCircular T="object" Color="Color.Primary" Size="Size.Large" Indeterminate="true" Class="my-7 d-flex mx-auto" />
     }
     else
     {
         <!-- Filtres et recherche -->
-        <MudPaper Elevation="2" Class="pa-4 mb-4">
-            <MudGrid>
-                <MudItem xs="12" md="6" lg="4">
-                    <MudTextField @bind-Value="searchQuery" Label="Rechercher des mods" 
+        <MudPaper T="object" Elevation="2" Class="pa-4 mb-4">
+            <MudGrid T="object">
+                <MudItem T="object" xs="12" md="6" lg="4">
+                    <MudTextField T="string" @bind-Value="searchQuery" Label="Rechercher des mods" 
                                 Variant="Variant.Outlined" Adornment="Adornment.End"
                                 AdornmentIcon="@Icons.Material.Filled.Search" 
                                 AdornmentColor="Color.Primary" 
@@ -34,24 +34,24 @@
                 <MudItem xs="12" md="6" lg="3">
                     <MudSelect T="string" Label="Jeu" Variant="Variant.Outlined"
                               @bind-Value="selectedGame" FullWidth="true" Class="mt-0">
-                        <MudSelectItem Value="@("all")">Tous les jeux</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("all")">Tous les jeux</MudSelectItem>
                         @foreach (var game in games)
                         {
-                            <MudSelectItem Value="@game">@game</MudSelectItem>
+                            <MudSelectItem T="string" Value="@game">@game</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="12" md="6" lg="3">
                     <MudSelect T="string" Label="Catégorie" Variant="Variant.Outlined"
                               @bind-Value="selectedCategory" FullWidth="true" Class="mt-0">
-                        <MudSelectItem Value="@("all")">Toutes les catégories</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("all")">Toutes les catégories</MudSelectItem>
                         @foreach (var category in categories)
                         {
-                            <MudSelectItem Value="@category">@category</MudSelectItem>
+                            <MudSelectItem T="string" Value="@category">@category</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
-                <MudItem xs="12" md="6" lg="2" Class="d-flex align-end">
+                <MudItem T="object" xs="12" md="6" lg="2" Class="d-flex align-end">
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" 
                               OnClick="ApplyFilters" FullWidth="true">
                         Appliquer les filtres
@@ -59,23 +59,23 @@
                 </MudItem>
             </MudGrid>
             
-            <MudGrid Class="mt-2">
+            <MudGrid T="object" Class="mt-2">
                 <MudItem xs="12" md="6">
                     <div class="d-flex flex-wrap gap-3">
-                        <MudCheckBox @bind-Checked="freeOnly" Label="Gratuits uniquement" Color="Color.Primary" />
-                        <MudCheckBox @bind-Checked="compatibleOnly" Label="Compatible avec mon jeu" Color="Color.Primary" />
+                        <MudCheckBox T="bool" @bind-Checked="freeOnly" Label="Gratuits uniquement" Color="Color.Primary" />
+                        <MudCheckBox T="bool" @bind-Checked="compatibleOnly" Label="Compatible avec mon jeu" Color="Color.Primary" />
                     </div>
                 </MudItem>
                 <MudItem xs="12" md="6">
                     <div class="d-flex justify-end">
                         <MudSelect T="string" Label="Trier par" Variant="Variant.Outlined"
                                   @bind-Value="sortBy" Style="width: 200px;" Class="mt-n2">
-                            <MudSelectItem Value="@("popular")">Popularité</MudSelectItem>
-                            <MudSelectItem Value="@("recent")">Plus récent</MudSelectItem>
-                            <MudSelectItem Value="@("rating")">Mieux notés</MudSelectItem>
-                            <MudSelectItem Value="@("downloads")">Plus téléchargés</MudSelectItem>
-                            <MudSelectItem Value="@("priceLow")">Prix croissant</MudSelectItem>
-                            <MudSelectItem Value="@("priceHigh")">Prix décroissant</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("popular")">Popularité</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("recent")">Plus récent</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("rating")">Mieux notés</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("downloads")">Plus téléchargés</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("priceLow")">Prix croissant</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("priceHigh")">Prix décroissant</MudSelectItem>
                         </MudSelect>
                     </div>
                 </MudItem>
@@ -86,53 +86,53 @@
         <div class="marketplace-results">
             @if (mods.Count == 0)
             {
-                <MudAlert Severity="Severity.Info" Class="my-4">Aucun mod ne correspond à vos critères.</MudAlert>
+                <MudAlert T="object" Severity="Severity.Info" Class="my-4">Aucun mod ne correspond à vos critères.</MudAlert>
             }
             else
             {
-                <MudText Typo="Typo.h6" Class="mb-4">Résultats (@mods.Count mods)</MudText>
+                <MudText T="string" Typo="Typo.h6" Class="mb-4">Résultats (@mods.Count mods)</MudText>
                 
-                <MudGrid Spacing="2" Class="mt-4">
+                <MudGrid T="object" Spacing="2" Class="mt-4">
                     @foreach (var mod in mods)
                     {
-                        <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudCard Style="height: 100%;" Elevation="2" Class="rounded-lg">
-                                <MudCardMedia Image="@mod.ThumbnailUrl" Height="200" Class="mod-thumbnail">
+                        <MudItem T="object" xs="12" sm="6" md="4" lg="3">
+                            <MudCard T="object" Style="height: 100%;" Elevation="2" Class="rounded-lg">
+                                <MudCardMedia T="object" Image="@mod.ThumbnailUrl" Height="200" Class="mod-thumbnail">
                                     @if (mod.IsFeatured)
                                     {
-                                        <MudChip Color="Color.Secondary" Size="Size.Small" Class="ma-2 featured-chip">Mis en avant</MudChip>
+                                        <MudChip T="string" Color="Color.Secondary" Size="Size.Small" Class="ma-2 featured-chip">Mis en avant</MudChip>
                                     }
                                     @if (mod.Price == 0)
                                     {
-                                        <MudChip Color="Color.Success" Size="Size.Small" Class="ma-2 price-chip">Gratuit</MudChip>
+                                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Class="ma-2 price-chip">Gratuit</MudChip>
                                     }
                                     else
                                     {
-                                        <MudChip Color="Color.Default" Size="Size.Small" Class="ma-2 price-chip">@mod.Price.ToString("C2", new CultureInfo("fr-FR"))</MudChip>
+                                        <MudChip T="string" Color="Color.Default" Size="Size.Small" Class="ma-2 price-chip">@mod.Price.ToString("C2", new CultureInfo("fr-FR"))</MudChip>
                                     }
                                 </MudCardMedia>
-                                <MudCardContent>
-                                    <MudText Typo="Typo.h6" Class="mud-text-secondary fw-bold text-truncate">@mod.Title</MudText>
+                                <MudCardContent T="object">
+                                    <MudText T="string" Typo="Typo.h6" Class="mud-text-secondary fw-bold text-truncate">@mod.Title</MudText>
                                     <div class="d-flex align-center">
-                                        <MudChip Size="Size.Small" Color="Color.Primary">@mod.Game</MudChip>
-                                        <MudChip Size="Size.Small" Color="Color.Default">@mod.Category</MudChip>
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Primary">@mod.Game</MudChip>
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Default">@mod.Category</MudChip>
                                     </div>
-                                    <MudText Typo="Typo.body2" Class="mt-2 text-truncate-2">@mod.Description</MudText>
+                                    <MudText T="string" Typo="Typo.body2" Class="mt-2 text-truncate-2">@mod.Description</MudText>
                                     
                                     <div class="d-flex justify-space-between align-center mt-2">
-                                        <MudRating ReadOnly="true" SelectedValue="@((int)Math.Round(mod.Rating))" Size="Size.Small" />
-                                        <MudText Typo="Typo.caption">@mod.RatingCount avis</MudText>
+                                        <MudRating T="int" ReadOnly="true" SelectedValue="@((int)Math.Round(mod.Rating))" Size="Size.Small" />
+                                        <MudText T="string" Typo="Typo.caption">@mod.RatingCount avis</MudText>
                                     </div>
                                     
                                     <div class="d-flex justify-space-between align-center">
-                                        <MudText Typo="Typo.caption">@mod.Downloads téléchargements</MudText>
-                                        <MudText Typo="Typo.caption">Par @mod.Author</MudText>
+                                        <MudText T="string" Typo="Typo.caption">@mod.Downloads téléchargements</MudText>
+                                        <MudText T="string" Typo="Typo.caption">Par @mod.Author</MudText>
                                     </div>
                                     
-                                    <MudText Typo="Typo.caption" Class="text-right">Mis à jour @mod.UpdatedDate.ToString("dd/MM/yyyy")</MudText>
+                                    <MudText T="string" Typo="Typo.caption" Class="text-right">Mis à jour @mod.UpdatedDate.ToString("dd/MM/yyyy")</MudText>
                                 </MudCardContent>
-                                <MudCardActions>
-                                    <MudButton FullWidth="true" Color="Color.Primary" OnClick="@(() => ViewModDetails(mod.Id))">Détails</MudButton>
+                                <MudCardActions T="object">
+                                    <MudButton T="object" FullWidth="true" Color="Color.Primary" OnClick="@(() => ViewModDetails(mod.Id))">Détails</MudButton>
                                 </MudCardActions>
                             </MudCard>
                         </MudItem>
