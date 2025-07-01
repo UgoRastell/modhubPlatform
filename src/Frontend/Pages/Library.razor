@@ -1,0 +1,139 @@
+@page "/library"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Frontend.Models
+@using System.Security.Claims
+@using Frontend.Components
+@inject IModService ModService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<PageTitle>Ma bibliothèque | ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Ma bibliothèque</MudText>
+    <MudDivider Class="mb-4" />
+
+    <AuthorizeView>
+        <Authorized>
+            @if (loading)
+            {
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" Class="my-7 d-flex mx-auto" />
+            }
+            else if (userMods?.Count > 0)
+            {
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+                            <MudTabPanel Text="Tous" Icon="@Icons.Material.Filled.AllInbox">
+                                <MudGrid>
+                                    @foreach (var mod in userMods)
+                                    {
+                                        <MudItem xs="12" sm="6" md="4" lg="3">
+                                            <ModCard Mod="mod" OnClick="@(() => NavigateToModDetails(mod.Id))" />
+                                        </MudItem>
+                                    }
+                                </MudGrid>
+                            </MudTabPanel>
+                            <MudTabPanel Text="Récemment ajoutés" Icon="@Icons.Material.Filled.NewReleases">
+                                <MudGrid>
+                                    @foreach (var mod in recentMods)
+                                    {
+                                        <MudItem xs="12" sm="6" md="4" lg="3">
+                                            <ModCard Mod="mod" OnClick="@(() => NavigateToModDetails(mod.Id))" />
+                                        </MudItem>
+                                    }
+                                </MudGrid>
+                            </MudTabPanel>
+                            <MudTabPanel Text="Favoris" Icon="@Icons.Material.Filled.Favorite">
+                                <MudGrid>
+                                    @foreach (var mod in favoriteMods)
+                                    {
+                                        <MudItem xs="12" sm="6" md="4" lg="3">
+                                            <ModCard Mod="mod" OnClick="@(() => NavigateToModDetails(mod.Id))" />
+                                        </MudItem>
+                                    }
+                                </MudGrid>
+                            </MudTabPanel>
+                        </MudTabs>
+                    </MudItem>
+                </MudGrid>
+            }
+            else
+            {
+                <MudPaper Class="d-flex flex-column align-center pa-8" Elevation="0">
+                    <MudIcon Icon="@Icons.Material.Filled.CollectionsBookmark" Color="Color.Secondary" Size="Size.Large" Class="mb-4" />
+                    <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">Votre bibliothèque est vide</MudText>
+                    <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-6">
+                        Explorez le catalogue de mods et téléchargez ceux qui vous intéressent pour les retrouver ici.
+                    </MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" 
+                              Href="/mods" EndIcon="@Icons.Material.Filled.ArrowForward">
+                        Découvrir des mods
+                    </MudButton>
+                </MudPaper>
+            }
+        </Authorized>
+        <NotAuthorized>
+            <MudAlert Severity="Severity.Info" Class="my-4">Vous devez être connecté pour accéder à votre bibliothèque.</MudAlert>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="login" Class="my-2">Se connecter</MudButton>
+        </NotAuthorized>
+    </AuthorizeView>
+</MudContainer>
+
+@code {
+    private List<Mod> userMods = new List<Mod>();
+    private List<Mod> recentMods = new List<Mod>();
+    private List<Mod> favoriteMods = new List<Mod>();
+    private bool loading = true;
+    
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateTask;
+            if (authState.User.Identity.IsAuthenticated)
+            {
+                var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await LoadUserMods(userId);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement de la bibliothèque: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task LoadUserMods(string userId)
+    {
+        // Récupérer les mods de l'utilisateur via le service
+        userMods = await ModService.GetUserModsAsync(userId);
+        
+        // Filtrer les mods récents (derniers 30 jours)
+        var thirtyDaysAgo = DateTime.Now.AddDays(-30);
+        recentMods = userMods
+            .Where(m => m.AcquiredDate >= thirtyDaysAgo)
+            .OrderByDescending(m => m.AcquiredDate)
+            .ToList();
+        
+        // Filtrer les mods favoris
+        favoriteMods = userMods
+            .Where(m => m.IsFavorite)
+            .ToList();
+    }
+
+    private void NavigateToModDetails(string modId)
+    {
+        NavigationManager.NavigateTo($"/mods/{modId}");
+    }
+}

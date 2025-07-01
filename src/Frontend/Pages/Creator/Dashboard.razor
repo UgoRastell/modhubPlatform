@@ -1,0 +1,322 @@
+@page "/creator/dashboard"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Frontend.Models
+@using System.Security.Claims
+@using System.Globalization
+@inject IModService ModService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "Creator")]
+
+<PageTitle>Tableau de bord créateur | ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Tableau de bord créateur</MudText>
+    <MudDivider Class="mb-4" />
+    
+    @if (loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" Class="my-7 d-flex mx-auto" />
+    }
+    else
+    {
+        <MudGrid>
+            <MudItem xs="12" md="6" lg="3">
+                <MudPaper Elevation="3" Class="pa-4 mud-height-full">
+                    <MudStack>
+                        <MudText Typo="Typo.subtitle1"><MudIcon Icon="@Icons.Material.Filled.Extension" Class="me-2" /> Mods publiés</MudText>
+                        <MudText Typo="Typo.h3" Color="Color.Primary" Class="mb-n2">@statistics.TotalMods</MudText>
+                        <MudText Typo="Typo.caption">Dont @statistics.ActiveMods actifs</MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+            
+            <MudItem xs="12" md="6" lg="3">
+                <MudPaper Elevation="3" Class="pa-4 mud-height-full">
+                    <MudStack>
+                        <MudText Typo="Typo.subtitle1"><MudIcon Icon="@Icons.Material.Filled.Download" Class="me-2" /> Téléchargements</MudText>
+                        <MudText Typo="Typo.h3" Color="Color.Secondary" Class="mb-n2">@statistics.TotalDownloads.ToString("N0", CultureInfo.CurrentCulture)</MudText>
+                        <MudText Typo="Typo.caption">+@statistics.MonthlyDownloads.ToString("N0", CultureInfo.CurrentCulture) ce mois-ci</MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+            
+            <MudItem xs="12" md="6" lg="3">
+                <MudPaper Elevation="3" Class="pa-4 mud-height-full">
+                    <MudStack>
+                        <MudText Typo="Typo.subtitle1"><MudIcon Icon="@Icons.Material.Filled.StarRate" Class="me-2" /> Évaluations</MudText>
+                        <MudText Typo="Typo.h3" Color="Color.Tertiary" Class="mb-n2">@statistics.AverageRating.ToString("0.0", CultureInfo.InvariantCulture)
+                            <span style="font-size: 60%; opacity: 0.7;">/5.0</span>
+                        </MudText>
+                        <MudText Typo="Typo.caption">Sur @statistics.TotalRatings évaluations</MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+            
+            <MudItem xs="12" md="6" lg="3">
+                <MudPaper Elevation="3" Class="pa-4 mud-height-full">
+                    <MudStack>
+                        <MudText Typo="Typo.subtitle1"><MudIcon Icon="@Icons.Material.Filled.Payments" Class="me-2" /> Revenus</MudText>
+                        <MudText Typo="Typo.h3" Color="Color.Success" Class="mb-n2">@statistics.MonthlyRevenue.ToString("C", CultureInfo.CurrentCulture)</MudText>
+                        <MudText Typo="Typo.caption">Ce mois-ci</MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+            
+            <MudItem xs="12" md="8">
+                <MudPaper Elevation="3" Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-4">Activité récente</MudText>
+                    
+                    @if (recentActivity.Count > 0)
+                    {
+                        <MudTimeline TimelinePosition="TimelinePosition.Left" TimelineAlign="TimelineAlign.Default">
+                            @foreach (var activity in recentActivity)
+                            {
+                                <MudTimelineItem Color="@GetActivityColor(activity.Type)" Size="Size.Small" 
+                                               Icon="@GetActivityIcon(activity.Type)" Elevation="0">
+                                    <ItemOpposite>
+                                        <MudText Typo="Typo.body2" Color="Color.Default">@activity.DateTime.ToString("dd MMM, HH:mm", CultureInfo.CurrentCulture)</MudText>
+                                    </ItemOpposite>
+                                    <ItemContent>
+                                        <MudText Typo="Typo.body1" Class="mb-n2">@activity.Title</MudText>
+                                        <MudText Typo="Typo.body2">@activity.Description</MudText>
+                                    </ItemContent>
+                                </MudTimelineItem>
+                            }
+                        </MudTimeline>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body1" Class="my-4 d-flex justify-center">Aucune activité récente</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+            
+            <MudItem xs="12" md="4">
+                <MudPaper Elevation="3" Class="pa-4 mud-height-full">
+                    <MudText Typo="Typo.h6" Class="mb-4">Mods populaires</MudText>
+                    
+                    @if (popularMods.Count > 0)
+                    {
+                        <MudList Clickable="true" Class="py-0">
+                            @foreach (var mod in popularMods)
+                            {
+                                <MudListItem Icon="@Icons.Material.Filled.Extension" 
+                                            OnClick="@(() => NavigationManager.NavigateTo($"/mods/{mod.Id}"))" 
+                                            Class="pa-0 mb-2">
+                                    <div class="d-flex align-center justify-space-between w-100">
+                                        <div>
+                                            <MudText Typo="Typo.body1">@mod.Title</MudText>
+                                            <MudText Typo="Typo.caption">@mod.DownloadsCount téléchargements</MudText>
+                                        </div>
+                                        <MudRating ReadOnly="true" SelectedValue="@mod.Rating" Max="5" />
+                                    </div>
+                                </MudListItem>
+                                <MudDivider Class="my-2" />
+                            }
+                        </MudList>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body1" Class="my-4 d-flex justify-center">Aucun mod publié</MudText>
+                    }
+                    
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" 
+                              Class="mt-4" Href="/creator/mods">
+                        Voir tous les mods
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+            
+            <MudItem xs="12">
+                <MudPaper Elevation="3" Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-4">Actions rapides</MudText>
+                    
+                    <MudGrid>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
+                                      StartIcon="@Icons.Material.Filled.Upload" Class="py-3"
+                                      Href="/creator/upload">
+                                Publier un nouveau mod
+                            </MudButton>
+                        </MudItem>
+                        
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudButton Variant="Variant.Filled" Color="Color.Secondary" FullWidth="true" 
+                                      StartIcon="@Icons.Material.Filled.ViewList" Class="py-3"
+                                      Href="/creator/mods">
+                                Gérer mes mods
+                            </MudButton>
+                        </MudItem>
+                        
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudButton Variant="Variant.Filled" Color="Color.Tertiary" FullWidth="true" 
+                                      StartIcon="@Icons.Material.Filled.Analytics" Class="py-3"
+                                      Href="/creator/analytics">
+                                Voir les statistiques
+                            </MudButton>
+                        </MudItem>
+                        
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true" 
+                                      StartIcon="@Icons.Material.Filled.Payments" Class="py-3"
+                                      Href="/creator/revenue">
+                                Gérer mes revenus
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private bool loading = true;
+    private CreatorStatistics statistics = new();
+    private List<CreatorActivity> recentActivity = new();
+    private List<PopularMod> popularMods = new();
+    
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateTask;
+            if (authState.User.Identity.IsAuthenticated)
+            {
+                // Dans un contexte réel, on chargerait ces données depuis l'API
+                await LoadCreatorDashboardData();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement du tableau de bord: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task LoadCreatorDashboardData()
+    {
+        // Simulation de chargement des données
+        await Task.Delay(500); // Remplacer par un vrai appel API
+        
+        // Données fictives pour la démonstration
+        statistics = new CreatorStatistics
+        {
+            TotalMods = 8,
+            ActiveMods = 5,
+            TotalDownloads = 24578,
+            MonthlyDownloads = 1250,
+            AverageRating = 4.2,
+            TotalRatings = 387,
+            MonthlyRevenue = 245.50m
+        };
+        
+        // Activités récentes
+        recentActivity = new List<CreatorActivity>
+        {
+            new CreatorActivity { 
+                DateTime = DateTime.Now.AddHours(-2), 
+                Title = "Nouveau téléchargement", 
+                Description = "Votre mod 'Enhanced UI' a été téléchargé 50 fois aujourd'hui",
+                Type = ActivityType.Download
+            },
+            new CreatorActivity { 
+                DateTime = DateTime.Now.AddHours(-5), 
+                Title = "Nouvelle évaluation", 
+                Description = "Votre mod 'Terrain Pack' a reçu une évaluation 5 étoiles",
+                Type = ActivityType.Rating
+            },
+            new CreatorActivity { 
+                DateTime = DateTime.Now.AddDays(-1), 
+                Title = "Commentaire", 
+                Description = "Un utilisateur a commenté sur votre mod 'Weather Effects'",
+                Type = ActivityType.Comment
+            },
+            new CreatorActivity { 
+                DateTime = DateTime.Now.AddDays(-2), 
+                Title = "Paiement reçu", 
+                Description = "Vous avez reçu un paiement de 32,50€",
+                Type = ActivityType.Payment
+            },
+        };
+        
+        // Mods populaires
+        popularMods = new List<PopularMod>
+        {
+            new PopularMod { Id = "1", Title = "Enhanced UI", DownloadsCount = 8546, Rating = 4 },
+            new PopularMod { Id = "2", Title = "Weather Effects", DownloadsCount = 6290, Rating = 5 },
+            new PopularMod { Id = "3", Title = "Terrain Pack", DownloadsCount = 4120, Rating = 4 },
+            new PopularMod { Id = "4", Title = "Combat Extension", DownloadsCount = 3850, Rating = 3 }
+        };
+    }
+    
+    private Color GetActivityColor(ActivityType type)
+    {
+        return type switch
+        {
+            ActivityType.Download => Color.Info,
+            ActivityType.Rating => Color.Warning,
+            ActivityType.Comment => Color.Secondary,
+            ActivityType.Payment => Color.Success,
+            ActivityType.Update => Color.Primary,
+            _ => Color.Default
+        };
+    }
+    
+    private string GetActivityIcon(ActivityType type)
+    {
+        return type switch
+        {
+            ActivityType.Download => Icons.Material.Filled.Download,
+            ActivityType.Rating => Icons.Material.Filled.Star,
+            ActivityType.Comment => Icons.Material.Filled.Comment,
+            ActivityType.Payment => Icons.Material.Filled.Payments,
+            ActivityType.Update => Icons.Material.Filled.Update,
+            _ => Icons.Material.Filled.Notifications
+        };
+    }
+    
+    // Modèles locaux pour la démonstration
+    public class CreatorStatistics
+    {
+        public int TotalMods { get; set; }
+        public int ActiveMods { get; set; }
+        public int TotalDownloads { get; set; }
+        public int MonthlyDownloads { get; set; }
+        public double AverageRating { get; set; }
+        public int TotalRatings { get; set; }
+        public decimal MonthlyRevenue { get; set; }
+    }
+    
+    public class CreatorActivity
+    {
+        public DateTime DateTime { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public ActivityType Type { get; set; }
+    }
+    
+    public enum ActivityType
+    {
+        Download,
+        Rating,
+        Comment,
+        Payment,
+        Update
+    }
+    
+    public class PopularMod
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public int DownloadsCount { get; set; }
+        public int Rating { get; set; }
+    }
+}

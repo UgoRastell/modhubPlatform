@@ -1,0 +1,262 @@
+@page "/creator/mods"
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using Frontend.Models
+@inject IModService ModService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "Creator")]
+
+<PageTitle>Gestion des mods | Espace Créateur | ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h4">Gestion des mods</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                  OnClick="@(() => NavigationManager.NavigateTo("/creator/mods/create"))">
+            Nouveau mod
+        </MudButton>
+    </div>
+    
+    <MudDivider Class="mb-4" />
+    
+    @if (loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" Class="my-7 d-flex mx-auto" />
+    }
+    else
+    {
+        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+            <MudTabPanel Text="Publiés" Icon="@Icons.Material.Filled.Public">
+                <ModsTable Mods="@publishedMods" Status="Publié" OnEdit="EditMod" OnView="ViewMod" OnDelete="ConfirmDelete" />
+            </MudTabPanel>
+            <MudTabPanel Text="Brouillons" Icon="@Icons.Material.Filled.Edit">
+                <ModsTable Mods="@draftMods" Status="Brouillon" OnEdit="EditMod" OnView="ViewMod" OnDelete="ConfirmDelete" />
+            </MudTabPanel>
+            <MudTabPanel Text="En modération" Icon="@Icons.Material.Filled.HourglassTop">
+                <ModsTable Mods="@pendingMods" Status="En modération" OnEdit="EditMod" OnView="ViewMod" OnDelete="ConfirmDelete" />
+            </MudTabPanel>
+            <MudTabPanel Text="Rejetés" Icon="@Icons.Material.Filled.Error">
+                <ModsTable Mods="@rejectedMods" Status="Rejeté" OnEdit="EditMod" OnView="ViewMod" OnDelete="ConfirmDelete" />
+            </MudTabPanel>
+        </MudTabs>
+        
+        <!-- Dialog de confirmation de suppression -->
+        <MudDialog @bind-IsVisible="deleteDialogVisible" Options="dialogOptions">
+            <TitleContent>
+                <MudText Typo="Typo.h6">
+                    <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Class="mr-2" /> Confirmer la suppression
+                </MudText>
+            </TitleContent>
+            <DialogContent>
+                <MudText>
+                    Êtes-vous sûr de vouloir supprimer le mod <strong>@(modToDelete?.Title)</strong> ?
+                    Cette action est irréversible.
+                </MudText>
+            </DialogContent>
+            <DialogActions>
+                <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="@(() => deleteDialogVisible = false)">Annuler</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@DeleteMod">Supprimer</MudButton>
+            </DialogActions>
+        </MudDialog>
+    }
+</MudContainer>
+
+@code {
+    private bool loading = true;
+    private bool deleteDialogVisible = false;
+    private List<ModInfo> creatorMods = new();
+    private List<ModInfo> publishedMods = new();
+    private List<ModInfo> draftMods = new();
+    private List<ModInfo> pendingMods = new();
+    private List<ModInfo> rejectedMods = new();
+    private ModInfo modToDelete;
+    
+    private DialogOptions dialogOptions = new DialogOptions { 
+        CloseOnEscapeKey = true,
+        MaxWidth = MaxWidth.Small,
+        FullWidth = true
+    };
+    
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateTask;
+            if (authState.User.Identity.IsAuthenticated)
+            {
+                await LoadCreatorMods();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des mods: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+    
+    private async Task LoadCreatorMods()
+    {
+        // Simulation de chargement des données
+        await Task.Delay(500); // Remplacer par un vrai appel API
+        
+        // Données de test
+        creatorMods = new List<ModInfo>
+        {
+            new ModInfo {
+                Id = "mod1",
+                Title = "Enhanced UI",
+                Description = "Une interface utilisateur améliorée pour une meilleure expérience de jeu",
+                Version = "1.2.0",
+                Status = "Published",
+                CreatedDate = DateTime.Now.AddDays(-45),
+                UpdatedDate = DateTime.Now.AddDays(-2),
+                Downloads = 8546,
+                Rating = 4.5,
+                RatingCount = 356,
+                ThumbnailUrl = "images/mods/mod1.jpg",
+                Game = "Skyrim"
+            },
+            new ModInfo {
+                Id = "mod2",
+                Title = "Weather Effects",
+                Description = "Des effets météorologiques réalistes",
+                Version = "2.1.3",
+                Status = "Published",
+                CreatedDate = DateTime.Now.AddDays(-30),
+                UpdatedDate = DateTime.Now.AddDays(-5),
+                Downloads = 6290,
+                Rating = 4.2,
+                RatingCount = 289,
+                ThumbnailUrl = "images/mods/mod2.jpg",
+                Game = "Fallout 4"
+            },
+            new ModInfo {
+                Id = "mod3",
+                Title = "Terrain Pack",
+                Description = "Nouveaux terrains et textures pour un monde plus immersif",
+                Version = "1.0.0",
+                Status = "Draft",
+                CreatedDate = DateTime.Now.AddDays(-10),
+                UpdatedDate = DateTime.Now.AddDays(-1),
+                Downloads = 0,
+                Rating = 0,
+                RatingCount = 0,
+                ThumbnailUrl = "images/mods/mod3.jpg",
+                Game = "Skyrim"
+            },
+            new ModInfo {
+                Id = "mod4",
+                Title = "Combat Extension",
+                Description = "Améliore le système de combat avec de nouvelles animations et mécaniques",
+                Version = "0.9.2",
+                Status = "InReview",
+                CreatedDate = DateTime.Now.AddDays(-15),
+                UpdatedDate = DateTime.Now.AddDays(-3),
+                Downloads = 0,
+                Rating = 0,
+                RatingCount = 0,
+                ThumbnailUrl = "images/mods/mod4.jpg",
+                Game = "The Witcher 3"
+            },
+            new ModInfo {
+                Id = "mod5",
+                Title = "Character Customizer",
+                Description = "Options avancées de personnalisation de personnages",
+                Version = "1.5.1",
+                Status = "Rejected",
+                CreatedDate = DateTime.Now.AddDays(-25),
+                UpdatedDate = DateTime.Now.AddDays(-20),
+                Downloads = 0,
+                Rating = 0,
+                RatingCount = 0,
+                ThumbnailUrl = "images/mods/mod5.jpg",
+                Game = "Cyberpunk 2077"
+            },
+            new ModInfo {
+                Id = "mod6",
+                Title = "Medieval Armor Pack",
+                Description = "Collection d'armures médiévales historiquement précises",
+                Version = "2.0.1",
+                Status = "Published",
+                CreatedDate = DateTime.Now.AddDays(-60),
+                UpdatedDate = DateTime.Now.AddDays(-7),
+                Downloads = 4120,
+                Rating = 3.9,
+                RatingCount = 198,
+                ThumbnailUrl = "images/mods/mod6.jpg",
+                Game = "Kingdom Come: Deliverance"
+            }
+        };
+        
+        // Filtrer par statut
+        publishedMods = creatorMods.Where(m => m.Status == "Published").ToList();
+        draftMods = creatorMods.Where(m => m.Status == "Draft").ToList();
+        pendingMods = creatorMods.Where(m => m.Status == "InReview").ToList();
+        rejectedMods = creatorMods.Where(m => m.Status == "Rejected").ToList();
+    }
+    
+    private void EditMod(ModInfo mod)
+    {
+        NavigationManager.NavigateTo($"/creator/mods/edit/{mod.Id}");
+    }
+    
+    private void ViewMod(ModInfo mod)
+    {
+        NavigationManager.NavigateTo($"/mods/{mod.Id}");
+    }
+    
+    private void ConfirmDelete(ModInfo mod)
+    {
+        modToDelete = mod;
+        deleteDialogVisible = true;
+    }
+    
+    private async Task DeleteMod()
+    {
+        try
+        {
+            // Dans une implémentation réelle, appeler l'API pour supprimer le mod
+            await Task.Delay(500);
+            
+            creatorMods.Remove(modToDelete);
+            
+            // Mettre à jour les listes filtrées
+            publishedMods = creatorMods.Where(m => m.Status == "Published").ToList();
+            draftMods = creatorMods.Where(m => m.Status == "Draft").ToList();
+            pendingMods = creatorMods.Where(m => m.Status == "InReview").ToList();
+            rejectedMods = creatorMods.Where(m => m.Status == "Rejected").ToList();
+            
+            Snackbar.Add($"Le mod \"{modToDelete.Title}\" a été supprimé", Severity.Success);
+            deleteDialogVisible = false;
+            modToDelete = null;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors de la suppression: {ex.Message}", Severity.Error);
+        }
+    }
+    
+    // Modèles locaux
+    public class ModInfo
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Version { get; set; }
+        public string Status { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime UpdatedDate { get; set; }
+        public int Downloads { get; set; }
+        public double Rating { get; set; }
+        public int RatingCount { get; set; }
+        public string ThumbnailUrl { get; set; }
+        public string Game { get; set; }
+    }
+}
