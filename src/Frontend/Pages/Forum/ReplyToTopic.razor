@@ -1,0 +1,202 @@
+@page "/forums/topics/{TopicId}/reply"
+@using Frontend.Services.Forum
+@using Frontend.Models.Forum
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Web
+@inject IForumService ForumService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Répondre - @(topic?.Title ?? "Chargement...") - Forum - ModsGamingPlatform</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-16">
+    <MudBreadcrumbs Items="_breadcrumbs" Class="mb-4"></MudBreadcrumbs>
+    
+    @if (_loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="mt-8 mx-auto d-block" />
+    }
+    else if (_notFound)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-4">
+            Le sujet demandé n'existe pas ou a été supprimé.
+        </MudAlert>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigationManager.NavigateTo("/forums"))">
+            Retour au forum
+        </MudButton>
+    }
+    else if (topic?.IsLocked == true)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mb-4">
+            Ce sujet est verrouillé. Vous ne pouvez pas y répondre.
+        </MudAlert>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigationManager.NavigateTo($"/forums/topics/{TopicId}"))">
+            Retour au sujet
+        </MudButton>
+    }
+    else
+    {
+        <AuthorizeView>
+            <Authorized>
+                <MudPaper Class="pa-4 mb-4" Elevation="3" Style="background-color: #232634;">
+                    <div class="d-flex justify-space-between align-center mb-4">
+                        <MudText Typo="Typo.h5">Répondre à : @topic.Title</MudText>
+                        <MudButton Variant="Variant.Text" Color="Color.Secondary" 
+                                   OnClick="@(() => NavigationManager.NavigateTo($"/forums/topics/{TopicId}"))">
+                            Annuler
+                        </MudButton>
+                    </div>
+                    
+                    <MudText Typo="Typo.subtitle2" Class="mb-2">Catégorie : @topic.CategoryName</MudText>
+                    <MudText Typo="Typo.caption" Class="mb-4">
+                        Sujet créé par @topic.AuthorName le @topic.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy à HH:mm")
+                    </MudText>
+                    
+                    <MudDivider Class="mb-4" />
+                    
+                    <MudForm @ref="_form" Model="_replyModel">
+                        <MudTextField @bind-Value="_replyModel.Content"
+                                      For="@(() => _replyModel.Content)"
+                                      Label="Votre réponse"
+                                      Multiline="true"
+                                      Lines="8"
+                                      MaxLength="5000"
+                                      Counter="5000"
+                                      Variant="Variant.Outlined"
+                                      Class="mb-4" />
+                        
+                        <div class="d-flex justify-space-between align-center">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                Soyez respectueux et constructif dans vos réponses.
+                            </MudText>
+                            
+                            <div>
+                                <MudButton Variant="Variant.Text" Color="Color.Secondary" Class="mr-2"
+                                           OnClick="@(() => NavigationManager.NavigateTo($"/forums/topics/{TopicId}"))">
+                                    Annuler
+                                </MudButton>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                                           OnClick="SubmitReply" 
+                                           Disabled="_submitting">
+                                    @if (_submitting)
+                                    {
+                                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    }
+                                    Publier la réponse
+                                </MudButton>
+                            </div>
+                        </div>
+                    </MudForm>
+                </MudPaper>
+                
+                <!-- Affichage du sujet original pour référence -->
+                <MudPaper Class="pa-4" Elevation="2" Style="background-color: #1e212b;">
+                    <MudText Typo="Typo.h6" Class="mb-3">Sujet original</MudText>
+                    <MudText Class="mb-2">@topic.Content</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        @topic.ViewsCount vues · @topic.RepliesCount réponses
+                    </MudText>
+                </MudPaper>
+            </Authorized>
+            <NotAuthorized>
+                <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-4">
+                    Vous devez être connecté pour répondre à ce sujet.
+                </MudAlert>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigationManager.NavigateTo("/login"))">
+                    Se connecter
+                </MudButton>
+            </NotAuthorized>
+        </AuthorizeView>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string TopicId { get; set; } = string.Empty;
+    
+    private bool _loading = true;
+    private bool _notFound = false;
+    private bool _submitting = false;
+    private ForumTopicViewModel? topic;
+    private MudForm? _form;
+    
+    private readonly CreateForumPostDto _replyModel = new();
+    
+    private List<BreadcrumbItem> _breadcrumbs = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Forum", href: "/forums")
+    };
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+    
+    private async Task LoadData()
+    {
+        try
+        {
+            _loading = true;
+            
+            // Charger les détails du topic
+            topic = await ForumService.GetTopicByIdAsync(TopicId);
+            
+            if (topic == null)
+            {
+                _notFound = true;
+                return;
+            }
+            
+            // Mettre à jour les breadcrumbs
+            _breadcrumbs.Add(new BreadcrumbItem(topic.CategoryName ?? topic.CategoryId, href: $"/forums/categories/{topic.CategoryId}"));
+            _breadcrumbs.Add(new BreadcrumbItem(topic.Title, href: $"/forums/topics/{topic.Id}"));
+            _breadcrumbs.Add(new BreadcrumbItem("Répondre", href: null, disabled: true));
+            
+            // Initialiser le modèle de réponse
+            _replyModel.TopicId = TopicId;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur de chargement : {ex.Message}", Severity.Error);
+            _notFound = true;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+    
+    private async Task SubmitReply()
+    {
+        if (_form == null || topic == null) return;
+        
+        await _form.Validate();
+        if (!_form.IsValid) return;
+        
+        try
+        {
+            _submitting = true;
+            
+            var createdPost = await ForumService.CreatePostAsync(_replyModel);
+            if (createdPost != null)
+            {
+                Snackbar.Add("Réponse publiée avec succès !", Severity.Success);
+                NavigationManager.NavigateTo($"/forums/topics/{TopicId}");
+            }
+            else
+            {
+                Snackbar.Add("Erreur lors de la publication de la réponse", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur : {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+}
