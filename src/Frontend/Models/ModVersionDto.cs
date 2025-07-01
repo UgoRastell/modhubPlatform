@@ -22,6 +22,9 @@ namespace Frontend.Models
         public string? Status { get; set; }
         public ModFileDto? MainFile { get; set; }
         public CompatibilityInfoDto? Compatibility { get; set; }
+        
+        [JsonPropertyName("metadata")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
     }
 }
