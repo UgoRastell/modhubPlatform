@@ -16,7 +16,7 @@ namespace Frontend.Services.Forum
         public ForumService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _baseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7001";
+            _baseUrl = configuration["ApiSettings:GatewayUrl"] ?? "https://modhub.ovh";
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
