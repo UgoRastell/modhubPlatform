@@ -10,13 +10,11 @@ namespace Frontend.Services.Forum
     public class ForumService : IForumService
     {
         private readonly HttpClient _httpClient;
-        private readonly string _baseUrl;
         private readonly JsonSerializerOptions _jsonOptions;
 
-        public ForumService(HttpClient httpClient, IConfiguration configuration)
+        public ForumService(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
-            _baseUrl = configuration["ApiSettings:GatewayUrl"] ?? "https://modhub.ovh";
+            _httpClient = httpClientFactory.CreateClient("ForumService");
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -30,7 +28,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/forum/categories");
+                var response = await _httpClient.GetAsync("api/forum/categories");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -117,7 +115,7 @@ namespace Frontend.Services.Forum
             {
                 var json = JsonSerializer.Serialize(categoryDto, _jsonOptions);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PutAsync($"{_baseUrl}/api/forum/categories/{categoryDto.Id}", content);
+                var response = await _httpClient.PutAsync($"api/forum/categories/{categoryDto.Id}", content);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -134,7 +132,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"{_baseUrl}/api/forum/categories/{id}");
+                var response = await _httpClient.DeleteAsync($"api/forum/categories/{id}");
                 return response.IsSuccessStatusCode;
             }
             catch
@@ -456,7 +454,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/forum/statistics");
+                var response = await _httpClient.GetAsync("api/forum/statistics");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
