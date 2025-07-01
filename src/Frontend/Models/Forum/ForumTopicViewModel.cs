@@ -18,6 +18,10 @@ namespace Frontend.Models.Forum
         public bool IsPinned { get; set; }
         public bool IsLocked { get; set; }
         
+        // Properties used in Forums.razor
+        public string CategoryName { get; set; } = string.Empty;
+        public string PostedDate => CreatedAt.ToString("dd/MM/yyyy");
+        
         // Additional properties referenced in ForumIndex.razor
         public required string Slug { get; set; }
         public string? LastReplyAuthorId { get; set; }

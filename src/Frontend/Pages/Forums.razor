@@ -2,6 +2,9 @@
 @using Frontend.Models
 @using Frontend.Models.Forum
 @using Frontend.Services.Forum
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Web
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject IForumService ForumService
@@ -206,7 +209,18 @@
     private List<ForumCategoryViewModel> forumCategories = new();
     private List<ForumTopicViewModel> latestTopics = new();
     private List<ForumTopicViewModel> popularTopics = new();
-    private ForumStatistics forumStats = new();
+    private List<ActiveMember> activeMembers = new();
+    private ForumStatistics forumStats = new()
+    {
+        MostActiveCategory = "",
+        MostActiveCategoryId = "",
+        MostActiveTopic = "",
+        MostActiveTopicId = "",
+        MostActiveUser = "",
+        MostActiveUserId = "",
+        NewestMemberId = "",
+        NewestMemberName = ""
+    };
     private bool isLoading = true;
     private string errorMessage = string.Empty;
 
@@ -230,12 +244,12 @@
             
             // Charger les sujets récents (Top 5)
             var recentTopicsResult = await ForumService.SearchTopicsAsync("", page: 1, pageSize: 5);
-            latestTopics = recentTopicsResult?.Data ?? new();
+            latestTopics = recentTopicsResult?.Items ?? new();
             
             // Pour les sujets populaires, on peut utiliser une recherche avec tri différent
             // ou créer une méthode spécifique dans le service si besoin
             var popularTopicsResult = await ForumService.SearchTopicsAsync("", page: 1, pageSize: 5);
-            popularTopics = popularTopicsResult?.Data ?? new();
+            popularTopics = popularTopicsResult?.Items ?? new();
         }
         catch (Exception ex)
         {
