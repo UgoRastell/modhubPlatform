@@ -104,14 +104,22 @@
                                         </div>
                                     }
 
-                                    @if (version.Compatibility != null && version.Compatibility.Any())
+                                    @if (version.Compatibility != null && version.Compatibility.HasCompatibilityInfo())
                                     {
                                         <div class="compatibility">
                                             <h5>Compatibilité</h5>
                                             <ul class="compatibility-list">
-                                                @foreach (var compatibility in version.Compatibility)
+                                                @foreach (var compatibilityGroup in version.Compatibility.GetCompatibilityData())
                                                 {
-                                                    <li>@compatibility</li>
+                                                    <li>
+                                                        <strong>@compatibilityGroup.Key:</strong>
+                                                        <ul>
+                                                            @foreach (var item in compatibilityGroup.Value)
+                                                            {
+                                                                <li>@item</li>
+                                                            }
+                                                        </ul>
+                                                    </li>
                                                 }
                                             </ul>
                                         </div>

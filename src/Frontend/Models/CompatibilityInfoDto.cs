@@ -1,42 +1,39 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace Frontend.Models
 {
-    public class CompatibilityInfoDto : IEnumerable<KeyValuePair<string, IEnumerable<string>>>
+    /// <summary>
+    /// Informations de compatibilité d'un mod, optimisée pour la sérialisation JSON
+    /// </summary>
+    public class CompatibilityInfoDto
     {
+        [JsonPropertyName("gameVersion")]
         public string? GameVersion { get; set; }
-        public List<string> RequiredMods { get; set; } = new List<string>();
-        public List<string> IncompatibleMods { get; set; } = new List<string>();
-        public List<string> OptionalMods { get; set; } = new List<string>();
-        public string? MinimumRequirements { get; set; }
-        public string? RecommendedRequirements { get; set; }
-        public string? CompatibilityNotes { get; set; }
-
-        // Méthodes pour implémenter IEnumerable
-        public IEnumerator<KeyValuePair<string, IEnumerable<string>>> GetEnumerator()
-        {
-            if (!string.IsNullOrEmpty(GameVersion))
-                yield return new KeyValuePair<string, IEnumerable<string>>("Version du jeu", new[] { GameVersion });
-            
-            if (RequiredMods.Any())
-                yield return new KeyValuePair<string, IEnumerable<string>>("Mods requis", RequiredMods);
-                
-            if (IncompatibleMods.Any())
-                yield return new KeyValuePair<string, IEnumerable<string>>("Mods incompatibles", IncompatibleMods);
-                
-            if (OptionalMods.Any())
-                yield return new KeyValuePair<string, IEnumerable<string>>("Mods optionnels", OptionalMods);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
         
-        // Helper pour la méthode Any()
-        public bool Any()
+        [JsonPropertyName("requiredMods")]
+        public List<string> RequiredMods { get; set; } = new List<string>();
+        
+        [JsonPropertyName("incompatibleMods")]
+        public List<string> IncompatibleMods { get; set; } = new List<string>();
+        
+        [JsonPropertyName("optionalMods")]
+        public List<string> OptionalMods { get; set; } = new List<string>();
+        
+        [JsonPropertyName("minimumRequirements")]
+        public string? MinimumRequirements { get; set; }
+        
+        [JsonPropertyName("recommendedRequirements")]
+        public string? RecommendedRequirements { get; set; }
+        
+        [JsonPropertyName("compatibilityNotes")]
+        public string? CompatibilityNotes { get; set; }
+        
+        /// <summary>
+        /// Vérifie si des informations de compatibilité sont disponibles
+        /// </summary>
+        public bool HasCompatibilityInfo()
         {
             return !string.IsNullOrEmpty(GameVersion) ||
                    RequiredMods.Any() ||
@@ -45,6 +42,28 @@ namespace Frontend.Models
                    !string.IsNullOrEmpty(MinimumRequirements) ||
                    !string.IsNullOrEmpty(RecommendedRequirements) ||
                    !string.IsNullOrEmpty(CompatibilityNotes);
+        }
+        
+        /// <summary>
+        /// Obtient un dictionnaire des informations de compatibilité pour l'affichage
+        /// </summary>
+        public Dictionary<string, List<string>> GetCompatibilityData()
+        {
+            var result = new Dictionary<string, List<string>>();
+            
+            if (!string.IsNullOrEmpty(GameVersion))
+                result["Version du jeu"] = new List<string> { GameVersion };
+            
+            if (RequiredMods.Any())
+                result["Mods requis"] = RequiredMods;
+                
+            if (IncompatibleMods.Any())
+                result["Mods incompatibles"] = IncompatibleMods;
+                
+            if (OptionalMods.Any())
+                result["Mods optionnels"] = OptionalMods;
+                
+            return result;
         }
     }
 }
