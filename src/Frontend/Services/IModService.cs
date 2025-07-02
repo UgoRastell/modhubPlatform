@@ -1,10 +1,15 @@
 using Frontend.Models;
+using Frontend.Models.ModManagement;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Frontend.Services
 {
     public interface IModService
     {
+        // Méthode pour récupérer les mods d'un créateur
+        Task<List<ModInfo>> GetCreatorModsAsync(string creatorId, string status = null);
+        
         Task<ApiResponse<PagedResult<ModDto>>> GetModsAsync(int page, int pageSize, string searchTerm = "", string category = "", string sortBy = "");
         Task<ApiResponse<ModDto>> GetModAsync(string id);
         Task<ApiResponse<ModDto>> CreateModAsync(ModCreateRequest request);

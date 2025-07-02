@@ -186,15 +186,18 @@
     {
         try
         {
+            // Récupérer l'ID de l'utilisateur connecté
             var authState = await AuthenticationStateTask;
-            if (authState.User.Identity.IsAuthenticated)
+            var user = authState.User;
+            
+            if (!user.Identity.IsAuthenticated)
             {
-                // Dans un contexte réel, on chargerait ces données depuis l'API
-                await LoadCreatorDashboardData();
+                NavigationManager.NavigateTo("/login");
+                return;
             }
             
-            currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? 
-                           user.FindFirst("sub")?.Value ?? "unknown-user";
+            var currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? 
+                               user.FindFirst("sub")?.Value ?? "unknown-user";
             
             // Récupérer les mods de l'utilisateur depuis MongoDB
             var userMods = await ModService.GetCreatorModsAsync(currentUserId);
@@ -271,7 +274,7 @@
             {
                 activities.Add(new CreatorActivity
                 {
-                    DateTime = lastUpdatedMod.UpdatedDate ?? DateTime.Now.AddDays(-1),
+                    DateTime = lastUpdatedMod.UpdatedDate,
                     Title = "Mise à jour de mod",
                     Description = $"Vous avez mis à jour votre mod '{lastUpdatedMod.Title}'",
                     Type = ActivityType.Update
