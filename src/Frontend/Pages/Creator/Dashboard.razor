@@ -1,11 +1,13 @@
 @page "/creator/dashboard"
 @using Microsoft.AspNetCore.Components.Authorization
 @using Frontend.Models
+@using Frontend.Models.ModManagement
 @using System.Security.Claims
 @using System.Globalization
 @inject IModService ModService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
 @attribute [Authorize(Roles = "Creator")]
 
 <PageTitle>Tableau de bord créateur | ModHub</PageTitle>
@@ -190,71 +192,136 @@
                 // Dans un contexte réel, on chargerait ces données depuis l'API
                 await LoadCreatorDashboardData();
             }
+            
+            currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? 
+                           user.FindFirst("sub")?.Value ?? "unknown-user";
+            
+            // Récupérer les mods de l'utilisateur depuis MongoDB
+            var userMods = await ModService.GetCreatorModsAsync(currentUserId);
+            
+            // Calculer les statistiques
+            statistics = CalculateStatistics(userMods);
+            
+            // Récupérer les mods populaires (triés par téléchargements)
+            popularMods = userMods
+                .OrderByDescending(m => m.Downloads)
+                .Take(5)
+                .Select(m => new PopularMod { 
+                    Id = m.Id, 
+                    Title = m.Title, 
+                    DownloadsCount = m.Downloads, 
+                    Rating = (int)Math.Round(m.Rating) 
+                })
+                .ToList();
+            
+            // Générer l'activité récente basée sur les mods
+            // Note: Idéalement cette donnée viendrait d'une collection dédiée dans MongoDB
+            recentActivity = GenerateRecentActivityFromMods(userMods);
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Erreur lors du chargement du tableau de bord: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Erreur lors du chargement des données: {ex.Message}", Severity.Error);
+            // Initialiser des statistiques vides en cas d'erreur
+            statistics = new CreatorStatistics();
         }
         finally
         {
             loading = false;
         }
     }
-
-    private async Task LoadCreatorDashboardData()
+    
+    private CreatorStatistics CalculateStatistics(List<ModInfo> mods)
     {
-        // Simulation de chargement des données
-        await Task.Delay(500); // Remplacer par un vrai appel API
+        // Calculer les statistiques basées sur les mods récupérés
+        int totalDownloads = mods.Sum(m => m.Downloads);
+        int totalRatings = mods.Sum(m => m.RatingCount);
+        double avgRating = totalRatings > 0 
+            ? mods.Where(m => m.RatingCount > 0).Average(m => m.Rating) 
+            : 0;
         
-        // Données fictives pour la démonstration
-        statistics = new CreatorStatistics
-        {
-            TotalMods = 8,
-            ActiveMods = 5,
-            TotalDownloads = 24578,
-            MonthlyDownloads = 1250,
-            AverageRating = 4.2,
-            TotalRatings = 387,
-            MonthlyRevenue = 245.50m
-        };
+        // Calculer les téléchargements de ce mois (simulé)
+        var thisMonth = DateTime.Now.Month;
+        int monthlyDownloads = totalDownloads / 10; // Simulation
         
-        // Activités récentes
-        recentActivity = new List<CreatorActivity>
-        {
-            new CreatorActivity { 
-                DateTime = DateTime.Now.AddHours(-2), 
-                Title = "Nouveau téléchargement", 
-                Description = "Votre mod 'Enhanced UI' a été téléchargé 50 fois aujourd'hui",
-                Type = ActivityType.Download
-            },
-            new CreatorActivity { 
-                DateTime = DateTime.Now.AddHours(-5), 
-                Title = "Nouvelle évaluation", 
-                Description = "Votre mod 'Terrain Pack' a reçu une évaluation 5 étoiles",
-                Type = ActivityType.Rating
-            },
-            new CreatorActivity { 
-                DateTime = DateTime.Now.AddDays(-1), 
-                Title = "Commentaire", 
-                Description = "Un utilisateur a commenté sur votre mod 'Weather Effects'",
-                Type = ActivityType.Comment
-            },
-            new CreatorActivity { 
-                DateTime = DateTime.Now.AddDays(-2), 
-                Title = "Paiement reçu", 
-                Description = "Vous avez reçu un paiement de 32,50€",
-                Type = ActivityType.Payment
-            },
-        };
+        // Calculer les revenus (à remplacer par de vraies données de la base Payments)
+        decimal revenue = mods.Where(m => m.Price > 0).Sum(m => m.Price * m.Downloads / 20); // Simulation
         
-        // Mods populaires
-        popularMods = new List<PopularMod>
+        return new CreatorStatistics
         {
-            new PopularMod { Id = "1", Title = "Enhanced UI", DownloadsCount = 8546, Rating = 4 },
-            new PopularMod { Id = "2", Title = "Weather Effects", DownloadsCount = 6290, Rating = 5 },
-            new PopularMod { Id = "3", Title = "Terrain Pack", DownloadsCount = 4120, Rating = 4 },
-            new PopularMod { Id = "4", Title = "Combat Extension", DownloadsCount = 3850, Rating = 3 }
+            TotalMods = mods.Count,
+            ActiveMods = mods.Count(m => m.Status?.ToLower() == "published"),
+            TotalDownloads = totalDownloads,
+            MonthlyDownloads = monthlyDownloads,
+            AverageRating = Math.Round(avgRating, 1),
+            TotalRatings = totalRatings,
+            MonthlyRevenue = revenue
         };
+    }
+    
+    private List<CreatorActivity> GenerateRecentActivityFromMods(List<ModInfo> mods)
+    {
+        var activities = new List<CreatorActivity>();
+        
+        // Créer des activités basées sur les mods les plus récents et les plus téléchargés
+        if (mods.Any())
+        {
+            // Dernier mod mis à jour
+            var lastUpdatedMod = mods.OrderByDescending(m => m.UpdatedDate).FirstOrDefault();
+            if (lastUpdatedMod != null)
+            {
+                activities.Add(new CreatorActivity
+                {
+                    DateTime = lastUpdatedMod.UpdatedDate ?? DateTime.Now.AddDays(-1),
+                    Title = "Mise à jour de mod",
+                    Description = $"Vous avez mis à jour votre mod '{lastUpdatedMod.Title}'",
+                    Type = ActivityType.Update
+                });
+            }
+            
+            // Mod le plus téléchargé
+            var mostDownloadedMod = mods.OrderByDescending(m => m.Downloads).FirstOrDefault();
+            if (mostDownloadedMod != null)
+            {
+                activities.Add(new CreatorActivity
+                {
+                    DateTime = DateTime.Now.AddHours(-5),
+                    Title = "Téléchargement populaire",
+                    Description = $"Votre mod '{mostDownloadedMod.Title}' a {mostDownloadedMod.Downloads} téléchargements",
+                    Type = ActivityType.Download
+                });
+            }
+            
+            // Mod le mieux noté
+            var bestRatedMod = mods.Where(m => m.RatingCount > 0).OrderByDescending(m => m.Rating).FirstOrDefault();
+            if (bestRatedMod != null)
+            {
+                activities.Add(new CreatorActivity
+                {
+                    DateTime = DateTime.Now.AddDays(-2),
+                    Title = "Évaluation positive",
+                    Description = $"Votre mod '{bestRatedMod.Title}' est bien noté avec {bestRatedMod.Rating:0.0}/5",
+                    Type = ActivityType.Rating
+                });
+            }
+            
+            // Ajout d'une activité de paiement simulée
+            if (mods.Any(m => m.Price > 0))
+            {
+                var premiumMod = mods.Where(m => m.Price > 0).OrderByDescending(m => m.Price).FirstOrDefault();
+                if (premiumMod != null)
+                {
+                    activities.Add(new CreatorActivity
+                    {
+                        DateTime = DateTime.Now.AddDays(-3),
+                        Title = "Paiement reçu",
+                        Description = $"Vous avez reçu un paiement pour votre mod premium '{premiumMod.Title}'",
+                        Type = ActivityType.Payment
+                    });
+                }
+            }
+        }
+        
+        return activities.OrderByDescending(a => a.DateTime).Take(5).ToList();
     }
     
     private Color GetActivityColor(ActivityType type)
