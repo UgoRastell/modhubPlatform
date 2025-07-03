@@ -277,42 +277,51 @@
 <div class="mods-hub-container">
     <MudContainer MaxWidth="MaxWidth.ExtraLarge">
         <!-- Section Hero -->
-        <div class="hero-section animate-fade-in">
-            <h1 class="hero-title">Hub des Mods</h1>
-            <p class="hero-subtitle">
+        <MudPaper Elevation="0" Class="pa-6 mb-4 rounded-lg" Style="background: var(--mud-palette-primary-darken)">
+            <MudText Typo="Typo.h3" Color="Color.Surface" Align="Align.Center" Class="mb-4 fw-bold">Hub des Mods</MudText>
+            <MudText Typo="Typo.body1" Color="Color.Surface" Align="Align.Center" Class="mb-6">
                 Découvrez, téléchargez et évaluez les meilleurs mods pour vos jeux préférés
-            </p>
+            </MudText>
             
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-number">@totalMods</span>
-                    <div class="stat-label">Mods disponibles</div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number">@totalDownloads.ToString("N0")</span>
-                    <div class="stat-label">Téléchargements</div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number">@activeCreators</span>
-                    <div class="stat-label">Créateurs actifs</div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number">@supportedGames</span>
-                    <div class="stat-label">Jeux supportés</div>
-                </div>
-            </div>
-        </div>
+            <MudGrid Class="mt-6" Justify="Justify.Center">
+                <MudItem xs="6" sm="3">
+                    <MudPaper Elevation="0" Class="pa-4 text-center" Style="background-color: rgba(255,255,255,0.1); backdrop-filter: blur(10px);">
+                        <MudText Typo="Typo.h4" Color="Color.Surface">@totalMods</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Surface">Mods disponibles</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudPaper Elevation="0" Class="pa-4 text-center" Style="background-color: rgba(255,255,255,0.1); backdrop-filter: blur(10px);">
+                        <MudText Typo="Typo.h4" Color="Color.Surface">@totalDownloads.ToString("N0")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Surface">Téléchargements</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudPaper Elevation="0" Class="pa-4 text-center" Style="background-color: rgba(255,255,255,0.1); backdrop-filter: blur(10px);">
+                        <MudText Typo="Typo.h4" Color="Color.Surface">@activeCreators</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Surface">Créateurs actifs</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudPaper Elevation="0" Class="pa-4 text-center" Style="background-color: rgba(255,255,255,0.1); backdrop-filter: blur(10px);">
+                        <MudText Typo="Typo.h4" Color="Color.Surface">@supportedGames</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Surface">Jeux supportés</MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
         
         <!-- Section Filtres -->
-        <div class="filters-section animate-fade-in">
-            <MudGrid AlignItems="Center">
+        <MudPaper Elevation="2" Class="pa-4 mb-6 rounded-lg">
+            <MudText Typo="Typo.h6" Class="mb-4">Filtres de recherche</MudText>
+            <MudGrid AlignItems="AlignItems.Center">
                 <MudItem xs="12" md="6">
                     <MudTextField @bind-Value="searchTerm"
                                   Placeholder="Rechercher des mods..."
                                   Variant="Variant.Outlined"
                                   Adornment="Adornment.Start"
                                   AdornmentIcon="@Icons.Material.Filled.Search"
-                                  Class="search-input"
+                                  Class="mud-width-full"
                                   Immediate="true"
                                   OnKeyUp="OnSearchKeyUp" />
                 </MudItem>
@@ -320,6 +329,7 @@
                     <MudSelect T="string" @bind-Value="selectedCategory"
                                Label="Catégorie"
                                Variant="Variant.Outlined"
+                               FullWidth="true"
                                AnchorOrigin="Origin.BottomCenter">
                         <MudSelectItem Value="@("")">Toutes les catégories</MudSelectItem>
                         <MudSelectItem Value="@("graphics")">Graphiques</MudSelectItem>
@@ -332,6 +342,7 @@
                     <MudSelect T="string" @bind-Value="sortBy"
                                Label="Trier par"
                                Variant="Variant.Outlined"
+                               FullWidth="true"
                                AnchorOrigin="Origin.BottomCenter">
                         <MudSelectItem Value="@("recent")">Plus récents</MudSelectItem>
                         <MudSelectItem Value="@("popular")">Plus populaires</MudSelectItem>
@@ -340,24 +351,30 @@
                     </MudSelect>
                 </MudItem>
             </MudGrid>
-        </div>
+        </MudPaper>
         
         <!-- Liste des Mods -->
         @if (isLoading)
         {
-            <div class="loading-container">
-                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
-            </div>
+            <MudPaper Elevation="0" Class="py-8">
+                <div class="d-flex flex-column align-center justify-center">
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                    <MudText Typo="Typo.body1" Class="mt-4" Color="Color.Primary">Chargement des mods...</MudText>
+                </div>
+            </MudPaper>
         }
         else if (mods == null || !mods.Any())
         {
-            <div class="no-mods-message animate-fade-in">
-                <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Color="Color.Default" />
-                <MudText Typo="Typo.h6" Class="mt-4 mb-2">Aucun mod trouvé</MudText>
-                <MudText Typo="Typo.body1" Color="Color.Default">
-                    Essayez de modifier vos critères de recherche ou de navigation.
+            <MudPaper Elevation="0" Class="pa-8 d-flex flex-column align-center justify-center" Style="min-height: 240px">
+                <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Color="Color.Error" Class="mb-4" />
+                <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-2">Aucun mod trouvé</MudText>
+                <MudText Typo="Typo.body1" Align="Align.Center" Color="Color.Secondary">
+                    Essayez de modifier vos critères de recherche ou de sélectionner une autre catégorie.
                 </MudText>
-            </div>
+                <MudButton Class="mt-4" Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => ResetFilters())">
+                    <MudIcon Icon="@Icons.Material.Filled.RestartAlt" Class="mr-2" Size="Size.Small" /> Réinitialiser les filtres
+                </MudButton>
+            </MudPaper>
         }
         else
         {
@@ -365,69 +382,94 @@
                 @foreach (var mod in mods)
                 {
                     <MudItem xs="12" sm="6" md="4" lg="3" Class="animate-fade-in">
-                        <div class="mod-card-enhanced">
+                        <MudCard Elevation="3" Class="mud-height-full">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6" Class="mud-text-nowrap-ellipsis">@mod.Name</MudText>
+                                    <MudText Typo="Typo.caption" Class="d-flex align-center gap-1">
+                                        <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" /> @mod.CreatorName
+                                    </MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudMenu Icon="@Icons.Material.Filled.MoreVert" Dense="true" Direction="Direction.Left" OffsetX="true">
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Visibility" OnClick="@(() => ViewModDetails(mod.Id))">Détails</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Report">Signaler</MudMenuItem>
+                                    </MudMenu>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            
                             <div style="position: relative;">
+                                <MudCardMedia Image="@GetModThumbnail(mod.ThumbnailUrl)" Height="180" @onerror="@((e) => HandleImageError(e))" />
                                 @if (mod.IsFeatured)
                                 {
-                                    <div class="premium-badge">PREMIUM</div>
+                                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Label="true"
+                                            Style="position: absolute; top: 8px; right: 8px;">
+                                        PREMIUM
+                                    </MudChip>
                                 }
                                 @if (mod.IsNew)
                                 {
-                                    <div class="new-badge">NOUVEAU</div>
+                                    <MudChip T="string" Color="Color.Info" Size="Size.Small" Label="true"
+                                            Style="position: absolute; top: 8px; left: 8px;">
+                                        NOUVEAU
+                                    </MudChip>
                                 }
-                                <img src="@GetModThumbnail(mod.ThumbnailUrl)"
-                                     alt="@mod.Name"
-                                     class="mod-thumbnail"
-                                     @onerror="@((e) => HandleImageError(e))" />
                             </div>
                             
-                            <div class="mod-content">
-                                <div class="mod-title">@mod.Name</div>
-                                <div class="mod-author">
-                                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
-                                    @mod.CreatorName
-                                </div>
-                                <div class="mod-description">@mod.ShortDescription</div>
+                            <MudCardContent>
+                                <MudText Typo="Typo.body2" Class="mud-text-secondary mud-text-nowrap-ellipsis" 
+                                          Style="max-height: 50px; overflow: hidden;">
+                                    @mod.ShortDescription
+                                </MudText>
                                 
-                                <div class="mod-stats">
-                                    <div class="stat-item">
-                                        <MudIcon Icon="@Icons.Material.Filled.Download" Size="Size.Small" />
-                                        @mod.DownloadCount.ToString("N0")
-                                    </div>
-                                    <div class="stat-item">
-                                        <div class="rating-stars">
-                                            @for (int i = 1; i <= 5; i++)
-                                            {
-                                                <MudIcon Icon="@(i <= Math.Round(mod.AverageRating) ? Icons.Material.Filled.Star : Icons.Material.Outlined.Star)"
-                                                         Size="Size.Small" />
-                                            }
-                                        </div>
-                                        <span>(@mod.RatingCount)</span>
-                                    </div>
-                                </div>
+                                <MudDivider Class="my-2" />
                                 
-                                <div class="mod-actions">
-                                    <MudButton Class="download-btn"
-                                               StartIcon="@Icons.Material.Filled.Download"
-                                               OnClick="@(() => DownloadMod(mod.Id, mod.Name))"
-                                               Disabled="@isDownloading">
-                                        Télécharger
-                                    </MudButton>
-                                    
-                                    <MudButton Class="rate-btn"
-                                               StartIcon="@Icons.Material.Filled.Star"
-                                               OnClick="@(() => OpenRatingDialog(mod))">
-                                        Noter
-                                    </MudButton>
-                                    
-                                    <MudButton Class="view-details-btn"
-                                               StartIcon="@Icons.Material.Filled.Visibility"
-                                               OnClick="@(() => ViewModDetails(mod.Id))">
-                                        Détails
-                                    </MudButton>
+                                <div class="d-flex justify-space-between align-center">
+                                    <div class="d-flex align-center gap-2">
+                                        <MudTooltip Text="Téléchargements">
+                                            <div class="d-flex align-center gap-1">
+                                                <MudIcon Icon="@Icons.Material.Filled.Download" Size="Size.Small" />
+                                                <MudText Typo="Typo.caption">@mod.DownloadCount.ToString("N0")</MudText>
+                                            </div>
+                                        </MudTooltip>
+                                    </div>
+                                    <div class="d-flex align-center gap-1">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <MudIcon Icon="@(i <= Math.Round(mod.AverageRating) ? Icons.Material.Filled.Star : Icons.Material.Outlined.Star)"
+                                                     Size="Size.Small" Color="Color.Warning" />
+                                        }
+                                        <MudText Typo="Typo.caption" Class="ml-1">(@mod.RatingCount)</MudText>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
+                            </MudCardContent>
+                            
+                            <MudCardActions Class="d-flex justify-space-between flex-wrap">
+                                <MudButton Variant="Variant.Filled" 
+                                           Color="Color.Primary" 
+                                           StartIcon="@Icons.Material.Filled.Download"
+                                           Size="Size.Small"
+                                           FullWidth="false"
+                                           Disabled="@isDownloading"
+                                           OnClick="@(() => DownloadMod(mod.Id, mod.Name))">
+                                    Télécharger
+                                </MudButton>
+                                
+                                <div>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Star"
+                                                  Color="Color.Secondary"
+                                                  Size="Size.Small"
+                                                  OnClick="@(() => OpenRatingDialog(mod))"
+                                                  Title="Noter" />
+                                    
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                  Color="Color.Default"
+                                                  Size="Size.Small"
+                                                  OnClick="@(() => ViewModDetails(mod.Id))"
+                                                  Title="Détails" />
+                                </div>
+                            </MudCardActions>
+                        </MudCard>
                     </MudItem>
                 }
             </MudGrid>
@@ -435,15 +477,17 @@
             <!-- Pagination -->
             @if (totalPages > 1)
             {
-                <div class="pagination-container">
-                    <MudPagination Count="totalPages"
+                <MudPaper Elevation="0" Class="d-flex justify-center mt-6 pa-4">
+                    <MudPagination Variant="Variant.Outlined"
+                                   Count="totalPages"
                                    Selected="currentPage"
                                    SelectedChanged="OnPageChanged"
                                    Color="Color.Primary"
-                                   Size="Size.Large"
+                                   Size="Size.Medium"
                                    ShowFirstButton="true"
-                                   ShowLastButton="true" />
-                </div>
+                                   ShowLastButton="true"
+                                   Class="mud-text-align-center" />
+                </MudPaper>
             }
         }
     </MudContainer>
@@ -622,6 +666,21 @@
     {
         // Cette méthode sera appelée si l'image ne peut pas être chargée
         // On pourrait remplacer par une image par défaut via JavaScript
+    }
+    
+    private async Task ResetFilters()
+    {
+        // Réinitialiser tous les filtres
+        searchTerm = "";
+        selectedCategory = "";
+        sortBy = "recent";
+        currentPage = 1;
+        
+        // Recharger les mods avec les filtres réinitialisés
+        await LoadMods();
+        
+        // Feedback utilisateur
+        Snackbar.Add("Filtres réinitialisés", Severity.Info);
     }
     
     public void Dispose()
