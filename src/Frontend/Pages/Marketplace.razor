@@ -1,0 +1,416 @@
+@page "/marketplace"
+@using System.Globalization
+@using Frontend.Models
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Web
+@inject IModService ModService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<PageTitle>Marketplace | ModHub</PageTitle>
+
+<MudContainer T="object" MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText T="string" Typo="Typo.h4" Class="mb-4">Découvrir des mods</MudText>
+    <MudDivider T="object" Class="mb-4" />
+
+    @if (loading)
+    {
+        <MudProgressCircular T="object" Color="Color.Primary" Size="Size.Large" Indeterminate="true" Class="my-7 d-flex mx-auto" />
+    }
+    else
+    {
+        <!-- Filtres et recherche -->
+        <MudPaper T="object" Elevation="2" Class="pa-4 mb-4">
+            <MudGrid T="object">
+                <MudItem T="object" xs="12" md="6" lg="4">
+                    <MudTextField T="string" @bind-Value="searchQuery" Label="Rechercher des mods" 
+                                Variant="Variant.Outlined" Adornment="Adornment.End"
+                                AdornmentIcon="@Icons.Material.Filled.Search" 
+                                AdornmentColor="Color.Primary" 
+                                OnKeyUp="SearchOnEnter"
+                                FullWidth="true" Immediate="true"
+                                Class="mt-0" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudSelect T="string" Label="Jeu" Variant="Variant.Outlined"
+                              @bind-Value="selectedGame" FullWidth="true" Class="mt-0">
+                        <MudSelectItem T="string" Value="@("all")">Tous les jeux</MudSelectItem>
+                        @foreach (var game in games)
+                        {
+                            <MudSelectItem T="string" Value="@game">@game</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="6" lg="3">
+                    <MudSelect T="string" Label="Catégorie" Variant="Variant.Outlined"
+                              @bind-Value="selectedCategory" FullWidth="true" Class="mt-0">
+                        <MudSelectItem T="string" Value="@("all")">Toutes les catégories</MudSelectItem>
+                        @foreach (var category in categories)
+                        {
+                            <MudSelectItem T="string" Value="@category">@category</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem T="object" xs="12" md="6" lg="2" Class="d-flex align-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                              OnClick="ApplyFilters" FullWidth="true">
+                        Appliquer les filtres
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+            
+            <MudGrid T="object" Class="mt-2">
+                <MudItem xs="12" md="6">
+                    <div class="d-flex flex-wrap gap-3">
+                        <MudCheckBox T="bool" @bind-Checked="freeOnly" Label="Gratuits uniquement" Color="Color.Primary" />
+                        <MudCheckBox T="bool" @bind-Checked="compatibleOnly" Label="Compatible avec mon jeu" Color="Color.Primary" />
+                    </div>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <div class="d-flex justify-end">
+                        <MudSelect T="string" Label="Trier par" Variant="Variant.Outlined"
+                                  @bind-Value="sortBy" Style="width: 200px;" Class="mt-n2">
+                            <MudSelectItem T="string" Value="@("popular")">Popularité</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("recent")">Plus récent</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("rating")">Mieux notés</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("downloads")">Plus téléchargés</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("priceLow")">Prix croissant</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("priceHigh")">Prix décroissant</MudSelectItem>
+                        </MudSelect>
+                    </div>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+        
+        <!-- Contenu des mods -->
+        <div class="marketplace-results">
+            @if (mods.Count == 0)
+            {
+                <MudAlert T="object" Severity="Severity.Info" Class="my-4">Aucun mod ne correspond à vos critères.</MudAlert>
+            }
+            else
+            {
+                <MudText T="string" Typo="Typo.h6" Class="mb-4">Résultats (@mods.Count mods)</MudText>
+                
+                <MudGrid T="object" Spacing="2" Class="mt-4">
+                    @foreach (var mod in mods)
+                    {
+                        <MudItem T="object" xs="12" sm="6" md="4" lg="3">
+                            <MudCard T="object" Style="height: 100%;" Elevation="2" Class="rounded-lg">
+                                <MudCardMedia T="object" Image="@mod.ThumbnailUrl" Height="200" Class="mod-thumbnail">
+                                    @if (mod.IsFeatured)
+                                    {
+                                        <MudChip T="string" Color="Color.Secondary" Size="Size.Small" Class="ma-2 featured-chip">Mis en avant</MudChip>
+                                    }
+                                    @if (mod.Price == 0)
+                                    {
+                                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Class="ma-2 price-chip">Gratuit</MudChip>
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Color="Color.Default" Size="Size.Small" Class="ma-2 price-chip">@mod.Price.ToString("C2", new CultureInfo("fr-FR"))</MudChip>
+                                    }
+                                </MudCardMedia>
+                                <MudCardContent T="object">
+                                    <MudText T="string" Typo="Typo.h6" Class="mud-text-secondary fw-bold text-truncate">@mod.Title</MudText>
+                                    <div class="d-flex align-center">
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Primary">@mod.Game</MudChip>
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Default">@mod.Category</MudChip>
+                                    </div>
+                                    <MudText T="string" Typo="Typo.body2" Class="mt-2 text-truncate-2">@mod.Description</MudText>
+                                    
+                                    <div class="d-flex justify-space-between align-center mt-2">
+                                        <MudRating T="int" ReadOnly="true" SelectedValue="@((int)Math.Round(mod.Rating))" Size="Size.Small" />
+                                        <MudText T="string" Typo="Typo.caption">@mod.RatingCount avis</MudText>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-space-between align-center">
+                                        <MudText T="string" Typo="Typo.caption">@mod.Downloads téléchargements</MudText>
+                                        <MudText T="string" Typo="Typo.caption">Par @mod.Author</MudText>
+                                    </div>
+                                    
+                                    <MudText T="string" Typo="Typo.caption" Class="text-right">Mis à jour @mod.UpdatedDate.ToString("dd/MM/yyyy")</MudText>
+                                </MudCardContent>
+                                <MudCardActions T="object">
+                                    <MudButton T="object" FullWidth="true" Color="Color.Primary" OnClick="@(() => ViewModDetails(mod.Id))">Détails</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+        </div>
+    }
+</MudContainer>
+
+@code {
+    private bool loading = true;
+    private string searchQuery = "";
+    private string selectedGame = "all";
+    private string selectedCategory = "all";
+    private string sortBy = "popular";
+    private bool freeOnly = false;
+    private bool compatibleOnly = false;
+    private List<ModViewModel> mods = new();
+    
+    // Données de test
+    private List<string> games = new List<string> { 
+        "Skyrim", 
+        "Fallout 4", 
+        "The Witcher 3", 
+        "Cyberpunk 2077", 
+        "Minecraft", 
+        "Valheim" 
+    };
+    
+    private List<string> categories = new List<string> { 
+        "Interface", 
+        "Graphismes", 
+        "Audio", 
+        "Gameplay", 
+        "Armes", 
+        "Armures", 
+        "Quêtes", 
+        "Personnages" 
+    };
+    
+    private class ModViewModel
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Game { get; set; }
+        public string Category { get; set; }
+        public string ThumbnailUrl { get; set; }
+        public double Rating { get; set; }
+        public int RatingCount { get; set; }
+        public int Downloads { get; set; }
+        public string Author { get; set; }
+        public DateTime UpdatedDate { get; set; }
+        public decimal Price { get; set; }
+        public bool IsFeatured { get; set; }
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Simulation de chargement des données
+            await Task.Delay(500);
+            await LoadMods();
+            loading = false;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des mods: {ex.Message}", Severity.Error);
+            loading = false;
+        }
+    }
+    
+    private async Task LoadMods()
+    {
+        // Dans une implémentation réelle, appeler l'API pour charger les mods
+        // avec les filtres actuels
+        await Task.Delay(200);
+        
+        // Génération de données de test
+        mods = new List<ModViewModel>
+        {
+            new ModViewModel
+            {
+                Id = "mod1",
+                Title = "Enhanced UI",
+                Description = "Une interface utilisateur améliorée pour une meilleure expérience de jeu",
+                Game = "Skyrim",
+                Category = "Interface",
+                ThumbnailUrl = "images/mods/mod1.jpg",
+                Rating = 4.5,
+                RatingCount = 356,
+                Downloads = 8546,
+                Author = "ModMaster",
+                UpdatedDate = DateTime.Now.AddDays(-5),
+                Price = 0,
+                IsFeatured = true
+            },
+            new ModViewModel
+            {
+                Id = "mod2",
+                Title = "Weather Effects",
+                Description = "Des effets météorologiques réalistes avec cycle jour/nuit avancé",
+                Game = "Fallout 4",
+                Category = "Graphismes",
+                ThumbnailUrl = "images/mods/mod2.jpg",
+                Rating = 4.2,
+                RatingCount = 289,
+                Downloads = 6290,
+                Author = "PixelWizard",
+                UpdatedDate = DateTime.Now.AddDays(-12),
+                Price = 2.99m,
+                IsFeatured = false
+            },
+            new ModViewModel
+            {
+                Id = "mod3",
+                Title = "Terrain Pack",
+                Description = "Nouveaux terrains et textures pour un monde plus immersif",
+                Game = "Skyrim",
+                Category = "Graphismes",
+                ThumbnailUrl = "images/mods/mod3.jpg",
+                Rating = 3.9,
+                RatingCount = 198,
+                Downloads = 4120,
+                Author = "LandscaperPro",
+                UpdatedDate = DateTime.Now.AddDays(-20),
+                Price = 4.99m,
+                IsFeatured = false
+            },
+            new ModViewModel
+            {
+                Id = "mod4",
+                Title = "Combat Extension",
+                Description = "Améliore le système de combat avec de nouvelles animations et mécaniques",
+                Game = "The Witcher 3",
+                Category = "Gameplay",
+                ThumbnailUrl = "images/mods/mod4.jpg",
+                Rating = 4.7,
+                RatingCount = 512,
+                Downloads = 12350,
+                Author = "CombatMaster",
+                UpdatedDate = DateTime.Now.AddDays(-3),
+                Price = 5.99m,
+                IsFeatured = true
+            },
+            new ModViewModel
+            {
+                Id = "mod5",
+                Title = "Character Customizer",
+                Description = "Options avancées de personnalisation de personnages",
+                Game = "Cyberpunk 2077",
+                Category = "Personnages",
+                ThumbnailUrl = "images/mods/mod5.jpg",
+                Rating = 4.1,
+                RatingCount = 178,
+                Downloads = 3850,
+                Author = "CharCreator",
+                UpdatedDate = DateTime.Now.AddDays(-8),
+                Price = 1.99m,
+                IsFeatured = false
+            },
+            new ModViewModel
+            {
+                Id = "mod6",
+                Title = "Medieval Armor Pack",
+                Description = "Collection d'armures médiévales historiquement précises",
+                Game = "Kingdom Come: Deliverance",
+                Category = "Armures",
+                ThumbnailUrl = "images/mods/mod6.jpg",
+                Rating = 3.8,
+                RatingCount = 145,
+                Downloads = 2780,
+                Author = "ArmorForge",
+                UpdatedDate = DateTime.Now.AddDays(-15),
+                Price = 3.49m,
+                IsFeatured = false
+            },
+            new ModViewModel
+            {
+                Id = "mod7",
+                Title = "Sound Overhaul",
+                Description = "Refonte complète des effets sonores pour une immersion améliorée",
+                Game = "Fallout 4",
+                Category = "Audio",
+                ThumbnailUrl = "images/mods/mod7.jpg",
+                Rating = 4.4,
+                RatingCount = 230,
+                Downloads = 5120,
+                Author = "AudioPro",
+                UpdatedDate = DateTime.Now.AddDays(-10),
+                Price = 0,
+                IsFeatured = false
+            },
+            new ModViewModel
+            {
+                Id = "mod8",
+                Title = "Quest Expansion",
+                Description = "Ajoute de nouvelles quêtes épiques avec doublage professionnel",
+                Game = "Skyrim",
+                Category = "Quêtes",
+                ThumbnailUrl = "images/mods/mod8.jpg",
+                Rating = 4.8,
+                RatingCount = 420,
+                Downloads = 9840,
+                Author = "StoryTeller",
+                UpdatedDate = DateTime.Now.AddDays(-1),
+                Price = 7.99m,
+                IsFeatured = true
+            }
+        };
+        
+        // Filtrage selon les paramètres
+        if (selectedGame != "all")
+        {
+            mods = mods.Where(m => m.Game == selectedGame).ToList();
+        }
+        
+        if (selectedCategory != "all")
+        {
+            mods = mods.Where(m => m.Category == selectedCategory).ToList();
+        }
+        
+        if (freeOnly)
+        {
+            mods = mods.Where(m => m.Price == 0).ToList();
+        }
+        
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            mods = mods.Where(m => 
+                m.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                m.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                m.Author.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+        
+        // Tri selon le paramètre sélectionné
+        mods = sortBy switch
+        {
+            "popular" => mods.OrderByDescending(m => m.Downloads).ToList(),
+            "recent" => mods.OrderByDescending(m => m.UpdatedDate).ToList(),
+            "rating" => mods.OrderByDescending(m => m.Rating).ToList(),
+            "downloads" => mods.OrderByDescending(m => m.Downloads).ToList(),
+            "priceLow" => mods.OrderBy(m => m.Price).ToList(),
+            "priceHigh" => mods.OrderByDescending(m => m.Price).ToList(),
+            _ => mods
+        };
+    }
+    
+    private async Task SearchMods()
+    {
+        loading = true;
+        await LoadMods();
+        loading = false;
+    }
+    
+    private async Task SearchOnEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchMods();
+        }
+    }
+    
+    private async Task ApplyFilters()
+    {
+        loading = true;
+        await LoadMods();
+        loading = false;
+    }
+    
+    private void ViewModDetails(string modId)
+    {
+        if (!string.IsNullOrEmpty(modId))
+        {
+            NavigationManager.NavigateTo($"/mod/{modId}");
+        }
+    }
+}

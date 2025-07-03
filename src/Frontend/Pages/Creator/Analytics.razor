@@ -1,0 +1,360 @@
+@page "/creator/analytics"
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using System.Globalization
+@using Frontend.Models
+@inject IModService ModService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "Creator")]
+
+<PageTitle>Statistiques | Espace Créateur | ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Statistiques de vos mods</MudText>
+    <MudDivider Class="mb-4" />
+
+    @if (loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" Class="my-7 d-flex mx-auto" />
+    }
+    else
+    {
+        <MudGrid>
+            <!-- Filtres et sélections -->
+            <MudItem xs="12">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudGrid>
+                        <MudItem xs="12" md="4">
+                            <MudSelect T="string" Label="Période" Value="selectedPeriod" ValueChanged="@((value) => OnPeriodChanged(value))" Variant="Variant.Outlined" Class="mt-0">
+                                <MudSelectItem Value="@("7days")">7 derniers jours</MudSelectItem>
+                                <MudSelectItem Value="@("30days")">30 derniers jours</MudSelectItem>
+                                <MudSelectItem Value="@("90days")">90 derniers jours</MudSelectItem>
+                                <MudSelectItem Value="@("1year")">12 derniers mois</MudSelectItem>
+                                <MudSelectItem Value="@("all")">Tout</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudSelect T="string" Label="Mod" Value="selectedModId" ValueChanged="@((value) => OnModChanged(value))" Variant="Variant.Outlined" Class="mt-0">
+                                <MudSelectItem Value="@("all")">Tous les mods</MudSelectItem>
+                                @foreach (var mod in creatorMods)
+                                {
+                                    <MudSelectItem Value="@mod.Id">@mod.Title</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="4" Class="d-flex align-end">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RefreshData" 
+                                      StartIcon="@Icons.Material.Filled.Refresh" Class="mb-1">
+                                Actualiser
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+
+            <!-- KPIs -->
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="2" Class="pa-4 mud-height-full">
+                    <MudStack>
+                        <MudText Typo="Typo.subtitle1"><MudIcon Icon="@Icons.Material.Filled.Download" Class="me-2" /> Téléchargements</MudText>
+                        <MudText Typo="Typo.h3" Color="Color.Primary" Class="mb-n2">@statistics.TotalDownloads.ToString("N0", CultureInfo.CurrentCulture)</MudText>
+                        <div class="d-flex align-center">
+                            <MudText Typo="Typo.caption">
+                                @if (statistics.DownloadGrowth > 0)
+                                {
+                                    <span style="color: var(--mud-palette-success);">
+                                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" /> +@statistics.DownloadGrowth%
+                                    </span>
+                                }
+                                else if (statistics.DownloadGrowth < 0)
+                                {
+                                    <span style="color: var(--mud-palette-error);">
+                                        <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Size="Size.Small" /> @statistics.DownloadGrowth%
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>
+                                        <MudIcon Icon="@Icons.Material.Filled.TrendingFlat" Size="Size.Small" /> 0%
+                                    </span>
+                                }
+                            </MudText>
+                            <MudText Typo="Typo.caption" Class="ms-2">vs période précédente</MudText>
+                        </div>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="2" Class="pa-4 mud-height-full">
+                    <MudStack>
+                        <MudText Typo="Typo.subtitle1"><MudIcon Icon="@Icons.Material.Filled.StarRate" Class="me-2" /> Évaluation moyenne</MudText>
+                        <MudText Typo="Typo.h3" Color="Color.Secondary" Class="mb-n2">@statistics.AverageRating.ToString("0.0", CultureInfo.InvariantCulture)</MudText>
+                        <div class="d-flex align-center">
+                            <MudRating ReadOnly="true" SelectedValue="@((int)Math.Round(statistics.AverageRating))" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Class="ms-2">@statistics.TotalRatings évaluations</MudText>
+                        </div>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="2" Class="pa-4 mud-height-full">
+                    <MudStack>
+                        <MudText Typo="Typo.subtitle1"><MudIcon Icon="@Icons.Material.Filled.Payments" Class="me-2" /> Revenus</MudText>
+                        <MudText Typo="Typo.h3" Color="Color.Success" Class="mb-n2">@statistics.TotalRevenue.ToString("C", CultureInfo.CurrentCulture)</MudText>
+                        <div class="d-flex align-center">
+                            <MudText Typo="Typo.caption">
+                                @if (statistics.RevenueGrowth > 0)
+                                {
+                                    <span style="color: var(--mud-palette-success);">
+                                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" /> +@statistics.RevenueGrowth%
+                                    </span>
+                                }
+                                else if (statistics.RevenueGrowth < 0)
+                                {
+                                    <span style="color: var(--mud-palette-error);">
+                                        <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Size="Size.Small" /> @statistics.RevenueGrowth%
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>
+                                        <MudIcon Icon="@Icons.Material.Filled.TrendingFlat" Size="Size.Small" /> 0%
+                                    </span>
+                                }
+                            </MudText>
+                            <MudText Typo="Typo.caption" Class="ms-2">vs période précédente</MudText>
+                        </div>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="2" Class="pa-4 mud-height-full">
+                    <MudStack>
+                        <MudText Typo="Typo.subtitle1"><MudIcon Icon="@Icons.Material.Filled.Groups" Class="me-2" /> Utilisateurs uniques</MudText>
+                        <MudText Typo="Typo.h3" Color="Color.Tertiary" Class="mb-n2">@statistics.UniqueUsers.ToString("N0", CultureInfo.CurrentCulture)</MudText>
+                        <MudText Typo="Typo.caption">
+                            Taux de conversion: @statistics.ConversionRate.ToString("0.0", CultureInfo.InvariantCulture)%
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Graphiques -->
+            <MudItem xs="12" md="8">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-4">Évolution des téléchargements</MudText>
+                    <div style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                        <!-- Emplacement pour le graphique -->
+                        <MudText Typo="Typo.body1" Color="Color.Secondary">
+                            [Graphique d'évolution des téléchargements]<br />
+                            Simulé - Dans une implémentation réelle, un composant graphique serait utilisé
+                        </MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Statistiques par platform -->
+            <MudItem xs="12" md="4">
+                <MudPaper Elevation="2" Class="pa-4 mud-height-full">
+                    <MudText Typo="Typo.h6" Class="mb-4">Répartition par plateforme</MudText>
+                    <MudList T="PlatformStat" Dense="true" Clickable="false">
+                        @foreach (var platform in platformStats.OrderByDescending(p => p.Percentage))
+                        {
+                            <MudListItem T="PlatformStat" Class="px-0">
+                                <div style="width: 100%;">
+                                    <div class="d-flex justify-space-between mb-1">
+                                        <MudText Typo="Typo.body2">@platform.Name</MudText>
+                                        <MudText Typo="Typo.body2">@platform.Percentage%</MudText>
+                                    </div>
+                                    <MudProgressLinear Color="@platform.Color" Value="@platform.Percentage" Class="my-1" />
+                                </div>
+                            </MudListItem>
+                        }
+                    </MudList>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Statistiques géographiques -->
+            <MudItem xs="12">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-4">Répartition géographique</MudText>
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <div style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                                <!-- Emplacement pour la carte géographique -->
+                                <MudText Typo="Typo.body1" Color="Color.Secondary">
+                                    [Carte de répartition des téléchargements]<br />
+                                    Simulé - Dans une implémentation réelle, une carte interactive serait utilisée
+                                </MudText>
+                            </div>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTable T="GeoStat" Items="@geoStats" Hover="true" Striped="true" Dense="true" Bordered="false" Class="mt-4">
+                                <HeaderContent>
+                                    <MudTh>Pays</MudTh>
+                                    <MudTh>Téléchargements</MudTh>
+                                    <MudTh>%</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Pays">@context.Country</MudTd>
+                                    <MudTd DataLabel="Téléchargements">@context.Downloads.ToString("N0", CultureInfo.CurrentCulture)</MudTd>
+                                    <MudTd DataLabel="%">@context.Percentage.ToString("0.0")%</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Exportation -->
+            <MudItem xs="12" Class="d-flex justify-end mt-4">
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" 
+                          StartIcon="@Icons.Material.Filled.FileDownload" Class="ml-auto">
+                    Exporter les statistiques (CSV)
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private bool loading = true;
+    private string selectedPeriod = "30days";
+    private string selectedModId = "all";
+    private List<ModInfo> creatorMods = new();
+    private AnalyticsStats statistics = new();
+    private List<PlatformStat> platformStats = new();
+    private List<GeoStat> geoStats = new();
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateTask;
+            if (authState.User.Identity.IsAuthenticated)
+            {
+                // Dans un contexte réel, on chargerait ces données depuis l'API
+                await LoadAnalyticsData();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des statistiques: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task LoadAnalyticsData()
+    {
+        // Simulation de chargement des données
+        await Task.Delay(500); // Remplacer par un vrai appel API
+
+        // Mods du créateur
+        creatorMods = new List<ModInfo>
+        {
+            new ModInfo { Id = "mod1", Title = "Enhanced UI" },
+            new ModInfo { Id = "mod2", Title = "Weather Effects" },
+            new ModInfo { Id = "mod3", Title = "Terrain Pack" },
+            new ModInfo { Id = "mod4", Title = "Combat Extension" }
+        };
+
+        // Données de statistiques
+        statistics = new AnalyticsStats
+        {
+            TotalDownloads = 24578,
+            DownloadGrowth = 12.5,
+            AverageRating = 4.2,
+            TotalRatings = 387,
+            TotalRevenue = 1245.75m,
+            RevenueGrowth = 8.2,
+            UniqueUsers = 5620,
+            ConversionRate = 22.8
+        };
+
+        // Statistiques par plateforme
+        platformStats = new List<PlatformStat>
+        {
+            new PlatformStat { Name = "Windows", Percentage = 68.5f, Color = Color.Primary },
+            new PlatformStat { Name = "Mac", Percentage = 18.2f, Color = Color.Secondary },
+            new PlatformStat { Name = "Linux", Percentage = 10.5f, Color = Color.Tertiary },
+            new PlatformStat { Name = "Autres", Percentage = 2.8f, Color = Color.Info }
+        };
+
+        // Statistiques géographiques
+        geoStats = new List<GeoStat>
+        {
+            new GeoStat { Country = "États-Unis", Downloads = 8450, Percentage = 34.4 },
+            new GeoStat { Country = "France", Downloads = 3245, Percentage = 13.2 },
+            new GeoStat { Country = "Allemagne", Downloads = 2890, Percentage = 11.8 },
+            new GeoStat { Country = "Royaume-Uni", Downloads = 2105, Percentage = 8.6 },
+            new GeoStat { Country = "Canada", Downloads = 1750, Percentage = 7.1 },
+            new GeoStat { Country = "Autres", Downloads = 6138, Percentage = 25.0 }
+        };
+    }
+
+    private async Task OnPeriodChanged(string period)
+    {
+        selectedPeriod = period;
+        loading = true;
+        await LoadAnalyticsData();
+        loading = false;
+    }
+
+    private async Task OnModChanged(string modId)
+    {
+        selectedModId = modId;
+        loading = true;
+        await LoadAnalyticsData();
+        loading = false;
+    }
+
+    private async Task RefreshData()
+    {
+        loading = true;
+        await LoadAnalyticsData();
+        loading = false;
+    }
+
+    // Classes pour les données locales
+    public class ModInfo
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+    }
+
+    public class AnalyticsStats
+    {
+        public int TotalDownloads { get; set; }
+        public double DownloadGrowth { get; set; }
+        public double AverageRating { get; set; }
+        public int TotalRatings { get; set; }
+        public decimal TotalRevenue { get; set; }
+        public double RevenueGrowth { get; set; }
+        public int UniqueUsers { get; set; }
+        public double ConversionRate { get; set; }
+    }
+
+    public class PlatformStat
+    {
+        public string Name { get; set; }
+        public float Percentage { get; set; }
+        public Color Color { get; set; }
+    }
+
+    public class GeoStat
+    {
+        public string Country { get; set; }
+        public int Downloads { get; set; }
+        public double Percentage { get; set; }
+    }
+}

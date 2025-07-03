@@ -1,0 +1,248 @@
+@page "/mod/{ModId}"
+@using System.Globalization
+@using Frontend.Models
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Web
+@inject IModService ModService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<PageTitle>Détails du mod | ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    @if (loading)
+    {
+        <div class="d-flex justify-center my-8">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+        </div>
+    }
+    else if (mod == null)
+    {
+        <MudAlert Severity="Severity.Error" Class="my-4">
+            Le mod demandé n'a pas été trouvé.
+            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => NavigationManager.NavigateTo("/marketplace"))">
+                Retour à la marketplace
+            </MudButton>
+        </MudAlert>
+    }
+    else
+    {
+        <MudBreadcrumbs T="BreadcrumbItem" Items="@breadcrumbs" Separator="/" Class="mb-4"></MudBreadcrumbs>
+        <MudGrid>
+            <MudItem xs="12" md="8">
+                <MudPaper Elevation="2" Class="pa-4 mb-4">
+                    <div class="d-flex justify-space-between align-center">
+                        <MudText Typo="Typo.h4" Class="mb-2">@mod.Title</MudText>
+                        @if (mod.Price == 0)
+                        {
+                            <MudChip T="string" Color="Color.Success" Size="Size.Medium">Gratuit</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Color="Color.Default" Size="Size.Medium">@mod.Price.ToString("C2", new CultureInfo("fr-FR"))</MudChip>
+                        }
+                    </div>
+
+                    <MudDivider Class="my-4" />
+
+                    <div class="d-flex gap-2 mb-4">
+                        <MudChip T="string" Color="Color.Primary">@mod.Game</MudChip>
+                        <MudChip T="string" Color="Color.Default">@mod.Category</MudChip>
+                        @if (mod.IsFeatured)
+                        {
+                            <MudChip T="string" Color="Color.Secondary">Mis en avant</MudChip>
+                        }
+                    </div>
+
+                    <MudText Class="mb-6">@mod.Description</MudText>
+
+                    <MudText Typo="Typo.h6" Class="mb-2">Images</MudText>
+                    <MudCarousel TData="object" Class="mud-width-full mb-6" Style="height:400px;" ShowArrows="true" ShowDelimiters="true" AutoCycle="true">
+                        <MudCarouselItem Transition="Transition.Slide">
+                            <div class="d-flex justify-center" style="height:100%">
+                                <img src="@mod.ThumbnailUrl" style="max-height:100%; max-width:100%; object-fit:contain" alt="@mod.Title" />
+                            </div>
+                        </MudCarouselItem>
+                        <MudCarouselItem Transition="Transition.Slide">
+                            <div class="d-flex justify-center" style="height:100%">
+                                <img src="@mod.ThumbnailUrl" style="max-height:100%; max-width:100%; object-fit:contain" alt="@mod.Title" />
+                            </div>
+                        </MudCarouselItem>
+                    </MudCarousel>
+
+                    <MudText Typo="Typo.h6" Class="mb-2">Contenu du mod</MudText>
+                    <MudExpansionPanels Class="mb-6">
+                        <MudExpansionPanel Text="Fichiers inclus">
+                            <MudList T="string" Dense="true">
+                                <MudListItem T="string" Icon="@Icons.Material.Filled.InsertDriveFile">main.pak (52 MB)</MudListItem>
+                                <MudListItem T="string" Icon="@Icons.Material.Filled.InsertDriveFile">textures.pak (128 MB)</MudListItem>
+                                <MudListItem T="string" Icon="@Icons.Material.Filled.InsertDriveFile">README.txt (4 KB)</MudListItem>
+                            </MudList>
+                        </MudExpansionPanel>
+                        <MudExpansionPanel Text="Instructions d'installation">
+                            <MudText>
+                                1. Téléchargez les fichiers du mod<br />
+                                2. Extrayez les fichiers dans le dossier d'installation de votre jeu<br />
+                                3. Remplacez les fichiers existants si nécessaire<br />
+                                4. Lancez le jeu et profitez du mod !
+                            </MudText>
+                        </MudExpansionPanel>
+                        <MudExpansionPanel Text="Compatibilité">
+                            <MudText>
+                                Ce mod est compatible avec les versions suivantes du jeu :<br />
+                                - Version 1.5.x<br />
+                                - Version 1.6.x<br />
+                                <br />
+                                Il est compatible avec les mods suivants :<br />
+                                - Enhanced Graphics<br />
+                                - Better Controls<br />
+                                <br />
+                                Il n'est PAS compatible avec :<br />
+                                - UI Overhaul
+                            </MudText>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudPaper Elevation="2" Class="pa-4 mb-4">
+                    <div class="d-flex flex-column gap-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large" OnClick="@DownloadMod">
+                            @if (mod.Price == 0)
+                            {
+                                <span>Télécharger</span>
+                            }
+                            else
+                            {
+                                <span>Acheter (@mod.Price.ToString("C2", new CultureInfo("fr-FR")))</span>
+                            }
+                        </MudButton>
+
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" StartIcon="@Icons.Material.Filled.Favorite">
+                            Ajouter aux favoris
+                        </MudButton>
+
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" FullWidth="true" StartIcon="@Icons.Material.Filled.Share">
+                            Partager
+                        </MudButton>
+                    </div>
+
+                    <MudDivider Class="my-4" />
+
+                    <MudText Typo="Typo.h6" Class="mb-2">Informations</MudText>
+                    <MudList T="string" Dense="true">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Person">
+                            Créateur: <MudLink Href="#" Color="Color.Primary">@mod.Author</MudLink>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Update">
+                            Dernière mise à jour: @mod.UpdatedDate.ToString("dd/MM/yyyy")
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.GetApp">
+                            Téléchargements: @mod.Downloads.ToString("N0", new CultureInfo("fr-FR"))
+                        </MudListItem>
+                    </MudList>
+
+                    <MudDivider Class="my-4" />
+
+                    <MudText Typo="Typo.h6" Class="mb-2">Évaluations</MudText>
+                    <div class="d-flex align-center mb-2">
+                        <MudRating ReadOnly="true" SelectedValue="@((int)Math.Round(mod.Rating))" />
+                        <MudText Class="ml-2">@mod.Rating.ToString("0.0", new CultureInfo("fr-FR"))/5</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2">Basé sur @mod.RatingCount.ToString("N0", new CultureInfo("fr-FR")) avis</MudText>
+
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Class="mt-2">
+                        Voir tous les avis
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string ModId { get; set; }
+
+    private bool loading = true;
+    private ModViewModel mod;
+    private List<BreadcrumbItem> breadcrumbs = new();
+
+    private class ModViewModel
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Game { get; set; }
+        public string Category { get; set; }
+        public string ThumbnailUrl { get; set; }
+        public double Rating { get; set; }
+        public int RatingCount { get; set; }
+        public int Downloads { get; set; }
+        public string Author { get; set; }
+        public DateTime UpdatedDate { get; set; }
+        public decimal Price { get; set; }
+        public bool IsFeatured { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Définition des breadcrumbs
+            breadcrumbs = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem("Accueil", href: "/"),
+                new BreadcrumbItem("Marketplace", href: "/marketplace"),
+                new BreadcrumbItem("Détails du mod", href: null, disabled: true)
+            };
+
+            // Simulation de chargement des données
+            await Task.Delay(500);
+            await LoadModDetails();
+            loading = false;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des détails du mod: {ex.Message}", Severity.Error);
+            loading = false;
+        }
+    }
+
+    private async Task LoadModDetails()
+    {
+        // Dans une implémentation réelle, appeler l'API pour charger les détails du mod
+        await Task.Delay(200);
+
+        // Génération de données de test
+        mod = new ModViewModel
+        {
+            Id = ModId,
+            Title = "Enhanced UI " + ModId,
+            Description = "Une interface utilisateur améliorée pour une meilleure expérience de jeu. Ce mod remplace complètement l'interface utilisateur du jeu pour la rendre plus intuitive et plus agréable visuellement. Il ajoute également de nouvelles fonctionnalités comme des raccourcis clavier personnalisables, des indicateurs de statut plus détaillés, et une mini-carte améliorée avec des points d'intérêt personnalisables. Compatible avec la plupart des autres mods populaires.",
+            Game = "Skyrim",
+            Category = "Interface",
+            ThumbnailUrl = "images/mods/mod1.jpg",
+            Rating = 4.5,
+            RatingCount = 356,
+            Downloads = 8546,
+            Author = "ModMaster",
+            UpdatedDate = DateTime.Now.AddDays(-5),
+            Price = 0,
+            IsFeatured = true
+        };
+    }
+
+    private void DownloadMod()
+    {
+        if (mod.Price > 0)
+        {
+            Snackbar.Add("Redirection vers la page de paiement...", Severity.Info);
+        }
+        else
+        {
+            Snackbar.Add("Téléchargement du mod commencé", Severity.Success);
+        }
+    }
+}

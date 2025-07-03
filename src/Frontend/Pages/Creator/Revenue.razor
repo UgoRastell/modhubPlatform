@@ -1,0 +1,393 @@
+@page "/creator/revenue"
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using System.Globalization
+@using Frontend.Models
+@inject IPaymentService PaymentService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "Creator")]
+
+<PageTitle>Gestion des revenus | Espace Créateur | ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Gestion des revenus</MudText>
+    <MudDivider Class="mb-4" />
+
+    @if (loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" Class="my-7 d-flex mx-auto" />
+    }
+    else
+    {
+        <MudGrid>
+            <!-- Carte solde et actions -->
+            <MudItem xs="12" md="6" lg="4">
+                <MudCard Elevation="3" Class="mb-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Solde actuel</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <div class="d-flex align-center mb-4">
+                            <MudText Typo="Typo.h3" Color="Color.Success" Style="font-weight: 600;">
+                                @revenueData.CurrentBalance.ToString("C", CultureInfo.CurrentCulture)
+                            </MudText>
+                            <MudChip T="string" Color="Color.Success" Size="Size.Small" Class="ml-4" Style="height: 24px;">
+                                Disponible
+                            </MudChip>
+                        </div>
+                        
+                        <MudText Typo="Typo.body2" Class="mb-4">
+                            Prochain paiement prévu: <strong>@revenueData.NextPaymentDate.ToString("dd MMMM yyyy", CultureInfo.CurrentCulture)</strong>
+                            @if (revenueData.PendingAmount > 0)
+                            {
+                                <span> (@revenueData.PendingAmount.ToString("C", CultureInfo.CurrentCulture))</span>
+                            }
+                        </MudText>
+                        
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
+                                  OnClick="@(() => RequestPayment())" Disabled="@(revenueData.CurrentBalance <= 0)"
+                                  StartIcon="@Icons.Material.Filled.AccountBalance" Class="mb-2">
+                            Demander un retrait
+                        </MudButton>
+                        
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true"
+                                  OnClick="@(() => OpenBankSettings())" StartIcon="@Icons.Material.Filled.Settings">
+                            Paramètres bancaires
+                        </MudButton>
+                    </MudCardContent>
+                </MudCard>
+                
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Récapitulatif fiscal</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudStack>
+                            <MudText Typo="Typo.body2">
+                                Revenus totaux @DateTime.Now.Year: <strong>@revenueData.YearlyRevenue.ToString("C", CultureInfo.CurrentCulture)</strong>
+                            </MudText>
+                            <MudText Typo="Typo.body2">
+                                Taxes prélevées: <strong>@revenueData.YearlyTaxes.ToString("C", CultureInfo.CurrentCulture)</strong>
+                            </MudText>
+                            
+                            <div class="d-flex justify-space-between mt-2">
+                                <MudButton Variant="Variant.Text" Color="Color.Primary" 
+                                         Size="Size.Small" StartIcon="@Icons.Material.Filled.FileDownload">
+                                    Relevé annuel
+                                </MudButton>
+                                <MudButton Variant="Variant.Text" Color="Color.Primary" 
+                                         Size="Size.Small" StartIcon="@Icons.Material.Filled.Receipt">
+                                    Certificat fiscal
+                                </MudButton>
+                            </div>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            
+            <!-- Graphique des revenus -->
+            <MudItem xs="12" md="6" lg="8">
+                <MudCard Elevation="3" Class="mb-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Évolution des revenus</MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <MudSelect T="string" Value="@chartPeriod" ValueChanged="@((value) => ChartPeriodChanged(value))"
+                                      Label="Période" Dense="true" Margin="Margin.Dense" Style="min-width: 120px;">
+                                <MudSelectItem Value="@("30days")">30 jours</MudSelectItem>
+                                <MudSelectItem Value="@("90days")">90 jours</MudSelectItem>
+                                <MudSelectItem Value="@("year")">Année</MudSelectItem>
+                            </MudSelect>
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <div style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                            <!-- Emplacement pour le graphique -->
+                            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                                [Graphique d'évolution des revenus]<br />
+                                Simulé - Dans une implémentation réelle, un composant graphique serait utilisé
+                            </MudText>
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+                
+                <!-- Revenus par mod -->
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Revenus par mod</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudTable T="ModRevenue" Items="@modRevenues" Hover="true" Striped="false" Dense="true" 
+                                 Bordered="false" Filter="new Func<ModRevenue,bool>(FilterFunc1)">
+                            <ToolBarContent>
+                                <MudTextField @bind-Value="searchString" Placeholder="Rechercher un mod"
+                                             Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                                             IconSize="Size.Medium" Class="mt-0" Immediate="true"></MudTextField>
+                            </ToolBarContent>
+                            <HeaderContent>
+                                <MudTh>Mod</MudTh>
+                                <MudTh>Revenus</MudTh>
+                                <MudTh>Téléchargements</MudTh>
+                                <MudTh>Prix moyen</MudTh>
+                                <MudTh>Tendance</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Mod">
+                                    <div class="d-flex align-center">
+                                        <MudIcon Icon="@Icons.Material.Filled.Extension" Class="mr-2" />
+                                        @context.ModName
+                                    </div>
+                                </MudTd>
+                                <MudTd DataLabel="Revenus">@context.Revenue.ToString("C", CultureInfo.CurrentCulture)</MudTd>
+                                <MudTd DataLabel="Téléchargements">@context.Downloads.ToString("N0", CultureInfo.CurrentCulture)</MudTd>
+                                <MudTd DataLabel="Prix moyen">@context.AveragePrice.ToString("C", CultureInfo.CurrentCulture)</MudTd>
+                                <MudTd DataLabel="Tendance">
+                                    @if (context.Trend > 0)
+                                    {
+                                        <span style="color: var(--mud-palette-success);">
+                                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" /> +@context.Trend%
+                                        </span>
+                                    }
+                                    else if (context.Trend < 0)
+                                    {
+                                        <span style="color: var(--mud-palette-error);">
+                                            <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Size="Size.Small" /> @context.Trend%
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span>
+                                            <MudIcon Icon="@Icons.Material.Filled.TrendingFlat" Size="Size.Small" /> 0%
+                                        </span>
+                                    }
+                                </MudTd>
+                            </RowTemplate>
+                            <PagerContent>
+                                <MudTablePager />
+                            </PagerContent>
+                        </MudTable>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            
+            <!-- Historique des paiements -->
+            <MudItem xs="12">
+                <MudCard Elevation="3" Class="mt-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Historique des paiements</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (paymentHistory.Count > 0)
+                        {
+                            <MudTable T="PaymentHistoryItem" Items="@paymentHistory" Hover="true" Bordered="false" Dense="true">
+                                <HeaderContent>
+                                    <MudTh>Date</MudTh>
+                                    <MudTh>Montant</MudTh>
+                                    <MudTh>Méthode</MudTh>
+                                    <MudTh>Statut</MudTh>
+                                    <MudTh>Référence</MudTh>
+                                    <MudTh></MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Date">@context.Date.ToString("dd/MM/yyyy", CultureInfo.CurrentCulture)</MudTd>
+                                    <MudTd DataLabel="Montant">@context.Amount.ToString("C", CultureInfo.CurrentCulture)</MudTd>
+                                    <MudTd DataLabel="Méthode">@context.Method</MudTd>
+                                    <MudTd DataLabel="Statut">
+                                        <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                                            @context.Status
+                                        </MudChip>
+                                    </MudTd>
+                                    <MudTd DataLabel="Référence">@context.Reference</MudTd>
+                                    <MudTd>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Receipt" Size="Size.Small"
+                                                     OnClick="@(() => ViewPaymentDetails(context))" 
+                                                     Title="Voir les détails" />
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body1" Class="my-4 d-flex justify-center">
+                                Aucun paiement effectué pour l'instant
+                            </MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private bool loading = true;
+    private string searchString = "";
+    private string chartPeriod = "30days";
+    private RevenueData revenueData = new();
+    private List<ModRevenue> modRevenues = new();
+    private List<PaymentHistoryItem> paymentHistory = new();
+    
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateTask;
+            if (authState.User.Identity.IsAuthenticated)
+            {
+                // Dans un contexte réel, on chargerait ces données depuis l'API
+                await LoadRevenueData();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement des données de revenus: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+    
+    private async Task LoadRevenueData()
+    {
+        // Simulation de chargement des données
+        await Task.Delay(500); // Remplacer par un vrai appel API
+        
+        // Données fictives pour la démonstration
+        revenueData = new RevenueData
+        {
+            CurrentBalance = 387.50m,
+            PendingAmount = 42.75m,
+            NextPaymentDate = DateTime.Now.AddDays(15),
+            YearlyRevenue = 4250.80m,
+            YearlyTaxes = 850.16m
+        };
+        
+        // Revenus par mod
+        modRevenues = new List<ModRevenue>
+        {
+            new ModRevenue { ModName = "Enhanced UI", Revenue = 1250.80m, Downloads = 8546, AveragePrice = 2.99m, Trend = 12.4 },
+            new ModRevenue { ModName = "Weather Effects", Revenue = 980.25m, Downloads = 6290, AveragePrice = 3.99m, Trend = 8.7 },
+            new ModRevenue { ModName = "Terrain Pack", Revenue = 845.50m, Downloads = 4120, AveragePrice = 4.99m, Trend = -2.3 },
+            new ModRevenue { ModName = "Combat Extension", Revenue = 750.40m, Downloads = 3850, AveragePrice = 1.99m, Trend = 5.1 },
+            new ModRevenue { ModName = "Character Customizer", Revenue = 423.85m, Downloads = 2150, AveragePrice = 2.49m, Trend = 0 }
+        };
+        
+        // Historique des paiements
+        paymentHistory = new List<PaymentHistoryItem>
+        {
+            new PaymentHistoryItem { 
+                Date = DateTime.Now.AddDays(-30), 
+                Amount = 320.45m, 
+                Method = "Virement bancaire",
+                Status = "Complété", 
+                Reference = "PAY-2025062511" 
+            },
+            new PaymentHistoryItem { 
+                Date = DateTime.Now.AddDays(-60), 
+                Amount = 280.15m, 
+                Method = "Virement bancaire",
+                Status = "Complété", 
+                Reference = "PAY-2025052409" 
+            },
+            new PaymentHistoryItem { 
+                Date = DateTime.Now.AddDays(-90), 
+                Amount = 310.80m, 
+                Method = "Virement bancaire",
+                Status = "Complété", 
+                Reference = "PAY-2025042318" 
+            },
+            new PaymentHistoryItem { 
+                Date = DateTime.Now.AddDays(-5), 
+                Amount = 42.75m, 
+                Method = "Virement bancaire",
+                Status = "En cours", 
+                Reference = "PAY-2025062817" 
+            }
+        };
+    }
+    
+    private bool FilterFunc1(ModRevenue mod) => FilterFunc(mod, searchString);
+    
+    private bool FilterFunc(ModRevenue mod, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+            
+        return mod.ModName.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+    }
+    
+    private Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Complété" => Color.Success,
+            "En cours" => Color.Info,
+            "Annulé" => Color.Error,
+            _ => Color.Default
+        };
+    }
+    
+    private void RequestPayment()
+    {
+        Snackbar.Add("Demande de retrait initiée. Vous recevrez un email de confirmation.", Severity.Success);
+    }
+    
+    private void OpenBankSettings()
+    {
+        NavigationManager.NavigateTo("/settings/payment");
+    }
+    
+    private void ViewPaymentDetails(PaymentHistoryItem payment)
+    {
+        Snackbar.Add($"Affichage des détails du paiement {payment.Reference}", Severity.Info);
+        // Ouvrir une dialogue avec les détails complets
+    }
+    
+    private void ChartPeriodChanged(string period)
+    {
+        chartPeriod = period;
+        // Dans une implémentation réelle, recharger les données du graphique
+    }
+    
+    // Modèles locaux pour la démonstration
+    public class RevenueData
+    {
+        public decimal CurrentBalance { get; set; }
+        public decimal PendingAmount { get; set; }
+        public DateTime NextPaymentDate { get; set; }
+        public decimal YearlyRevenue { get; set; }
+        public decimal YearlyTaxes { get; set; }
+    }
+    
+    public class ModRevenue
+    {
+        public string ModName { get; set; }
+        public decimal Revenue { get; set; }
+        public int Downloads { get; set; }
+        public decimal AveragePrice { get; set; }
+        public double Trend { get; set; }
+    }
+    
+    public class PaymentHistoryItem
+    {
+        public DateTime Date { get; set; }
+        public decimal Amount { get; set; }
+        public string Method { get; set; }
+        public string Status { get; set; }
+        public string Reference { get; set; }
+    }
+}

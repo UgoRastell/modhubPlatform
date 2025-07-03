@@ -1,0 +1,111 @@
+@using System.Globalization
+@using Frontend.Models
+@using Frontend.Models.ModManagement
+@using MudBlazor
+
+<MudTable Items="@Mods" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@(Mods == null)" 
+         LoadingProgressColor="Color.Info" Filter="new Func<ModInfo, bool>(FilterFunc)">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6" Class="mud-text-secondary">@Status (@Mods.Count)</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString" Placeholder="Rechercher" Adornment="Adornment.Start"
+                     AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" 
+                     Class="mt-0" Immediate="true"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Titre</MudTh>
+        <MudTh>Jeu</MudTh>
+        <MudTh>Version</MudTh>
+        <MudTh>Créé le</MudTh>
+        <MudTh>Modifié le</MudTh>
+        @if (Status == "Publié")
+        {
+            <MudTh>Téléch.</MudTh>
+            <MudTh>Note</MudTh>
+        }
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Titre">
+            <div class="d-flex align-center">
+                @if (!string.IsNullOrEmpty(context.ThumbnailUrl))
+                {
+                    <MudAvatar Class="mr-2" Style="width: 40px; height: 40px;">
+                        <MudImage Src="@context.ThumbnailUrl" Alt="@context.Title" ObjectFit="ObjectFit.Cover" />
+                    </MudAvatar>
+                }
+                else
+                {
+                    <MudAvatar Color="Color.Secondary" Class="mr-2">@context.Title[0]</MudAvatar>
+                }
+                <span>@context.Title</span>
+            </div>
+        </MudTd>
+        <MudTd DataLabel="Jeu">@context.Game</MudTd>
+        <MudTd DataLabel="Version">@context.Version</MudTd>
+        <MudTd DataLabel="Créé le">@context.CreatedDate.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd DataLabel="Modifié le">@context.UpdatedDate.ToString("dd/MM/yyyy")</MudTd>
+        @if (Status == "Publié")
+        {
+            <MudTd DataLabel="Téléchargements">@context.Downloads.ToString("N0", CultureInfo.CurrentCulture)</MudTd>
+            <MudTd DataLabel="Note">
+                <div class="d-flex align-center">
+                    <MudRating ReadOnly="true" SelectedValue="@((int)Math.Round(context.Rating))" Size="Size.Small" />
+                    <MudText Typo="Typo.caption" Class="ml-2">@context.Rating.ToString("0.0")</MudText>
+                </div>
+            </MudTd>
+        }
+        <MudTd>
+            <div class="d-flex">
+                <MudTooltip Text="Modifier">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" 
+                                 OnClick="@(() => OnEdit.InvokeAsync(context))" />
+                </MudTooltip>
+                <MudTooltip Text="Voir">
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" 
+                                 OnClick="@(() => OnView.InvokeAsync(context))" />
+                </MudTooltip>
+                <MudTooltip Text="Supprimer">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                 OnClick="@(() => OnDelete.InvokeAsync(context))" />
+                </MudTooltip>
+            </div>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>Aucun mod trouvé dans cette catégorie</MudText>
+    </NoRecordsContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[] { 5, 10, 25, 50 }" />
+    </PagerContent>
+</MudTable>
+
+@code {
+    private string searchString = "";
+
+    [Parameter]
+    public List<ModInfo> Mods { get; set; }
+    
+    [Parameter]
+    public string Status { get; set; }
+    
+    [Parameter]
+    public EventCallback<ModInfo> OnEdit { get; set; }
+    
+    [Parameter]
+    public EventCallback<ModInfo> OnView { get; set; }
+    
+    [Parameter]
+    public EventCallback<ModInfo> OnDelete { get; set; }
+    
+    private bool FilterFunc(ModInfo mod)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+            
+        return mod.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+               mod.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+               mod.Game.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+               mod.Version.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+    }
+}

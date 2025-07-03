@@ -1,0 +1,57 @@
+/* Styles pour la Marketplace */
+
+.mod-thumbnail {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.featured-chip {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+}
+
+.price-chip {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Animation de hover sur les cartes */
+.mud-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.mud-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Styles pour les filtres */
+.marketplace-filters .mud-paper {
+    border-radius: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .featured-chip, .price-chip {
+        font-size: 0.7rem;
+    }
+}
