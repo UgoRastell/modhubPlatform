@@ -60,8 +60,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "profileservice",
-          "Port": 80
+          "Host": "usersservice",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/api/users/{everything}",
