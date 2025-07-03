@@ -522,11 +522,33 @@ namespace ModsService.Controllers
                     // Ce code sera implémenté selon les besoins futurs
                 }
                 
-                // Vérifier que le fichier existe
-                string filePath = mod.FileLocation;
-                if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath))
+                // Convertir le chemin URL stocké dans FileLocation en chemin physique
+                string physicalPath;
+                if (string.IsNullOrEmpty(mod.FileLocation))
                 {
-                    _logger.LogWarning("Fichier du mod non trouvé: {FilePath}", filePath);
+                    _logger.LogWarning("FileLocation manquant pour le mod: {ModId}", modId);
+                    return NotFound(new { Success = false, Message = "Chemin du fichier mod manquant" });
+                }
+                
+                // Si le chemin commence par /uploads, le convertir en chemin physique
+                if (mod.FileLocation.StartsWith("/uploads/"))
+                {
+                    // Récupérer la partie après /uploads/
+                    string relativePath = mod.FileLocation.Substring("/uploads/".Length);
+                    // Construire le chemin physique complet
+                    physicalPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads", relativePath);
+                    _logger.LogInformation("Conversion du chemin: {UrlPath} -> {PhysicalPath}", mod.FileLocation, physicalPath);
+                }
+                else
+                {
+                    // Conserver le chemin tel quel s'il ne commence pas par /uploads/
+                    physicalPath = mod.FileLocation;
+                }
+                
+                // Vérifier que le fichier existe
+                if (!System.IO.File.Exists(physicalPath))
+                {
+                    _logger.LogWarning("Fichier du mod non trouvé au chemin physique: {FilePath}", physicalPath);
                     return NotFound(new { Success = false, Message = "Fichier du mod non trouvé" });
                 }
                 
@@ -549,10 +571,11 @@ namespace ModsService.Controllers
                 var fileName = mod.FileName ?? $"mod-{mod.Id}.zip"; // Fallback si le nom de fichier n'est pas défini
                 var mimeType = mod.MimeType ?? "application/octet-stream";
                 
-                _logger.LogInformation("Téléchargement du fichier {FileName} ({MimeType}) pour le mod {ModId}", fileName, mimeType, modId);
+                _logger.LogInformation("Téléchargement du fichier {FileName} ({MimeType}) pour le mod {ModId} depuis {PhysicalPath}", 
+                    fileName, mimeType, modId, physicalPath);
                 
                 // Retourner le fichier sous forme de stream pour optimiser la mémoire
-                var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
+                var stream = new FileStream(physicalPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
                 
                 // Définir les headers pour permettre la reprise de téléchargement
                 Response.Headers.Add("Accept-Ranges", "bytes");
