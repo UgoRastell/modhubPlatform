@@ -1,14 +1,16 @@
-@page "/creator/mods"
+@page "/creator/my-mods"
 @using System.Net.Http
 @using System.Net.Http.Json
 @using Microsoft.AspNetCore.Components.Authorization
 @using Frontend.Models
+@using Frontend.Models.ModManagement
 @using Frontend.Services
+@using Frontend.Services.Interfaces
 @using Microsoft.AspNetCore.Authorization
 @using MudBlazor
-@inject HttpClient Http
 @inject IJSRuntime JSRuntime
 @inject ISnackbar Snackbar
+@inject IModService ModService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @attribute [Authorize(Roles = "Creator")]
@@ -210,8 +212,8 @@
 
 @code {
     private bool isLoading = true;
-    private List<ModDto> myMods = new List<ModDto>();
     private string errorMessage;
+    private List<ModDto> myMods = new();
     
     protected override async Task OnInitializedAsync()
     {
@@ -230,27 +232,33 @@
             
             if (user.Identity.IsAuthenticated)
             {
-                // Appel API pour récupérer les mods du créateur connecté
-                var response = await Http.GetAsync("api/v1/mods/creator");
+                // Récupérer l'ID du créateur à partir des claims
+                var creatorId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? 
+                                user.FindFirst("sub")?.Value ?? "unknown-user";
                 
-                if (response.IsSuccessStatusCode)
+                // Utiliser le ModService pour récupérer les mods depuis MongoDB
+                var modsInfo = await ModService.GetCreatorModsAsync(creatorId);
+                
+                // Convertir les ModInfo en ModDto pour l'affichage
+                myMods = modsInfo.Select(m => new ModDto
                 {
-                    var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<ModDto>>>();
-                    if (result.Success)
-                    {
-                        myMods = result.Data;
-                    }
-                    else
-                    {
-                        errorMessage = result.Message;
-                        Snackbar.Add(errorMessage, Severity.Error);
-                    }
-                }
-                else
-                {
-                    errorMessage = $"Erreur {response.StatusCode}: Impossible de charger vos mods";
-                    Snackbar.Add(errorMessage, Severity.Error);
-                }
+                    Id = m.Id,
+                    Name = m.Title,
+                    Description = m.Description,
+                    ThumbnailUrl = m.ThumbnailUrl,
+                    GameId = m.Game?.Split('-').FirstOrDefault() ?? "",
+                    GameName = m.Game,
+                    Rating = m.Rating,
+                    ReviewCount = m.RatingCount,
+                    DownloadCount = m.Downloads,
+                    Tags = m.Category?.Split(',').ToList() ?? new List<string>(),
+                    IsPremium = m.Price > 0,
+                    IsNew = (DateTime.Now - m.CreatedDate).TotalDays < 7,
+                    CreatedAt = m.CreatedDate,
+                    UpdatedAt = m.UpdatedDate,
+                    Version = m.Version,
+                    FileSize = 0 // Information non disponible dans ModInfo
+                }).ToList();
             }
         }
         catch (Exception ex)

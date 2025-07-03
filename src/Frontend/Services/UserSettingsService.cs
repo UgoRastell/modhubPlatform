@@ -101,7 +101,7 @@ namespace Frontend.Services
         public UserSettingsService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            _apiBaseUrl = configuration["ApiSettings:GatewayUrl"] ?? "https://modhub.ovh";
         }
 
         public async Task<UserSettingsModel> GetAllSettingsAsync()

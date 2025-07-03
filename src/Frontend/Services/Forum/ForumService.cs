@@ -10,13 +10,11 @@ namespace Frontend.Services.Forum
     public class ForumService : IForumService
     {
         private readonly HttpClient _httpClient;
-        private readonly string _baseUrl;
         private readonly JsonSerializerOptions _jsonOptions;
 
-        public ForumService(HttpClient httpClient, IConfiguration configuration)
+        public ForumService(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
-            _baseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7001";
+            _httpClient = httpClientFactory.CreateClient("ForumService");
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -30,7 +28,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/forum/categories");
+                var response = await _httpClient.GetAsync("api/forum/categories");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -53,7 +51,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/forum/categories/{id}");
+                var response = await _httpClient.GetAsync($"api/forum/categories/{id}");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -87,7 +85,7 @@ namespace Frontend.Services.Forum
             {
                 var json = JsonSerializer.Serialize(categoryDto, _jsonOptions);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync($"{_baseUrl}/api/forum/categories", content);
+                var response = await _httpClient.PostAsync($"api/forum/categories", content);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -117,7 +115,7 @@ namespace Frontend.Services.Forum
             {
                 var json = JsonSerializer.Serialize(categoryDto, _jsonOptions);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PutAsync($"{_baseUrl}/api/forum/categories/{categoryDto.Id}", content);
+                var response = await _httpClient.PutAsync($"api/forum/categories/{categoryDto.Id}", content);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -134,7 +132,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"{_baseUrl}/api/forum/categories/{id}");
+                var response = await _httpClient.DeleteAsync($"api/forum/categories/{id}");
                 return response.IsSuccessStatusCode;
             }
             catch
@@ -151,7 +149,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/forum/categories/{categoryId}/topics");
+                var response = await _httpClient.GetAsync($"api/forum/categories/{categoryId}/topics");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -167,7 +165,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/forum/categories/{categoryId}/topics?page={page}&pageSize={pageSize}&sortBy={sortBy}&filterType={filterType}");
+                var response = await _httpClient.GetAsync($"api/forum/categories/{categoryId}/topics?page={page}&pageSize={pageSize}&sortBy={sortBy}&filterType={filterType}");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -191,7 +189,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/forum/topics/{topicId}");
+                var response = await _httpClient.GetAsync($"api/forum/topics/{topicId}");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -209,7 +207,7 @@ namespace Frontend.Services.Forum
             {
                 var json = JsonSerializer.Serialize(topicDto, _jsonOptions);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync($"{_baseUrl}/api/forum/topics", content);
+                var response = await _httpClient.PostAsync("api/forum/topics", content);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -243,7 +241,7 @@ namespace Frontend.Services.Forum
             {
                 var json = JsonSerializer.Serialize(topicDto, _jsonOptions);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PutAsync($"{_baseUrl}/api/forum/topics/{topicDto.Id}", content);
+                var response = await _httpClient.PutAsync($"api/forum/topics/{topicDto.Id}", content);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -260,7 +258,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"{_baseUrl}/api/forum/topics/{id}");
+                var response = await _httpClient.DeleteAsync($"api/forum/topics/{id}");
                 return response.IsSuccessStatusCode;
             }
             catch
@@ -273,7 +271,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.PostAsync($"{_baseUrl}/api/forum/topics/{id}/pin?isPinned={isPinned}", null);
+                var response = await _httpClient.PostAsync($"api/forum/topics/{id}/pin?isPinned={isPinned}", null);
                 return response.IsSuccessStatusCode;
             }
             catch
@@ -286,7 +284,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.PostAsync($"{_baseUrl}/api/forum/topics/{id}/lock?isLocked={isLocked}", null);
+                var response = await _httpClient.PostAsync($"api/forum/topics/{id}/lock?isLocked={isLocked}", null);
                 return response.IsSuccessStatusCode;
             }
             catch
@@ -303,7 +301,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/forum/topics/{topicId}/posts?page={page}&pageSize={pageSize}");
+                var response = await _httpClient.GetAsync($"api/forum/topics/{topicId}/posts?page={page}&pageSize={pageSize}");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -319,7 +317,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/forum/posts/{postId}");
+                var response = await _httpClient.GetAsync($"api/forum/posts/{postId}");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -337,7 +335,7 @@ namespace Frontend.Services.Forum
             {
                 var json = JsonSerializer.Serialize(postDto, _jsonOptions);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync($"{_baseUrl}/api/forum/posts", content);
+                var response = await _httpClient.PostAsync("api/forum/posts", content);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -367,7 +365,7 @@ namespace Frontend.Services.Forum
             {
                 var json = JsonSerializer.Serialize(postDto, _jsonOptions);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PutAsync($"{_baseUrl}/api/forum/posts/{postDto.Id}", content);
+                var response = await _httpClient.PutAsync($"api/forum/posts/{postDto.Id}", content);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -388,7 +386,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"{_baseUrl}/api/forum/posts/{postId}");
+                var response = await _httpClient.DeleteAsync($"api/forum/posts/{postId}");
                 return response.IsSuccessStatusCode;
             }
             catch
@@ -401,7 +399,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.PostAsync($"{_baseUrl}/api/forum/posts/{postId}/like?isLiked={isLiked}", null);
+                var response = await _httpClient.PostAsync($"api/forum/posts/{postId}/like?isLiked={isLiked}", null);
                 return response.IsSuccessStatusCode;
             }
             catch
@@ -418,7 +416,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var url = $"{_baseUrl}/api/forum/search?query={Uri.EscapeDataString(query)}&page={page}&pageSize={pageSize}";
+                var url = $"api/forum/search?query={Uri.EscapeDataString(query)}&page={page}&pageSize={pageSize}";
                 if (!string.IsNullOrEmpty(categoryId))
                     url += $"&categoryId={categoryId}";
                 if (!string.IsNullOrEmpty(tag))
@@ -440,7 +438,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/forum/tags/popular");
+                var response = await _httpClient.GetAsync("api/forum/tags/popular");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -456,7 +454,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/forum/statistics");
+                var response = await _httpClient.GetAsync("api/forum/statistics");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -476,7 +474,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/forum/posts/{postId}/can-edit?userId={userId}");
+                var response = await _httpClient.GetAsync($"api/forum/posts/{postId}/can-edit?userId={userId}");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -492,7 +490,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/forum/posts/{postId}/can-delete?userId={userId}");
+                var response = await _httpClient.GetAsync($"api/forum/posts/{postId}/can-delete?userId={userId}");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -508,7 +506,7 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/forum/categories/can-manage?userId={userId}");
+                var response = await _httpClient.GetAsync($"api/forum/categories/can-manage?userId={userId}");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();

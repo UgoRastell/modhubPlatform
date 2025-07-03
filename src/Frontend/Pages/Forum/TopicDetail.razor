@@ -1,10 +1,15 @@
 @page "/forums/topics/{TopicId}"
 @using Frontend.Services.Forum
 @using Frontend.Models.Forum
+@using MudBlazor
 @using MudBlazor.Extensions
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IForumService ForumService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
+@inject IScrollListenerFactory ScrollListenerFactory
+@implements IDisposable
 
 <PageTitle>@(topic?.Title ?? "Chargement...") - Forum - ModsGamingPlatform</PageTitle>
 
@@ -84,80 +89,127 @@
         }
         else
         {
-            <MudText Typo="Typo.h5" Class="mb-4">Réponses</MudText>
+            <MudText Typo="Typo.h5" Class="mb-4">Réponses (@_posts.Count)</MudText>
             
-            @foreach (var post in _posts)
-            {
-                <MudPaper Class="pa-4 mb-4" Elevation="2" Style="background-color: #232634;">
-                    <div class="d-flex justify-space-between mb-2">
-                        <div>
-                            <MudText Typo="Typo.subtitle1">@post.AuthorName</MudText>
-                            <MudText Typo="Typo.caption">
-                                @post.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
-                                @if (post.IsEdited)
-                                {
-                                    <span> (modifié)</span>
-                                }
-                            </MudText>
-                        </div>
-                        <MudMenu Icon="@Icons.Material.Filled.MoreVert">
-                            <MudMenuItem OnClick="@(() => NavigationManager.NavigateTo($"/forums/posts/{post.Id}/edit"))">
-                                Modifier
-                            </MudMenuItem>
-                            <MudMenuItem OnClick="@(() => DeletePost(post.Id))">
-                                Supprimer
-                            </MudMenuItem>
-                        </MudMenu>
-                    </div>
-                    
-                    <MudText Class="mb-2">@post.Content</MudText>
-                    
-                    <MudDivider Class="my-3" />
-                    
-                    <div class="d-flex justify-space-between align-center">
-                        <div>
-                            <MudIconButton Icon="@Icons.Material.Filled.ThumbUp" 
-                                       Color="@(post.IsLikedByCurrentUser ? Color.Secondary : Color.Default)" 
-                                       OnClick="@(() => LikePost(post.Id))" />
-                            <MudText Typo="Typo.caption" Inline="true">@post.LikesCount</MudText>
-                        </div>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" 
-                               OnClick="@(() => NavigationManager.NavigateTo($"/forums/posts/{post.Id}/reply"))">
-                            Répondre
-                        </MudButton>
-                    </div>
-                </MudPaper>
-                
-                <!-- Réponses imbriquées -->
-                @if (post.Replies.Any())
+            <!-- Container avec gestion du hover pour les messages -->
+            <div @onmouseenter="@(() => _paperHovering = true)" 
+                 @onmouseleave="@(() => HoverStop("paper"))">
+                 
+                @foreach (var post in _posts)
                 {
-                    <div class="ml-8 mb-4">
-                        @foreach (var reply in post.Replies)
-                        {
-                            <MudPaper Class="pa-3 mb-3" Elevation="1" Style="background-color: #1e212b;">
-                                <div class="d-flex justify-space-between mb-2">
-                                    <div>
-                                        <MudText Typo="Typo.subtitle2">@reply.AuthorName</MudText>
-                                        <MudText Typo="Typo.caption">
-                                            @reply.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
-                                        </MudText>
-                                    </div>
-                                    <MudMenu Icon="@Icons.Material.Filled.MoreVert">
-                                        <MudMenuItem OnClick="@(() => NavigationManager.NavigateTo($"/forums/posts/{reply.Id}/edit"))">
-                                            Modifier
+                    <MudPaper Class="pa-3 mb-3 position-relative" 
+                              Elevation="@(Hovering && _hoverPost?.Id == post.Id ? 4 : 2)" 
+                              Style="@($"background-color: #232634; transition: all 0.2s ease-in-out; {(Hovering && _hoverPost?.Id == post.Id ? "transform: translateY(-2px);" : "")}")"
+                              @onmouseenter="@((args) => HoverStart(args, post))"
+                              @onmouseleave="@(() => HoverStop("bubble"))"
+                              @onclick="@((args) => ClickMessage(args, post))"
+                              @oncontextmenu="@((args) => RightClickMessage(args, post))">
+                        
+                        <div class="d-flex justify-space-between align-start mb-2">
+                            <div class="d-flex align-center gap-3">
+                                <!-- Avatar -->
+                                <MudAvatar Color="Color.Primary" Size="Size.Medium">
+                                    @post.AuthorName.Substring(0, Math.Min(2, post.AuthorName.Length)).ToUpper()
+                                </MudAvatar>
+                                <div>
+                                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">@post.AuthorName</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Default">
+                                        @post.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy à HH:mm")
+                                        @if (post.IsEdited)
+                                        {
+                                             <MudChip T="string" Size="Size.Small" Color="Color.Info" Class="ml-2">Modifié</MudChip>
+                                        }
+                                    </MudText>
+                                </div>
+                            </div>
+                            
+                            <!-- Actions hover -->
+                            @if (Hovering && _hoverPost?.Id == post.Id)
+                            {
+                                <div class="d-flex align-center gap-1 actionarea" style="opacity: 1;">
+                                    <MudIconButton Icon="@Icons.Material.Filled.ThumbUp" 
+                                                   Size="Size.Small"
+                                                   Color="@(post.IsLikedByCurrentUser ? Color.Secondary : Color.Default)"
+                                                   OnClick="@(() => MessageAction("liked"))"
+                                                   Title="J'aime" />
+                                    <span class="emoji">@post.LikesCount</span>
+                                    
+                                    <MudIconButton Icon="@Icons.Material.Filled.Reply" 
+                                                   Size="Size.Small"
+                                                   Color="Color.Primary"
+                                                   OnClick="@(() => Reply())"
+                                                   Title="Répondre" />
+                                    
+                                    <MudMenu Icon="@Icons.Material.Filled.MoreVert" Size="Size.Small" @ref="_contextMenu">
+                                        <MudMenuItem OnClick="@(() => NavigationManager.NavigateTo($"/forums/posts/{post.Id}/edit"))">
+                                            <div class="d-flex align-center gap-2">
+                                                <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Small" />
+                                                Modifier
+                                            </div>
                                         </MudMenuItem>
-                                        <MudMenuItem OnClick="@(() => DeletePost(reply.Id))">
-                                            Supprimer
+                                        <MudMenuItem OnClick="@(() => DeletePost(post.Id))">
+                                            <div class="d-flex align-center gap-2">
+                                                <MudIcon Icon="@Icons.Material.Filled.Delete" Size="Size.Small" />
+                                                Supprimer
+                                            </div>
                                         </MudMenuItem>
                                     </MudMenu>
                                 </div>
-                                
-                                <MudText Typo="Typo.body2">@reply.Content</MudText>
-                            </MudPaper>
-                        }
-                    </div>
+                            }
+                        </div>
+                        
+                        <!-- Contenu du message -->
+                        <div class="ml-12">
+                            <MudText Class="mb-3">@post.Content</MudText>
+                            
+                            <!-- Statistiques du message -->
+                            <div class="d-flex align-center gap-4 mt-2">
+                                <div class="d-flex align-center gap-1">
+                                    <MudIcon Icon="@Icons.Material.Filled.ThumbUp" Size="Size.Small" Color="Color.Default" />
+                                    <MudText Typo="Typo.caption">@post.LikesCount</MudText>
+                                </div>
+                                @if (post.Replies.Any())
+                                {
+                                    <div class="d-flex align-center gap-1">
+                                        <MudIcon Icon="@Icons.Material.Filled.Reply" Size="Size.Small" Color="Color.Default" />
+                                        <MudText Typo="Typo.caption">@post.Replies.Count réponse(s)</MudText>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </MudPaper>
+                    
+                    <!-- Réponses imbriquées -->
+                    @if (post.Replies.Any())
+                    {
+                        <div class="ml-8 mb-4">
+                            @foreach (var reply in post.Replies)
+                            {
+                                <MudPaper Class="pa-3 mb-3" Elevation="1" Style="background-color: #1e212b;">
+                                    <div class="d-flex justify-space-between mb-2">
+                                        <div>
+                                            <MudText Typo="Typo.subtitle2">@reply.AuthorName</MudText>
+                                            <MudText Typo="Typo.caption">
+                                                @reply.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                            </MudText>
+                                        </div>
+                                        <MudMenu Icon="@Icons.Material.Filled.MoreVert">
+                                            <MudMenuItem OnClick="@(() => NavigationManager.NavigateTo($"/forums/posts/{reply.Id}/edit"))">
+                                                Modifier
+                                            </MudMenuItem>
+                                            <MudMenuItem OnClick="@(() => DeletePost(reply.Id))">
+                                                Supprimer
+                                            </MudMenuItem>
+                                        </MudMenu>
+                                    </div>
+                                    
+                                    <MudText Typo="Typo.body2">@reply.Content</MudText>
+                                </MudPaper>
+                            }
+                        </div>
+                    }
                 }
-            }
+            </div>
         }
     }
 </MudContainer>
@@ -171,6 +223,16 @@
     private ForumTopicViewModel? topic;
     private List<ForumPostViewModel> _posts = new();
     
+    // Variables pour ChatBubble interactions
+    private IScrollListener? _scrollListener;
+    private ForumPostViewModel? _selectedPost;
+    private ForumPostViewModel? _hoverPost;
+    private MudMenu? _contextMenu;
+    private bool _bubbleHovering;
+    private bool _paperHovering;
+    
+    private bool Hovering => _paperHovering || _bubbleHovering;
+    
     private List<BreadcrumbItem> _breadcrumbs = new List<BreadcrumbItem>
     {
         new BreadcrumbItem("Forum", href: "/forums")
@@ -178,6 +240,8 @@
     
     protected override async Task OnInitializedAsync()
     {
+        _scrollListener = ScrollListenerFactory.Create(null);
+        _scrollListener.OnScroll += OnScrollAsync;
         await LoadData();
     }
     
@@ -223,6 +287,92 @@
         {
             _loading = false;
         }
+    }
+    
+    // Méthodes d'interaction ChatBubble
+    private void OnScrollAsync(object? sender, ScrollEventArgs e)
+    {
+        HoverStop("scroll");
+    }
+    
+    public void Dispose()
+    {
+        if (_scrollListener != null)
+            _scrollListener.OnScroll -= OnScrollAsync;
+    }
+    
+    private void HoverStart(MouseEventArgs args, ForumPostViewModel post)
+    {
+        _bubbleHovering = true;
+        _hoverPost = post;
+    }
+    
+    private void HoverStop(string typeOfStop)
+    {
+        try
+        {
+            switch (typeOfStop)
+            {
+                case "paper":
+                    _paperHovering = false;
+                    break;
+                case "bubble":
+                    _bubbleHovering = false;
+                    break;
+                case "scroll":
+                    _paperHovering = false;
+                    _bubbleHovering = false;
+                    StateHasChanged();
+                    break;
+                default:
+                    break;
+            }
+        }
+        catch { }
+    }
+    
+    // Méthodes d'interaction ChatBubble
+    private void ClickMessage(MouseEventArgs args, ForumPostViewModel post)
+    {
+        // Action par défaut au clic sur un message
+        _hoverPost = post;
+        StateHasChanged();
+    }
+    
+    private void RightClickMessage(MouseEventArgs args, ForumPostViewModel post)
+    {
+        // Action au clic droit sur un message
+        _hoverPost = post;
+        // Le menu contextuel s'ouvrira automatiquement
+        StateHasChanged();
+    }
+    
+    private async Task MessageAction(string action)
+    {
+        if (_hoverPost == null) return;
+        
+        try
+        {
+            switch (action)
+            {
+                case "liked":
+                    await LikePost(_hoverPost.Id);
+                    Snackbar.Add("Message liké!", Severity.Success);
+                    break;
+                default:
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors de l'action: {ex.Message}", Severity.Error);
+        }
+    }
+    
+    private void Reply()
+    {
+        if (_hoverPost == null) return;
+        NavigationManager.NavigateTo($"/forums/posts/{_hoverPost.Id}/reply");
     }
     
     private async Task LikePost(string postId)

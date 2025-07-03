@@ -6,6 +6,7 @@ namespace Frontend.Models.Forum
         public int TotalTopics { get; set; }
         public int TotalPosts { get; set; }
         public int TotalUsers { get; set; }
+        public int TotalMembers { get; set; }
         public required string MostActiveCategory { get; set; }
         public required string MostActiveCategoryId { get; set; }
         public required string MostActiveTopic { get; set; }
@@ -13,9 +14,10 @@ namespace Frontend.Models.Forum
         public required string MostActiveUser { get; set; }
         public required string MostActiveUserId { get; set; }
 
-        // Properties used in ForumIndex.razor
+        // Properties used in ForumIndex.razor and Forums.razor
         public required string NewestMemberId { get; set; }
         public required string NewestMemberName { get; set; }
+        public string LastMemberName => NewestMemberName;
         public int OnlineUserCount { get; set; }
         public int OnlineGuestCount { get; set; }
     }

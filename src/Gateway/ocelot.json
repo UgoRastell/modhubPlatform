@@ -271,6 +271,25 @@
       }
     },
     {
+      "DownstreamPathTemplate": "/api/forum/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "communityservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/forum/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "FileCacheOptions": {
+        "TtlSeconds": 30
+      }
+    },
+    {
       "DownstreamPathTemplate": "/uploads/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
