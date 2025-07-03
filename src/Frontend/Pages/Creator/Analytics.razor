@@ -23,196 +23,229 @@
         <MudGrid>
             <!-- Filtres et sélections -->
             <MudItem xs="12">
-                <MudPaper Elevation="2" Class="pa-4">
-                    <MudGrid>
-                        <MudItem xs="12" md="4">
-                            <MudSelect T="string" Label="Période" Value="selectedPeriod" ValueChanged="@((value) => OnPeriodChanged(value))" Variant="Variant.Outlined" Class="mt-0">
-                                <MudSelectItem Value="@("7days")">7 derniers jours</MudSelectItem>
-                                <MudSelectItem Value="@("30days")">30 derniers jours</MudSelectItem>
-                                <MudSelectItem Value="@("90days")">90 derniers jours</MudSelectItem>
-                                <MudSelectItem Value="@("1year")">12 derniers mois</MudSelectItem>
-                                <MudSelectItem Value="@("all")">Tout</MudSelectItem>
-                            </MudSelect>
-                        </MudItem>
-                        <MudItem xs="12" md="4">
-                            <MudSelect T="string" Label="Mod" Value="selectedModId" ValueChanged="@((value) => OnModChanged(value))" Variant="Variant.Outlined" Class="mt-0">
-                                <MudSelectItem Value="@("all")">Tous les mods</MudSelectItem>
-                                @foreach (var mod in creatorMods)
-                                {
-                                    <MudSelectItem Value="@mod.Id">@mod.Title</MudSelectItem>
-                                }
-                            </MudSelect>
-                        </MudItem>
-                        <MudItem xs="12" md="4" Class="d-flex align-end">
-                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RefreshData" 
-                                      StartIcon="@Icons.Material.Filled.Refresh" Class="mb-1">
-                                Actualiser
-                            </MudButton>
-                        </MudItem>
-                    </MudGrid>
-                </MudPaper>
+                <MudCard Elevation="3" Class="mb-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Filtres</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="4">
+                                <MudSelect T="string" Label="Période" Value="selectedPeriod" ValueChanged="@((value) => OnPeriodChanged(value))" Variant="Variant.Outlined" Class="mt-0">
+                                    <MudSelectItem Value="@("7days")">7 derniers jours</MudSelectItem>
+                                    <MudSelectItem Value="@("30days")">30 derniers jours</MudSelectItem>
+                                    <MudSelectItem Value="@("90days")">90 derniers jours</MudSelectItem>
+                                    <MudSelectItem Value="@("1year")">12 derniers mois</MudSelectItem>
+                                    <MudSelectItem Value="@("all")">Tout</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudSelect T="string" Label="Mod" Value="selectedModId" ValueChanged="@((value) => OnModChanged(value))" Variant="Variant.Outlined" Class="mt-0">
+                                    <MudSelectItem Value="@("all")">Tous les mods</MudSelectItem>
+                                    @foreach (var mod in creatorMods)
+                                    {
+                                        <MudSelectItem Value="@mod.Id">@mod.Title</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" md="4" Class="d-flex align-end">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RefreshData" 
+                                        StartIcon="@Icons.Material.Filled.Refresh" Class="mb-1">
+                                    Actualiser
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
             </MudItem>
 
             <!-- KPIs -->
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="2" Class="pa-4 mud-height-full">
-                    <MudStack>
-                        <MudText Typo="Typo.subtitle1"><MudIcon Icon="@Icons.Material.Filled.Download" Class="me-2" /> Téléchargements</MudText>
-                        <MudText Typo="Typo.h3" Color="Color.Primary" Class="mb-n2">@statistics.TotalDownloads.ToString("N0", CultureInfo.CurrentCulture)</MudText>
+                <MudCard Elevation="3" Class="mud-height-full">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6"><MudIcon Icon="@Icons.Material.Filled.Download" Class="me-2" /> Téléchargements</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h3" Color="Color.Primary" Style="font-weight: 600;" Class="mb-n2">@statistics.TotalDownloads.ToString("N0", CultureInfo.CurrentCulture)</MudText>
                         <div class="d-flex align-center">
                             <MudText Typo="Typo.caption">
                                 @if (statistics.DownloadGrowth > 0)
                                 {
                                     <span style="color: var(--mud-palette-success);">
-                                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" /> +@statistics.DownloadGrowth%
-                                    </span>
-                                }
-                                else if (statistics.DownloadGrowth < 0)
-                                {
-                                    <span style="color: var(--mud-palette-error);">
-                                        <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Size="Size.Small" /> @statistics.DownloadGrowth%
+                                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" /> 
+                                        +@statistics.DownloadGrowth.ToString("0.0", CultureInfo.CurrentCulture)%
                                     </span>
                                 }
                                 else
                                 {
-                                    <span>
-                                        <MudIcon Icon="@Icons.Material.Filled.TrendingFlat" Size="Size.Small" /> 0%
+                                    <span style="color: var(--mud-palette-error);">
+                                        <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Size="Size.Small" /> 
+                                        @statistics.DownloadGrowth.ToString("0.0", CultureInfo.CurrentCulture)%
                                     </span>
                                 }
                             </MudText>
                             <MudText Typo="Typo.caption" Class="ms-2">vs période précédente</MudText>
                         </div>
-                    </MudStack>
-                </MudPaper>
+                    </MudCardContent>
+                </MudCard>
             </MudItem>
 
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="2" Class="pa-4 mud-height-full">
-                    <MudStack>
-                        <MudText Typo="Typo.subtitle1"><MudIcon Icon="@Icons.Material.Filled.StarRate" Class="me-2" /> Évaluation moyenne</MudText>
-                        <MudText Typo="Typo.h3" Color="Color.Secondary" Class="mb-n2">@statistics.AverageRating.ToString("0.0", CultureInfo.InvariantCulture)</MudText>
+                <MudCard Elevation="3" Class="mud-height-full">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6"><MudIcon Icon="@Icons.Material.Filled.Stars" Class="me-2" /> Note moyenne</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
                         <div class="d-flex align-center">
-                            <MudRating ReadOnly="true" SelectedValue="@((int)Math.Round(statistics.AverageRating))" Size="Size.Small" />
-                            <MudText Typo="Typo.caption" Class="ms-2">@statistics.TotalRatings évaluations</MudText>
+                            <MudText Typo="Typo.h3" Color="Color.Warning" Style="font-weight: 600;" Class="mb-n2">@statistics.AverageRating.ToString("0.0", CultureInfo.CurrentCulture)</MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Class="ml-1" />
                         </div>
-                    </MudStack>
-                </MudPaper>
+                        <MudText Typo="Typo.caption" Class="ms-2">@statistics.TotalRatings évaluations</MudText>
+                    </MudCardContent>
+                </MudCard>
             </MudItem>
 
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="2" Class="pa-4 mud-height-full">
-                    <MudStack>
-                        <MudText Typo="Typo.subtitle1"><MudIcon Icon="@Icons.Material.Filled.Payments" Class="me-2" /> Revenus</MudText>
-                        <MudText Typo="Typo.h3" Color="Color.Success" Class="mb-n2">@statistics.TotalRevenue.ToString("C", CultureInfo.CurrentCulture)</MudText>
+                <MudCard Elevation="3" Class="mud-height-full">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6"><MudIcon Icon="@Icons.Material.Filled.Payments" Class="me-2" /> Revenus</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h3" Color="Color.Success" Style="font-weight: 600;" Class="mb-n2">@statistics.TotalRevenue.ToString("C", CultureInfo.CurrentCulture)</MudText>
                         <div class="d-flex align-center">
                             <MudText Typo="Typo.caption">
                                 @if (statistics.RevenueGrowth > 0)
                                 {
                                     <span style="color: var(--mud-palette-success);">
-                                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" /> +@statistics.RevenueGrowth%
-                                    </span>
-                                }
-                                else if (statistics.RevenueGrowth < 0)
-                                {
-                                    <span style="color: var(--mud-palette-error);">
-                                        <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Size="Size.Small" /> @statistics.RevenueGrowth%
+                                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" /> 
+                                        +@statistics.RevenueGrowth.ToString("0.0", CultureInfo.CurrentCulture)%
                                     </span>
                                 }
                                 else
                                 {
-                                    <span>
-                                        <MudIcon Icon="@Icons.Material.Filled.TrendingFlat" Size="Size.Small" /> 0%
+                                    <span style="color: var(--mud-palette-error);">
+                                        <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Size="Size.Small" /> 
+                                        @statistics.RevenueGrowth.ToString("0.0", CultureInfo.CurrentCulture)%
                                     </span>
                                 }
                             </MudText>
                             <MudText Typo="Typo.caption" Class="ms-2">vs période précédente</MudText>
                         </div>
-                    </MudStack>
-                </MudPaper>
+                    </MudCardContent>
+                </MudCard>
             </MudItem>
 
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="2" Class="pa-4 mud-height-full">
-                    <MudStack>
-                        <MudText Typo="Typo.subtitle1"><MudIcon Icon="@Icons.Material.Filled.Groups" Class="me-2" /> Utilisateurs uniques</MudText>
-                        <MudText Typo="Typo.h3" Color="Color.Tertiary" Class="mb-n2">@statistics.UniqueUsers.ToString("N0", CultureInfo.CurrentCulture)</MudText>
-                        <MudText Typo="Typo.caption">
-                            Taux de conversion: @statistics.ConversionRate.ToString("0.0", CultureInfo.InvariantCulture)%
-                        </MudText>
-                    </MudStack>
-                </MudPaper>
+                <MudCard Elevation="3" Class="mud-height-full">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6"><MudIcon Icon="@Icons.Material.Filled.People" Class="me-2" /> Utilisateurs</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h3" Color="Color.Info" Style="font-weight: 600;" Class="mb-n2">@statistics.UniqueUsers.ToString("N0", CultureInfo.CurrentCulture)</MudText>
+                        <div class="d-flex align-center">
+                            <MudText Typo="Typo.caption">
+                                Taux de conversion: @statistics.ConversionRate.ToString("0.0", CultureInfo.CurrentCulture)%
+                            </MudText>
+                        </div>
+                    </MudCardContent>
+                </MudCard>
             </MudItem>
 
             <!-- Graphiques -->
             <MudItem xs="12" md="8">
-                <MudPaper Elevation="2" Class="pa-4">
-                    <MudText Typo="Typo.h6" Class="mb-4">Évolution des téléchargements</MudText>
-                    <div style="height: 300px; display: flex; align-items: center; justify-content: center;">
-                        <!-- Emplacement pour le graphique -->
-                        <MudText Typo="Typo.body1" Color="Color.Secondary">
-                            [Graphique d'évolution des téléchargements]<br />
-                            Simulé - Dans une implémentation réelle, un composant graphique serait utilisé
-                        </MudText>
-                    </div>
-                </MudPaper>
+                <MudCard Elevation="3" Class="mb-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Évolution des téléchargements</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <div style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                            <!-- Emplacement pour le graphique -->
+                            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                                [Graphique d'évolution des téléchargements]
+                                Simulé - Dans une implémentation réelle, un composant graphique serait utilisé
+                            </MudText>
+                        </div>
+                    </MudCardContent>
+                </MudCard>
             </MudItem>
 
             <!-- Statistiques par platform -->
             <MudItem xs="12" md="4">
-                <MudPaper Elevation="2" Class="pa-4 mud-height-full">
-                    <MudText Typo="Typo.h6" Class="mb-4">Répartition par plateforme</MudText>
-                    <MudList T="PlatformStat" Dense="true" Clickable="false">
-                        @foreach (var platform in platformStats.OrderByDescending(p => p.Percentage))
-                        {
-                            <MudListItem T="PlatformStat" Class="px-0">
-                                <div style="width: 100%;">
-                                    <div class="d-flex justify-space-between mb-1">
-                                        <MudText Typo="Typo.body2">@platform.Name</MudText>
-                                        <MudText Typo="Typo.body2">@platform.Percentage%</MudText>
+                <MudCard Elevation="3" Class="mud-height-full">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Répartition par plateforme</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudList T="PlatformStat" Dense="true" Clickable="false">
+                            @foreach (var platform in platformStats.OrderByDescending(p => p.Percentage))
+                            {
+                                <MudListItem>
+                                    <div class="d-flex justify-space-between align-center width-100">
+                                        <span>@platform.Name</span>
+                                        <strong>@platform.Percentage.ToString("0.0", CultureInfo.CurrentCulture)%</strong>
                                     </div>
                                     <MudProgressLinear Color="@platform.Color" Value="@platform.Percentage" Class="my-1" />
-                                </div>
-                            </MudListItem>
-                        }
-                    </MudList>
-                </MudPaper>
+                                </MudListItem>
+                            }
+                        </MudList>
+                    </MudCardContent>
+                </MudCard>
             </MudItem>
 
             <!-- Statistiques géographiques -->
             <MudItem xs="12">
-                <MudPaper Elevation="2" Class="pa-4">
-                    <MudText Typo="Typo.h6" Class="mb-4">Répartition géographique</MudText>
-                    <MudGrid>
-                        <MudItem xs="12" md="6">
-                            <div style="height: 300px; display: flex; align-items: center; justify-content: center;">
-                                <!-- Emplacement pour la carte géographique -->
-                                <MudText Typo="Typo.body1" Color="Color.Secondary">
-                                    [Carte de répartition des téléchargements]<br />
-                                    Simulé - Dans une implémentation réelle, une carte interactive serait utilisée
-                                </MudText>
-                            </div>
-                        </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudTable T="GeoStat" Items="@geoStats" Hover="true" Striped="true" Dense="true" Bordered="false" Class="mt-4">
-                                <HeaderContent>
-                                    <MudTh>Pays</MudTh>
-                                    <MudTh>Téléchargements</MudTh>
-                                    <MudTh>%</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Pays">@context.Country</MudTd>
-                                    <MudTd DataLabel="Téléchargements">@context.Downloads.ToString("N0", CultureInfo.CurrentCulture)</MudTd>
-                                    <MudTd DataLabel="%">@context.Percentage.ToString("0.0")%</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        </MudItem>
-                    </MudGrid>
-                </MudPaper>
+                <MudCard Elevation="3" Class="mb-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Répartition géographique</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                     <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <div style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                                    <!-- Emplacement pour la carte géographique -->
+                                    <MudText Typo="Typo.body1" Color="Color.Secondary">
+                                        [Carte de répartition des téléchargements]<br />
+                                        Simulé - Dans une implémentation réelle, une carte interactive serait utilisée
+                                    </MudText>
+                                </div>
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTable T="GeoStat" Items="@geoStats" Hover="true" Striped="true" Dense="true" Bordered="false" Class="mt-4">
+                                    <HeaderContent>
+                                        <MudTh>Pays</MudTh>
+                                        <MudTh>Téléchargements</MudTh>
+                                        <MudTh>%</MudTh>
+                                    </HeaderContent>
+                                    <RowTemplate>
+                                        <MudTd DataLabel="Pays">@context.Country</MudTd>
+                                        <MudTd DataLabel="Téléchargements">@context.Downloads.ToString("N0", CultureInfo.CurrentCulture)</MudTd>
+                                        <MudTd DataLabel="%">@context.Percentage.ToString("0.0")%</MudTd>
+                                    </RowTemplate>
+                                </MudTable>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
             </MudItem>
 
             <!-- Exportation -->
             <MudItem xs="12" Class="d-flex justify-end mt-4">
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" 
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" 
                           StartIcon="@Icons.Material.Filled.FileDownload" Class="ml-auto">
                     Exporter les statistiques (CSV)
                 </MudButton>
