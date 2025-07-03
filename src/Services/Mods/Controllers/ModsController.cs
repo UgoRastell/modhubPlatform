@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
+using System.Net.Mime;
+using System.Net;
 
 namespace ModsService.Controllers
 {
@@ -483,6 +485,126 @@ namespace ModsService.Controllers
             }
         }
         
+        /// <summary>
+        /// Télécharger un mod par son ID
+        /// </summary>
+        /// <param name="modId">L'ID du mod à télécharger</param>
+        /// <returns>Le fichier du mod ou une erreur</returns>
+        [HttpGet("{modId}/download")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DownloadMod(string modId)
+        {
+            try
+            {
+                _logger.LogInformation("Demande de téléchargement pour le mod {ModId}", modId);
+                
+                // Récupérer les informations du mod depuis la base de données
+                var mod = await _modRepository.GetByIdAsync(modId);
+                if (mod == null)
+                {
+                    _logger.LogWarning("Mod non trouvé: {ModId}", modId);
+                    return NotFound(new { Success = false, Message = "Mod non trouvé" });
+                }
+                
+                // Vérifier si le mod est gratuit ou si l'utilisateur est authentifié
+                if (mod.IsPremium)
+                {
+                    if (!User.Identity.IsAuthenticated)
+                    {
+                        _logger.LogWarning("Tentative de téléchargement d'un mod premium sans authentification: {ModId}", modId);
+                        return Forbid("Authentification requise pour télécharger ce mod premium");
+                    }
+                    
+                    // TODO: Vérifier que l'utilisateur a bien payé pour ce mod premium
+                    // Ce code sera implémenté selon les besoins futurs
+                }
+                
+                // Vérifier que le fichier existe
+                string filePath = mod.FileLocation;
+                if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath))
+                {
+                    _logger.LogWarning("Fichier du mod non trouvé: {FilePath}", filePath);
+                    return NotFound(new { Success = false, Message = "Fichier du mod non trouvé" });
+                }
+                
+                // Incrémenter le compteur de téléchargements
+                // Note: Cela devrait idéalement être fait de manière asynchrone pour ne pas bloquer le téléchargement
+                // TODO: Implémenter un service dédié pour enregistrer les téléchargements
+                try
+                {
+                    // Mise à jour temporaire du compteur (à remplacer par une implémentation plus robuste)
+                    mod.DownloadCount++;
+                    // Cette implémentation simplifiée serait à remplacer par un service dédié
+                }
+                catch (Exception ex)
+                {
+                    // Ne pas bloquer le téléchargement si l'incrémentation échoue
+                    _logger.LogWarning(ex, "Erreur lors de l'incrémentation du compteur de téléchargements pour {ModId}", modId);
+                }
+                
+                // Préparer les en-têtes pour le téléchargement
+                var fileName = mod.FileName ?? $"mod-{mod.Id}.zip"; // Fallback si le nom de fichier n'est pas défini
+                var mimeType = mod.MimeType ?? "application/octet-stream";
+                
+                _logger.LogInformation("Téléchargement du fichier {FileName} ({MimeType}) pour le mod {ModId}", fileName, mimeType, modId);
+                
+                // Retourner le fichier sous forme de stream pour optimiser la mémoire
+                var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
+                
+                // Définir les headers pour permettre la reprise de téléchargement
+                Response.Headers.Add("Accept-Ranges", "bytes");
+                
+                return File(stream, mimeType, fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors du téléchargement du mod {ModId}", modId);
+                return StatusCode(500, new { Success = false, Message = $"Erreur lors du téléchargement: {ex.Message}" });
+            }
+        }
+        
+        /// <summary>
+        /// Télécharger une version spécifique d'un mod
+        /// </summary>
+        /// <param name="modId">L'ID du mod</param>
+        /// <param name="versionId">L'ID de la version à télécharger</param>
+        /// <returns>Le fichier de la version spécifique du mod ou une erreur</returns>
+        [HttpGet("{modId}/versions/{versionId}/download")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DownloadModVersion(string modId, string versionId)
+        {
+            try
+            {
+                _logger.LogInformation("Demande de téléchargement pour la version {VersionId} du mod {ModId}", versionId, modId);
+                
+                // Récupérer les informations du mod depuis la base de données
+                var mod = await _modRepository.GetByIdAsync(modId);
+                if (mod == null)
+                {
+                    _logger.LogWarning("Mod non trouvé: {ModId}", modId);
+                    return NotFound(new { Success = false, Message = "Mod non trouvé" });
+                }
+                
+                // NOTE: Cette implémentation est simplifiée car le modèle actuel ne gère pas les versions multiples
+                // Dans une implémentation complète, il faudrait récupérer la version spécifique
+                // TODO: Implémenter la gestion des versions
+                
+                // Pour l'instant, traiter comme le téléchargement normal
+                return await DownloadMod(modId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors du téléchargement de la version {VersionId} du mod {ModId}", versionId, modId);
+                return StatusCode(500, new { Success = false, Message = $"Erreur lors du téléchargement: {ex.Message}" });
+            }
+        }
+
         /// <summary>
         /// Crée un objet anonyme contenant les métadonnées du mod pour les réponses API
         /// </summary>
