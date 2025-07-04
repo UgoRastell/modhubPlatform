@@ -657,15 +657,67 @@
     
     private string GetModThumbnail(string? thumbnailUrl)
     {
-        return string.IsNullOrWhiteSpace(thumbnailUrl) 
-            ? "/images/mod-placeholder.png" 
-            : thumbnailUrl;
+        // Cas 1: URL vide ou null -> image par défaut
+        if (string.IsNullOrWhiteSpace(thumbnailUrl))
+        {
+            Console.WriteLine("ModsHub: URL de miniature vide, utilisation de l'image par défaut");
+            return "/images/mod-placeholder.png";
+        }
+
+        // Cas 2: URL relative qui commence par /uploads -> utiliser directement
+        if (thumbnailUrl.StartsWith("/uploads/"))
+        {
+            // API Gateway - configuration pour le développement local
+            string apiBaseUrl = NavigationManager.BaseUri;
+            
+            // Construire l'URL complète depuis la base de l'API Gateway + chemin relatif
+            string fullUrl = $"{apiBaseUrl.TrimEnd('/')}{thumbnailUrl}";
+            Console.WriteLine($"ModsHub: URL de miniature construite: {fullUrl}");
+            
+            return fullUrl;
+        }
+
+        // Cas 3: URL relative qui ne commence pas par / -> ajouter le /
+        if (!thumbnailUrl.StartsWith("/") && !thumbnailUrl.StartsWith("http"))
+        {
+            string fixedUrl = $"/{thumbnailUrl}";
+            Console.WriteLine($"ModsHub: URL de miniature corrigée: {fixedUrl}");
+            return fixedUrl;
+        }
+        
+        // Cas 4: URL absolue (http://, https://) ou déjà formatée correctement
+        Console.WriteLine($"ModsHub: URL de miniature utilisée telle quelle: {thumbnailUrl}");
+        return thumbnailUrl;
     }
     
-    private void HandleImageError(ErrorEventArgs e)
+    private async void HandleImageError(ErrorEventArgs e)
     {
-        // Cette méthode sera appelée si l'image ne peut pas être chargée
-        // On pourrait remplacer par une image par défaut via JavaScript
+        // Cette méthode est appelée si l'image ne peut pas être chargée
+        Console.WriteLine("ModsHub: Erreur de chargement d'image détectée");
+        
+        try
+        {
+            // Utiliser JSRuntime pour remplacer l'image par défaut
+            await JSRuntime.InvokeVoidAsync("replaceWithDefaultImage", e.Element, "/images/mod-placeholder.png");
+            
+            // Ajouter du code JS en ligne pour gérer le remplacement d'image (une seule fois)
+            await JSRuntime.InvokeVoidAsync("eval", @"
+                if (!window.replaceWithDefaultImage) {
+                    window.replaceWithDefaultImage = function(img, defaultSrc) {
+                        if (img && img.tagName === 'IMG') {
+                            img.onerror = null; // Évite les boucles infinies
+                            img.src = defaultSrc;
+                            console.log('Image remplacée par défaut:', defaultSrc);
+                        }
+                    };
+                    console.log('Fonction de remplacement d\'image définie');
+                }
+            ");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ModsHub: Erreur lors du remplacement d'image: {ex.Message}");
+        }
     }
     
     private async Task ResetFilters()
