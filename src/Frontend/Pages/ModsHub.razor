@@ -664,15 +664,22 @@
             return "/images/mod-placeholder.png";
         }
 
-        // Cas 2: URL relative qui commence par /uploads -> utiliser directement
+        // Cas 2: URL relative qui commence par /uploads -> utiliser l'API Gateway 
         if (thumbnailUrl.StartsWith("/uploads/"))
         {
-            // API Gateway - configuration pour le développement local
-            string apiBaseUrl = NavigationManager.BaseUri;
+            // Au lieu d'utiliser le domaine principal, nous devons utiliser l'endpoint API explicite
+            // qui est configuré pour servir les fichiers statiques depuis le service Mods
+            string apiGatewayUrl = "https://api.modhub.ovh";
             
-            // Construire l'URL complète depuis la base de l'API Gateway + chemin relatif
-            string fullUrl = $"{apiBaseUrl.TrimEnd('/')}{thumbnailUrl}";
-            Console.WriteLine($"ModsHub: URL de miniature construite: {fullUrl}");
+            if (NavigationManager.BaseUri.Contains("localhost"))
+            {
+                // En environnement de développement local
+                apiGatewayUrl = "http://localhost:5000";
+            }
+            
+            // Construire l'URL complète en passant par l'API Gateway + le chemin relatif
+            string fullUrl = $"{apiGatewayUrl}/api/v1/mods/files{thumbnailUrl}";
+            Console.WriteLine($"ModsHub: URL de miniature construite via API: {fullUrl}");
             
             return fullUrl;
         }
