@@ -664,24 +664,20 @@
             return "/images/mod-placeholder.png";
         }
 
-        // Cas 2: URL relative qui commence par /uploads -> utiliser l'API Gateway 
-        if (thumbnailUrl.StartsWith("/uploads/"))
+        // Cas 2: Pour les miniatures de mods, utiliser un chemin direct
+        if (thumbnailUrl.Contains("/uploads/mods/") && thumbnailUrl.Contains("thumbnail"))
         {
-            // Au lieu d'utiliser le domaine principal, nous devons utiliser l'endpoint API explicite
-            // qui est configuré pour servir les fichiers statiques depuis le service Mods
-            string apiGatewayUrl = "https://api.modhub.ovh";
+            // Simplifier l'accès en utilisant directement le chemin relatif
+            // dans le domaine actuel (statiquement servi par StaticFiles middleware)
+            string modId = GetModIdFromThumbnailUrl(thumbnailUrl);
             
-            if (NavigationManager.BaseUri.Contains("localhost"))
+            if (!string.IsNullOrEmpty(modId))
             {
-                // En environnement de développement local
-                apiGatewayUrl = "http://localhost:5000";
+                // Utiliser une URL simple avec le modId pour le cache et la simplicité
+                string simpleUrl = $"/images/mods/{modId}.jpg";
+                Console.WriteLine($"ModsHub: URL de miniature simplifiée: {simpleUrl}");
+                return simpleUrl;
             }
-            
-            // Construire l'URL complète en passant par l'API Gateway + le chemin relatif
-            string fullUrl = $"{apiGatewayUrl}/api/v1/mods/files{thumbnailUrl}";
-            Console.WriteLine($"ModsHub: URL de miniature construite via API: {fullUrl}");
-            
-            return fullUrl;
         }
 
         // Cas 3: URL relative qui ne commence pas par / -> ajouter le /
@@ -695,6 +691,29 @@
         // Cas 4: URL absolue (http://, https://) ou déjà formatée correctement
         Console.WriteLine($"ModsHub: URL de miniature utilisée telle quelle: {thumbnailUrl}");
         return thumbnailUrl;
+    }
+    
+    // Extraire l'ID du mod à partir de l'URL de la miniature
+    private string GetModIdFromThumbnailUrl(string thumbnailUrl)
+    {
+        try
+        {
+            // Format typique: /uploads/mods/68614955ea7069aaa24b9cfc/thumbnail.jpg
+            string[] parts = thumbnailUrl.Split('/');
+            // L'ID du mod est généralement le dernier segment avant "thumbnail.jpg"
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (i < parts.Length - 1 && parts[i+1].StartsWith("thumbnail"))
+                {
+                    return parts[i];
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de l'extraction de l'ID du mod: {ex.Message}");
+        }
+        return string.Empty;
     }
     
     // Adapté pour utiliser une approche compatible avec Blazor sans accès direct au DOM
