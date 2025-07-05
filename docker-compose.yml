@@ -68,6 +68,8 @@ services:
       - RabbitMQ__Password=admin
       - LOGSTASH_HOST=logstash
       - LOGSTASH_PORT=5000
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     depends_on:
       - mongodb
       - rabbitmq
