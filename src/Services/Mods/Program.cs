@@ -88,11 +88,43 @@ string uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
 if (!Directory.Exists(uploadsDir))
 {
     Directory.CreateDirectory(uploadsDir);
+    Console.WriteLine($"Dossier uploads créé: {uploadsDir}");
 }
+else
+{
+    Console.WriteLine($"Dossier uploads existant: {uploadsDir}");
+    // Vérifier et afficher le contenu pour debug
+    try 
+    {
+        var files = Directory.GetFiles(uploadsDir, "*.*", SearchOption.AllDirectories);
+        Console.WriteLine($"Nombre de fichiers trouvés dans uploads: {files.Length}");
+        foreach (var file in files.Take(10)) // Limite à 10 fichiers pour éviter de surcharger les logs
+        {
+            Console.WriteLine($"Fichier: {file}");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Erreur lors de la lecture du dossier uploads: {ex.Message}");
+    }
+}
+
+// Configuration améliorée des fichiers statiques pour les uploads
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(uploadsDir),
-    RequestPath = "/uploads"
+    RequestPath = "/uploads",
+    ServeUnknownFileTypes = true, // Permet de servir tous types de fichiers
+    OnPrepareResponse = ctx =>
+    {
+        // Ajouter des headers CORS explicites pour les images
+        ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
+        ctx.Context.Response.Headers.Append("Access-Control-Allow-Methods", "GET");
+        ctx.Context.Response.Headers.Append("Cache-Control", "public, max-age=3600");
+        
+        // Journalisation de l'accès aux fichiers statiques pour le débogage
+        Console.WriteLine($"Fichier statique demandé: {ctx.Context.Request.Path}");
+    }
 });
 
 // Ordre important pour le middleware d'authentification/autorisation

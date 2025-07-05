@@ -657,15 +657,77 @@
     
     private string GetModThumbnail(string? thumbnailUrl)
     {
-        return string.IsNullOrWhiteSpace(thumbnailUrl) 
-            ? "/images/mod-placeholder.png" 
-            : thumbnailUrl;
+        // Cas 1: URL vide ou null -> image par défaut
+        if (string.IsNullOrWhiteSpace(thumbnailUrl))
+        {
+            Console.WriteLine("ModsHub: URL de miniature vide, utilisation de l'image par défaut");
+            return "/images/mod-placeholder.png";
+        }
+
+        // Cas 2: Pour les miniatures de mods, utiliser un chemin direct
+        if (thumbnailUrl.Contains("/uploads/mods/") && thumbnailUrl.Contains("thumbnail"))
+        {
+            // Simplifier l'accès en utilisant directement le chemin relatif
+            // dans le domaine actuel (statiquement servi par StaticFiles middleware)
+            string modId = GetModIdFromThumbnailUrl(thumbnailUrl);
+            
+            if (!string.IsNullOrEmpty(modId))
+            {
+                // Utiliser une URL simple avec le modId pour le cache et la simplicité
+                string simpleUrl = $"/images/mods/{modId}.jpg";
+                Console.WriteLine($"ModsHub: URL de miniature simplifiée: {simpleUrl}");
+                return simpleUrl;
+            }
+        }
+
+        // Cas 3: URL relative qui ne commence pas par / -> ajouter le /
+        if (!thumbnailUrl.StartsWith("/") && !thumbnailUrl.StartsWith("http"))
+        {
+            string fixedUrl = $"/{thumbnailUrl}";
+            Console.WriteLine($"ModsHub: URL de miniature corrigée: {fixedUrl}");
+            return fixedUrl;
+        }
+        
+        // Cas 4: URL absolue (http://, https://) ou déjà formatée correctement
+        Console.WriteLine($"ModsHub: URL de miniature utilisée telle quelle: {thumbnailUrl}");
+        return thumbnailUrl;
     }
     
+    // Extraire l'ID du mod à partir de l'URL de la miniature
+    private string GetModIdFromThumbnailUrl(string thumbnailUrl)
+    {
+        try
+        {
+            // Format typique: /uploads/mods/68614955ea7069aaa24b9cfc/thumbnail.jpg
+            string[] parts = thumbnailUrl.Split('/');
+            // L'ID du mod est généralement le dernier segment avant "thumbnail.jpg"
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (i < parts.Length - 1 && parts[i+1].StartsWith("thumbnail"))
+                {
+                    return parts[i];
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de l'extraction de l'ID du mod: {ex.Message}");
+        }
+        return string.Empty;
+    }
+    
+    // Adapté pour utiliser une approche compatible avec Blazor sans accès direct au DOM
     private void HandleImageError(ErrorEventArgs e)
     {
-        // Cette méthode sera appelée si l'image ne peut pas être chargée
-        // On pourrait remplacer par une image par défaut via JavaScript
+        // Loguer l'erreur pour le diagnostic
+        Console.WriteLine("ModsHub: Erreur de chargement d'image détectée");
+        
+        // Note: Dans un contexte Blazor, nous ne pouvons pas accéder directement à l'élément DOM
+        // via ErrorEventArgs. Nous utilisons plutôt des propriétés Blazor appropriées.
+        // L'image sera gérée par la méthode GetModThumbnail qui retourne déjà une image par défaut si nécessaire
+        
+        // Force un rafraîchissement du composant si nécessaire
+        StateHasChanged();
     }
     
     private async Task ResetFilters()

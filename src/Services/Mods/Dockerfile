@@ -23,6 +23,8 @@ COPY --from=build /app/publish .
 
 # Créer un utilisateur non-root pour plus de sécurité
 RUN adduser --disabled-password --home /app --gecos '' appuser && \
+    mkdir -p /app/uploads/mods && \
+    chmod -R 755 /app/uploads && \
     chown -R appuser:appuser /app
 USER appuser
 

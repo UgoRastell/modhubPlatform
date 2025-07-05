@@ -195,18 +195,24 @@
         try
         {
             // Redirection vers l'authentification Google OAuth
-            var redirectUri = NavigationManager.BaseUri + "signin-google";
+            var redirectUri = "https://modhub.ovh/signin-google";
             var authorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
             
             var queryParams = new Dictionary<string, string>
             {
-                { "client_id", "809448317022-j15ftsa8viduc70o0e02b7u90tfrtscv.apps.googleusercontent.com" },
+                { "client_id", "961049468680-2h3khj8eid7dfs4hd3l6gq2v91mb0qle.apps.googleusercontent.com" },
                 { "redirect_uri", redirectUri },
                 { "response_type", "code" },
                 { "scope", "openid email profile" },
                 { "access_type", "offline" },
                 { "state", Guid.NewGuid().ToString() }
             };
+            
+            // Ajouter le paramètre returnUrl si disponible
+            if (!string.IsNullOrEmpty(returnUrl))
+            {
+                queryParams.Add("state", $"{Guid.NewGuid().ToString()}|{returnUrl}");
+            }
             
             var queryString = string.Join("&", queryParams.Select(p => $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value)}"));
             var authorizationRequest = $"{authorizationEndpoint}?{queryString}";

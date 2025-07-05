@@ -37,3 +37,10 @@ yarn-error.log
 # Generated files
 .DS_Store
 Thumbs.db
+
+bin/
+obj/
+*.dll
+*.pdb
+*.exe
+*.wasm
