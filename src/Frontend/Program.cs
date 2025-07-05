@@ -53,6 +53,7 @@ builder.Services.AddScoped<IGameService, GameService>();
 // Services de modération et forum
 builder.Services.AddScoped<IModerationService, ModerationService>();
 builder.Services.AddScoped<IForumService, ForumService>();
+builder.Services.AddScoped<ForumSignalRService>();
 
 // Configuration des services MudBlazor
 builder.Services.AddMudServices(config =>

@@ -5,11 +5,14 @@
 @using MudBlazor.Extensions
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
 @inject IForumService ForumService
+@inject ForumSignalRService SignalRService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 @inject IScrollListenerFactory ScrollListenerFactory
-@implements IDisposable
+@inject AuthenticationStateProvider AuthStateProvider
+@implements IAsyncDisposable
 
 <PageTitle>@(topic?.Title ?? "Chargement...") - Forum - ModsGamingPlatform</PageTitle>
 
@@ -211,6 +214,44 @@
                 }
             </div>
         }
+        
+        @* Zone d'affichage des utilisateurs en train de taper *@
+        @if (_typingUsers.Any())
+        {
+            <MudText Typo="Typo.caption" Color="Color.Primary" Class="mt-2">
+                @if (_typingUsers.Count == 1)
+                {
+                    @($"{_typingUsers[0]} est en train d'écrire...")
+                }
+                else
+                {
+                    @($"{string.Join(", ", _typingUsers)} sont en train d'écrire...")
+                }
+            </MudText>
+        }
+        
+        @* Zone de saisie des messages *@
+        @if (!topic.IsLocked)
+        {
+            <MudPaper Elevation="2" Class="pa-3 mt-4">
+                <MudTextField @bind-Value="_newMessage" 
+                              Label="Votre message" 
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              Immediate="true"
+                              Placeholder="Écrivez votre message ici..."
+                              Class="mb-2"
+                              @onkeyup="OnMessageInputKeypress" />
+                <div class="d-flex justify-end">
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               OnClick="@SendMessageAsync"
+                               Disabled="string.IsNullOrWhiteSpace(_newMessage) || !_isConnected">
+                        Envoyer
+                    </MudButton>
+                </div>
+            </MudPaper>
+        }
     }
 </MudContainer>
 
@@ -233,6 +274,12 @@
     
     private bool Hovering => _paperHovering || _bubbleHovering;
     
+    // Variables pour SignalR
+    private List<string> _typingUsers = new();
+    private System.Timers.Timer _typingTimer = new(3000);
+    private string _newMessage = string.Empty;
+    private bool _isConnected = false;
+    
     private List<BreadcrumbItem> _breadcrumbs = new List<BreadcrumbItem>
     {
         new BreadcrumbItem("Forum", href: "/forums")
@@ -243,6 +290,19 @@
         _scrollListener = ScrollListenerFactory.Create(null);
         _scrollListener.OnScroll += OnScrollAsync;
         await LoadData();
+        
+        // Configurer le timer pour réinitialiser l'état de frappe
+        _typingTimer.AutoReset = false;
+        _typingTimer.Elapsed += (sender, e) => {
+            _typingUsers.Clear();
+            InvokeAsync(StateHasChanged);
+        };
+        
+        // Configurer les handlers d'événements SignalR
+        SignalRService.OnMessageReceived += HandleMessageReceived;
+        SignalRService.OnUserTyping += HandleUserTyping;
+        SignalRService.OnUserOnline += HandleUserOnline;
+        SignalRService.OnUserOffline += HandleUserOffline;
     }
     
     protected override async Task OnParametersSetAsync()
@@ -277,6 +337,12 @@
             
             // Charger les posts associés au topic
             _posts = await ForumService.GetPostsByTopicIdAsync(TopicId);
+            
+            // Se connecter au hub SignalR si ce n'est pas déjà fait
+            if (!_isConnected)
+            {
+                await ConnectToSignalRHub();
+            }
         }
         catch (Exception ex)
         {
@@ -295,10 +361,126 @@
         HoverStop("scroll");
     }
     
-    public void Dispose()
+    private async Task ConnectToSignalRHub()
+    {
+        if (!string.IsNullOrEmpty(TopicId))
+        {
+            try
+            {
+                await SignalRService.StartConnectionAsync(TopicId);
+                _isConnected = SignalRService.IsConnected;
+                
+                if (_isConnected)
+                {
+                    Snackbar.Add("Connecté au chat du forum", Severity.Success);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur de connexion au chat: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+    
+    // Handlers d'événements SignalR
+    private void HandleMessageReceived(string username, string message)
+    {
+        // Créer un nouveau post avec le message reçu
+        var newPost = new ForumPostViewModel
+        {
+            Id = Guid.NewGuid().ToString(),
+            TopicId = TopicId,
+            AuthorId = "live", // Sera remplacé par l'ID réel lors du rechargement complet
+            AuthorName = username,
+            Content = message,
+            CreatedAt = DateTime.UtcNow,
+            IsEdited = false,
+            LikesCount = 0
+        };
+        
+        // Ajouter temporairement le message à la liste locale
+        _posts.Add(newPost);
+        
+        // Actualiser l'interface
+        InvokeAsync(StateHasChanged);
+        
+        // Optionnellement, recharger la liste complète des posts depuis le serveur
+        // pour obtenir les IDs corrects et autres métadonnées
+        InvokeAsync(async () => await LoadData());
+    }
+    
+    private void HandleUserTyping(string username)
+    {
+        if (!_typingUsers.Contains(username))
+        {
+            _typingUsers.Add(username);
+            _typingTimer.Stop();
+            _typingTimer.Start();
+            InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    private void HandleUserOnline(string connectionId)
+    {
+        // Gérer la connexion d'un utilisateur si nécessaire
+        InvokeAsync(StateHasChanged);
+    }
+    
+    private void HandleUserOffline(string connectionId)
+    {
+        // Gérer la déconnexion d'un utilisateur si nécessaire
+        InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task SendMessageAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(_newMessage) && _isConnected)
+        {
+            try
+            {
+                await SignalRService.SendMessageAsync(_newMessage);
+                _newMessage = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erreur d'envoi: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+    
+    private async Task OnMessageInputKeypress(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter" && !args.ShiftKey)
+        {
+            await SendMessageAsync();
+        }
+        else
+        {
+            // Notifier que l'utilisateur est en train d'écrire
+            await SignalRService.SendUserTypingAsync();
+        }
+    }
+    
+    public async ValueTask DisposeAsync()
     {
         if (_scrollListener != null)
+        {
             _scrollListener.OnScroll -= OnScrollAsync;
+            _scrollListener.Dispose();
+        }
+        
+        // Nettoyer les gestionnaires d'événements SignalR
+        if (SignalRService != null)
+        {
+            SignalRService.OnMessageReceived -= HandleMessageReceived;
+            SignalRService.OnUserTyping -= HandleUserTyping;
+            SignalRService.OnUserOnline -= HandleUserOnline;
+            SignalRService.OnUserOffline -= HandleUserOffline;
+            
+            await SignalRService.DisposeAsync();
+        }
+        
+        _typingTimer?.Dispose();
     }
     
     private void HoverStart(MouseEventArgs args, ForumPostViewModel post)

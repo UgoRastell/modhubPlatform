@@ -98,7 +98,7 @@
   └─────┬────┘   └──────────┘   └─────────┘
         │
   ┌─────▼────────────────────────────────┐
-  │  MongoDB  │
+  │  MongoDB                             │
   └──────────────────────────────────────┘
 ```
 
@@ -116,6 +116,8 @@
 - **REST/HTTP**: Opérations CRUD, JWT Bearer, OpenAPI
 - **Asynchrone**: RabbitMQ, traitement fichiers, notifications
 - **Résilience**: Circuit Breaker, retry policies, health checks
+
+
 
 ---
 
@@ -160,6 +162,9 @@
 **Support Navigateurs**
 - Chrome/Edge 120+, Firefox 121+, Safari 17+
 - Design responsive mobile/tablette
+
+
+
 
 ---
 
@@ -216,6 +221,9 @@ POST /api/mods/{id}/rate    # Notation communautaire
 - Dashboard administration
 - Métriques et KPI
 - Gestion utilisateurs
+
+
+
 
 ---
 
@@ -384,6 +392,10 @@ erDiagram
 - Catégories : TTL 1 heure
 - Recherches fréquentes : TTL 5 minutes
 
+<div style="text-align: right; font-style: italic; color: #666;">Page 5</div>
+
+
+
 ---
 
 ## 6. Sécurité et Authentification
@@ -442,7 +454,7 @@ erDiagram
   "sub": "user_id",
   "email": "user@example.com",
   "username": "modcreator123",
-  "roles": ["creator", "user"],
+  "roles": ["user", "creator"],
   "permissions": ["mod:create", "mod:update", "payment:create"],
   "iat": 1703764800,
   "exp": 1703765700,
@@ -608,6 +620,9 @@ Admin (Superadmin)
 - Audits réguliers conformité
 - Formation équipe RGPD
 
+
+
+
 ---
 
 ## 7. Infrastructure et Déploiement
@@ -695,6 +710,9 @@ Admin (Superadmin)
 - **Session Management** : Redis pour persistence
 - **Disaster Recovery** : RTO < 15 min, monitoring < 2 min
 
+
+
+
 ---
 
 ## 8. Monitoring et Observabilité
@@ -754,6 +772,9 @@ Admin (Superadmin)
 - **Elasticsearch** : Recherche et logs
 - **Services externes** : Stripe API, etc.
 - **Système de fichiers** : Accès uploads et storage
+
+
+
 
 ---
 
@@ -820,6 +841,9 @@ Admin (Superadmin)
 - **Analytics** : Statistiques détaillées, reporting
 - **Configuration** : Paramètres plateforme, maintenance
 
+
+
+
 ---
 
 ## 10. Diagrammes UML et Architecture
@@ -839,10 +863,10 @@ API Gateway (Ocelot)
     |
     v
 Microservices:
-- Users Service (8080)
-- Mods Service (8081) 
-- Payments Service (8082)
-- Community Service (8083)
+- UsersService (8080)
+- ModsService (8081) 
+- PaymentsService (8082)
+- CommunityService (8083)
     |
     v
 Data Layer:
@@ -1044,9 +1068,6 @@ PAYMENT (Paiement)
 
 SUBSCRIPTION (Abonnement)
 - id (PK), user_id (FK), stripe_subscription_id, plan, status
-
-REPORT (Signalement)
-- id (PK), mod_id (FK), reporter_id (FK), reason, status
 ```
 
 **Principales relations :**
@@ -1057,6 +1078,10 @@ REPORT (Signalement)
 4. MOD (1) <---> (0..n) RATING : un mod peut recevoir plusieurs évaluations
 5. MOD (1) <---> (0..n) COMMENT : un mod peut avoir plusieurs commentaires
 6. COMMENT (0..1) <---> (0..n) COMMENT : commentaires imbriquables (réponses)
+
+<div style="text-align: right; font-style: italic; color: #666;">Page 10</div>
+
+
 
 ---
 
@@ -1154,6 +1179,9 @@ REPORT (Signalement)
 - **Requêtes lentes** : Log automatique > 5 secondes
 - **Middleware dédié** : Mesure transparente toutes API
 
+
+
+
 ---
 
 ## 12. Tests et Qualité
@@ -1202,21 +1230,20 @@ REPORT (Signalement)
 - Seuils : API < 500ms, throughput > 95%, 1000 req/sec GET
 - **Search** : 200 req/sec, < 300ms, 95% succès
 
-### 12.6 Qualité du Code
+### 12.6 Qualité Logicielle
 
-**SonarQube Intégration :**
-- **Couverture** : 85% minimum (dotCover, Coverlet)
-- **Duplications** : < 3% du code
-- **Code Smells** : < 10 par KLOC
-- **Technical Debt** : < 5% du projet
-- **Complexité** : < 15 par méthode
-- **Maintenabilité** : Index > 80
+**Metrics**
 
-**GitHub Actions CI/CD :**
-- **Quality Gates** : Vérification automatique PR
-- **Tests** : Couverture + SonarCloud scan
-- **Build** : .NET 8.0, Release configuration
-- **Échec CI** : Si quality gate non validée
+| Métrique | Cible | Outil |
+|----------|-------|-------|
+| **Coverage** | >85% | Coverlet |
+| **Duplication** | <5% | SonarQube |
+| **Complexité** | <15 | SonarQube |
+| **Dépendances** | <100ms | MiniProfiler |
+| **Tech Debt** | <5d/sprint | Jira + SonarQube |
+| **Accessibilité** | WCAG AA | Lighthouse |
+
+
 
 ---
 
@@ -1227,11 +1254,11 @@ REPORT (Signalement)
 **Base Légale du Traitement**
 | Type de Donnée | Base Légale | Finalité |
 |-----------------|---------------|----------|
-| Compte utilisateur | Contrat | Exécution du service |
-| Cookies analytiques | Consentement | Amélioration UX |
-| Données de paiement | Contrat | Facturation |
-| Communications marketing | Consentement | Promotion |
-| Logs de sécurité | Intérêt légitime | Sécurité |
+| **Compte utilisateur** | Contrat | Exécution du service |
+| **Cookies analytiques** | Consentement | Amélioration UX |
+| **Données de paiement** | Contrat | Facturation |
+| **Communications marketing** | Consentement | Promotion |
+| **Logs de sécurité** | Intérêt légitime | Sécurité |
 
 **Minimisation des Données :**
 - **Champs requis** : email, username, password uniquement
@@ -1268,6 +1295,9 @@ REPORT (Signalement)
 - **Rétention** : 1 an minimum pour audit RGPD
 - **Requêtes** : Filtrage par utilisateur et période
 - **Alerte** : Accès suspects, tentatives intrusion
+
+
+
 
 ---
 
@@ -1344,6 +1374,9 @@ REPORT (Signalement)
 - **2025** : 100K utilisateurs, 10K mods, €500K CA
 - **2027** : 1M utilisateurs, 100K mods, €10M CA
 
+
+
+
 ---
 
 ## 15. Annexes
@@ -1407,6 +1440,9 @@ REPORT (Signalement)
 
 **Documentation :** API, Guide développeur, Dashboards, Status Page, Support
 
+
+
+
 ---
 
 ## Conclusion
@@ -1426,3 +1462,5 @@ Ce cahier des charges technique définit l'architecture, les spécifications et 
 **Version :** 1.0 | **Mise à jour :** 30 juin 2025 | **Révision :** Trimestrielle
 
 *ModHub - L'Écosystème Mods Gaming de Demain*
+
+

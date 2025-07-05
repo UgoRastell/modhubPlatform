@@ -177,6 +177,57 @@
           "build/Microsoft.AspNetCore.Components.WebAssembly.DevServer.targets": {}
         }
       },
+      "Microsoft.AspNetCore.Connections.Abstractions/9.0.6": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Features": "9.0.6"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.Connections.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.Connections.Abstractions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.Http.Connections.Client/9.0.6": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.Http.Connections.Common": "9.0.6",
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.6",
+          "Microsoft.Extensions.Options": "9.0.6",
+          "System.Net.ServerSentEvents": "9.0.6"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.Http.Connections.Client.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.Http.Connections.Client.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.Http.Connections.Common/9.0.6": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.Connections.Abstractions": "9.0.6"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.Http.Connections.Common.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.Http.Connections.Common.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.AspNetCore.Metadata/9.0.2": {
         "type": "package",
         "compile": {
@@ -186,6 +237,76 @@
         },
         "runtime": {
           "lib/net9.0/Microsoft.AspNetCore.Metadata.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.SignalR.Client/9.0.6": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.Http.Connections.Client": "9.0.6",
+          "Microsoft.AspNetCore.SignalR.Client.Core": "9.0.6"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Client.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Client.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.SignalR.Client.Core/9.0.6": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.SignalR.Common": "9.0.6",
+          "Microsoft.AspNetCore.SignalR.Protocols.Json": "9.0.6",
+          "Microsoft.Extensions.DependencyInjection": "9.0.6",
+          "Microsoft.Extensions.Logging": "9.0.6",
+          "System.Threading.Channels": "9.0.6"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Client.Core.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Client.Core.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.SignalR.Common/9.0.6": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.Connections.Abstractions": "9.0.6",
+          "Microsoft.Extensions.Options": "9.0.6"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Common.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Common.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.SignalR.Protocols.Json/9.0.6": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.SignalR.Common": "9.0.6"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Protocols.Json.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Protocols.Json.dll": {
             "related": ".xml"
           }
         }
@@ -309,10 +430,10 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "Microsoft.Extensions.DependencyInjection/9.0.2": {
+      "Microsoft.Extensions.DependencyInjection/9.0.6": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.2"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.6"
         },
         "compile": {
           "lib/net9.0/Microsoft.Extensions.DependencyInjection.dll": {
@@ -328,7 +449,7 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.2": {
+      "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.6": {
         "type": "package",
         "compile": {
           "lib/net9.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
@@ -383,6 +504,19 @@
         },
         "build": {
           "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.Features/9.0.6": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/Microsoft.Extensions.Features.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.Features.dll": {
+            "related": ".xml"
+          }
         }
       },
       "Microsoft.Extensions.FileProviders.Abstractions/9.0.2": {
@@ -497,12 +631,12 @@
           }
         }
       },
-      "Microsoft.Extensions.Logging/9.0.2": {
+      "Microsoft.Extensions.Logging/9.0.6": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection": "9.0.2",
-          "Microsoft.Extensions.Logging.Abstractions": "9.0.2",
-          "Microsoft.Extensions.Options": "9.0.2"
+          "Microsoft.Extensions.DependencyInjection": "9.0.6",
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.6",
+          "Microsoft.Extensions.Options": "9.0.6"
         },
         "compile": {
           "lib/net9.0/Microsoft.Extensions.Logging.dll": {
@@ -518,10 +652,10 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "Microsoft.Extensions.Logging.Abstractions/9.0.2": {
+      "Microsoft.Extensions.Logging.Abstractions/9.0.6": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.2"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.6"
         },
         "compile": {
           "lib/net9.0/Microsoft.Extensions.Logging.Abstractions.dll": {
@@ -537,11 +671,11 @@
           "buildTransitive/net8.0/Microsoft.Extensions.Logging.Abstractions.targets": {}
         }
       },
-      "Microsoft.Extensions.Options/9.0.2": {
+      "Microsoft.Extensions.Options/9.0.6": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.2",
-          "Microsoft.Extensions.Primitives": "9.0.2"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.6",
+          "Microsoft.Extensions.Primitives": "9.0.6"
         },
         "compile": {
           "lib/net9.0/Microsoft.Extensions.Options.dll": {
@@ -580,7 +714,7 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "Microsoft.Extensions.Primitives/9.0.2": {
+      "Microsoft.Extensions.Primitives/9.0.6": {
         "type": "package",
         "compile": {
           "lib/net9.0/Microsoft.Extensions.Primitives.dll": {
@@ -806,6 +940,22 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
+      "System.Net.ServerSentEvents/9.0.6": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/System.Net.ServerSentEvents.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/System.Net.ServerSentEvents.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
       "System.Runtime.CompilerServices.Unsafe/5.0.0": {
         "type": "package",
         "compile": {
@@ -863,6 +1013,22 @@
             "assetType": "runtime",
             "rid": "win"
           }
+        }
+      },
+      "System.Threading.Channels/9.0.6": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/System.Threading.Channels.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/System.Threading.Channels.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
         }
       },
       "ZstdSharp.Port/0.7.3": {
@@ -1061,6 +1227,57 @@
           "build/Microsoft.AspNetCore.Components.WebAssembly.DevServer.targets": {}
         }
       },
+      "Microsoft.AspNetCore.Connections.Abstractions/9.0.6": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Features": "9.0.6"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.Connections.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.Connections.Abstractions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.Http.Connections.Client/9.0.6": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.Http.Connections.Common": "9.0.6",
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.6",
+          "Microsoft.Extensions.Options": "9.0.6",
+          "System.Net.ServerSentEvents": "9.0.6"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.Http.Connections.Client.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.Http.Connections.Client.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.Http.Connections.Common/9.0.6": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.Connections.Abstractions": "9.0.6"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.Http.Connections.Common.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.Http.Connections.Common.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.AspNetCore.Metadata/9.0.2": {
         "type": "package",
         "compile": {
@@ -1070,6 +1287,76 @@
         },
         "runtime": {
           "lib/net9.0/Microsoft.AspNetCore.Metadata.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.SignalR.Client/9.0.6": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.Http.Connections.Client": "9.0.6",
+          "Microsoft.AspNetCore.SignalR.Client.Core": "9.0.6"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Client.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Client.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.SignalR.Client.Core/9.0.6": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.SignalR.Common": "9.0.6",
+          "Microsoft.AspNetCore.SignalR.Protocols.Json": "9.0.6",
+          "Microsoft.Extensions.DependencyInjection": "9.0.6",
+          "Microsoft.Extensions.Logging": "9.0.6",
+          "System.Threading.Channels": "9.0.6"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Client.Core.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Client.Core.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.SignalR.Common/9.0.6": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.Connections.Abstractions": "9.0.6",
+          "Microsoft.Extensions.Options": "9.0.6"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Common.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Common.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.SignalR.Protocols.Json/9.0.6": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.SignalR.Common": "9.0.6"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Protocols.Json.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.SignalR.Protocols.Json.dll": {
             "related": ".xml"
           }
         }
@@ -1193,10 +1480,10 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "Microsoft.Extensions.DependencyInjection/9.0.2": {
+      "Microsoft.Extensions.DependencyInjection/9.0.6": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.2"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.6"
         },
         "compile": {
           "lib/net9.0/Microsoft.Extensions.DependencyInjection.dll": {
@@ -1212,7 +1499,7 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.2": {
+      "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.6": {
         "type": "package",
         "compile": {
           "lib/net9.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
@@ -1267,6 +1554,19 @@
         },
         "build": {
           "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.Features/9.0.6": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/Microsoft.Extensions.Features.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.Features.dll": {
+            "related": ".xml"
+          }
         }
       },
       "Microsoft.Extensions.FileProviders.Abstractions/9.0.2": {
@@ -1381,12 +1681,12 @@
           }
         }
       },
-      "Microsoft.Extensions.Logging/9.0.2": {
+      "Microsoft.Extensions.Logging/9.0.6": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection": "9.0.2",
-          "Microsoft.Extensions.Logging.Abstractions": "9.0.2",
-          "Microsoft.Extensions.Options": "9.0.2"
+          "Microsoft.Extensions.DependencyInjection": "9.0.6",
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.6",
+          "Microsoft.Extensions.Options": "9.0.6"
         },
         "compile": {
           "lib/net9.0/Microsoft.Extensions.Logging.dll": {
@@ -1402,10 +1702,10 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "Microsoft.Extensions.Logging.Abstractions/9.0.2": {
+      "Microsoft.Extensions.Logging.Abstractions/9.0.6": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.2"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.6"
         },
         "compile": {
           "lib/net9.0/Microsoft.Extensions.Logging.Abstractions.dll": {
@@ -1421,11 +1721,11 @@
           "buildTransitive/net8.0/Microsoft.Extensions.Logging.Abstractions.targets": {}
         }
       },
-      "Microsoft.Extensions.Options/9.0.2": {
+      "Microsoft.Extensions.Options/9.0.6": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.2",
-          "Microsoft.Extensions.Primitives": "9.0.2"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.6",
+          "Microsoft.Extensions.Primitives": "9.0.6"
         },
         "compile": {
           "lib/net9.0/Microsoft.Extensions.Options.dll": {
@@ -1464,7 +1764,7 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "Microsoft.Extensions.Primitives/9.0.2": {
+      "Microsoft.Extensions.Primitives/9.0.6": {
         "type": "package",
         "compile": {
           "lib/net9.0/Microsoft.Extensions.Primitives.dll": {
@@ -1684,6 +1984,22 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
+      "System.Net.ServerSentEvents/9.0.6": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/System.Net.ServerSentEvents.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/System.Net.ServerSentEvents.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
       "System.Runtime.CompilerServices.Unsafe/5.0.0": {
         "type": "package",
         "compile": {
@@ -1725,6 +2041,22 @@
           "lib/netstandard2.0/System.Security.Principal.Windows.dll": {
             "related": ".xml"
           }
+        }
+      },
+      "System.Threading.Channels/9.0.6": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/System.Threading.Channels.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/System.Threading.Channels.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
         }
       },
       "ZstdSharp.Port/0.7.3": {
@@ -2089,6 +2421,67 @@
         "tools/x86/aspnetcorev2_inprocess.dll"
       ]
     },
+    "Microsoft.AspNetCore.Connections.Abstractions/9.0.6": {
+      "sha512": "78aCqAAdbJvwRMyGp63iVcSobLb+LrZ8EjIU06dXwflBSpUDkicZPppJuoggdvWvc1W8eA62w5Sh7+ZFZvsutg==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.connections.abstractions/9.0.6",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net462/Microsoft.AspNetCore.Connections.Abstractions.dll",
+        "lib/net462/Microsoft.AspNetCore.Connections.Abstractions.xml",
+        "lib/net9.0/Microsoft.AspNetCore.Connections.Abstractions.dll",
+        "lib/net9.0/Microsoft.AspNetCore.Connections.Abstractions.xml",
+        "lib/netstandard2.0/Microsoft.AspNetCore.Connections.Abstractions.dll",
+        "lib/netstandard2.0/Microsoft.AspNetCore.Connections.Abstractions.xml",
+        "lib/netstandard2.1/Microsoft.AspNetCore.Connections.Abstractions.dll",
+        "lib/netstandard2.1/Microsoft.AspNetCore.Connections.Abstractions.xml",
+        "microsoft.aspnetcore.connections.abstractions.9.0.6.nupkg.sha512",
+        "microsoft.aspnetcore.connections.abstractions.nuspec"
+      ]
+    },
+    "Microsoft.AspNetCore.Http.Connections.Client/9.0.6": {
+      "sha512": "fzJfVBPaeLliimP9lyzhE5el7a2eosCLk0saQlkjJH1368Q6belE2nI+thpZ/JZ9koEm0IQPP+6/EwjK/v0I6w==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.http.connections.client/9.0.6",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net462/Microsoft.AspNetCore.Http.Connections.Client.dll",
+        "lib/net462/Microsoft.AspNetCore.Http.Connections.Client.xml",
+        "lib/net9.0/Microsoft.AspNetCore.Http.Connections.Client.dll",
+        "lib/net9.0/Microsoft.AspNetCore.Http.Connections.Client.xml",
+        "lib/netstandard2.0/Microsoft.AspNetCore.Http.Connections.Client.dll",
+        "lib/netstandard2.0/Microsoft.AspNetCore.Http.Connections.Client.xml",
+        "lib/netstandard2.1/Microsoft.AspNetCore.Http.Connections.Client.dll",
+        "lib/netstandard2.1/Microsoft.AspNetCore.Http.Connections.Client.xml",
+        "microsoft.aspnetcore.http.connections.client.9.0.6.nupkg.sha512",
+        "microsoft.aspnetcore.http.connections.client.nuspec"
+      ]
+    },
+    "Microsoft.AspNetCore.Http.Connections.Common/9.0.6": {
+      "sha512": "BPXsi0m4L31mZy9HHDrDN5gGjvJkRKktB7ZjHIuX6Cha7WYadGYHGaz9LmUcswCGb00MEJX1aSc0wR//wr56cQ==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.http.connections.common/9.0.6",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net462/Microsoft.AspNetCore.Http.Connections.Common.dll",
+        "lib/net462/Microsoft.AspNetCore.Http.Connections.Common.xml",
+        "lib/net9.0/Microsoft.AspNetCore.Http.Connections.Common.dll",
+        "lib/net9.0/Microsoft.AspNetCore.Http.Connections.Common.xml",
+        "lib/netstandard2.0/Microsoft.AspNetCore.Http.Connections.Common.dll",
+        "lib/netstandard2.0/Microsoft.AspNetCore.Http.Connections.Common.xml",
+        "microsoft.aspnetcore.http.connections.common.9.0.6.nupkg.sha512",
+        "microsoft.aspnetcore.http.connections.common.nuspec"
+      ]
+    },
     "Microsoft.AspNetCore.Metadata/9.0.2": {
       "sha512": "sYLasa9sXXkVJ3BLsMi8Y7B0QnyedIJHQ3Jqh45ibABiPwJ4J13XioAa6oyP7VekmBIy7nq/BMAz1lX63P2fsg==",
       "type": "package",
@@ -2106,6 +2499,84 @@
         "lib/netstandard2.0/Microsoft.AspNetCore.Metadata.xml",
         "microsoft.aspnetcore.metadata.9.0.2.nupkg.sha512",
         "microsoft.aspnetcore.metadata.nuspec"
+      ]
+    },
+    "Microsoft.AspNetCore.SignalR.Client/9.0.6": {
+      "sha512": "VX8yakZUQT1+vtTIKQxuFijzS9ET5vmWpSv7uvxb0AoVIb+8KL99FsbJBG7gq4TlCsss9DPEoat42t40yTzM2A==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.signalr.client/9.0.6",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net462/Microsoft.AspNetCore.SignalR.Client.dll",
+        "lib/net462/Microsoft.AspNetCore.SignalR.Client.xml",
+        "lib/net9.0/Microsoft.AspNetCore.SignalR.Client.dll",
+        "lib/net9.0/Microsoft.AspNetCore.SignalR.Client.xml",
+        "lib/netstandard2.0/Microsoft.AspNetCore.SignalR.Client.dll",
+        "lib/netstandard2.0/Microsoft.AspNetCore.SignalR.Client.xml",
+        "microsoft.aspnetcore.signalr.client.9.0.6.nupkg.sha512",
+        "microsoft.aspnetcore.signalr.client.nuspec"
+      ]
+    },
+    "Microsoft.AspNetCore.SignalR.Client.Core/9.0.6": {
+      "sha512": "sXCPxeECWqVIxfzH4nlV0m17R/IelbJ8B+W1e+E3Ne/wqVUphd+b3MbaSGficNiahRnX1UwKUxT4dAFFilJtnA==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.signalr.client.core/9.0.6",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net462/Microsoft.AspNetCore.SignalR.Client.Core.dll",
+        "lib/net462/Microsoft.AspNetCore.SignalR.Client.Core.xml",
+        "lib/net9.0/Microsoft.AspNetCore.SignalR.Client.Core.dll",
+        "lib/net9.0/Microsoft.AspNetCore.SignalR.Client.Core.xml",
+        "lib/netstandard2.0/Microsoft.AspNetCore.SignalR.Client.Core.dll",
+        "lib/netstandard2.0/Microsoft.AspNetCore.SignalR.Client.Core.xml",
+        "lib/netstandard2.1/Microsoft.AspNetCore.SignalR.Client.Core.dll",
+        "lib/netstandard2.1/Microsoft.AspNetCore.SignalR.Client.Core.xml",
+        "microsoft.aspnetcore.signalr.client.core.9.0.6.nupkg.sha512",
+        "microsoft.aspnetcore.signalr.client.core.nuspec"
+      ]
+    },
+    "Microsoft.AspNetCore.SignalR.Common/9.0.6": {
+      "sha512": "sZDm6Nru8wBMOb6Bq9qlTiK5H/8yL7FY08bXydOncJSpVfbj2TwmqjUCR4AmJY6Dvxdhf8f29VgikBSz2EYoiw==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.signalr.common/9.0.6",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net462/Microsoft.AspNetCore.SignalR.Common.dll",
+        "lib/net462/Microsoft.AspNetCore.SignalR.Common.xml",
+        "lib/net9.0/Microsoft.AspNetCore.SignalR.Common.dll",
+        "lib/net9.0/Microsoft.AspNetCore.SignalR.Common.xml",
+        "lib/netstandard2.0/Microsoft.AspNetCore.SignalR.Common.dll",
+        "lib/netstandard2.0/Microsoft.AspNetCore.SignalR.Common.xml",
+        "microsoft.aspnetcore.signalr.common.9.0.6.nupkg.sha512",
+        "microsoft.aspnetcore.signalr.common.nuspec"
+      ]
+    },
+    "Microsoft.AspNetCore.SignalR.Protocols.Json/9.0.6": {
+      "sha512": "pRCQi9Nu60gyOvGzPXJyP5faSvE4FbDFevnv7/deviodbHULDyqJ82aYhCV98f8AyUh0Yhu98EovIyC9YkdFYg==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.signalr.protocols.json/9.0.6",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net462/Microsoft.AspNetCore.SignalR.Protocols.Json.dll",
+        "lib/net462/Microsoft.AspNetCore.SignalR.Protocols.Json.xml",
+        "lib/net9.0/Microsoft.AspNetCore.SignalR.Protocols.Json.dll",
+        "lib/net9.0/Microsoft.AspNetCore.SignalR.Protocols.Json.xml",
+        "lib/netstandard2.0/Microsoft.AspNetCore.SignalR.Protocols.Json.dll",
+        "lib/netstandard2.0/Microsoft.AspNetCore.SignalR.Protocols.Json.xml",
+        "microsoft.aspnetcore.signalr.protocols.json.9.0.6.nupkg.sha512",
+        "microsoft.aspnetcore.signalr.protocols.json.nuspec"
       ]
     },
     "Microsoft.AspNetCore.WebUtilities/9.0.2": {
@@ -2276,10 +2747,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "Microsoft.Extensions.DependencyInjection/9.0.2": {
-      "sha512": "ZffbJrskOZ40JTzcTyKwFHS5eACSWp2bUQBBApIgGV+es8RaTD4OxUG7XxFr3RIPLXtYQ1jQzF2DjKB5fZn7Qg==",
+    "Microsoft.Extensions.DependencyInjection/9.0.6": {
+      "sha512": "vS65HMo5RS10DD543fknsyVDxihMcVxVn3/hNaILgBxWYnOLxWIeCIO9X0QFuCvPRNjClvXe9Aj8KaQNx7vFkQ==",
       "type": "package",
-      "path": "microsoft.extensions.dependencyinjection/9.0.2",
+      "path": "microsoft.extensions.dependencyinjection/9.0.6",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2301,15 +2772,15 @@
         "lib/netstandard2.0/Microsoft.Extensions.DependencyInjection.xml",
         "lib/netstandard2.1/Microsoft.Extensions.DependencyInjection.dll",
         "lib/netstandard2.1/Microsoft.Extensions.DependencyInjection.xml",
-        "microsoft.extensions.dependencyinjection.9.0.2.nupkg.sha512",
+        "microsoft.extensions.dependencyinjection.9.0.6.nupkg.sha512",
         "microsoft.extensions.dependencyinjection.nuspec",
         "useSharedDesignerContext.txt"
       ]
     },
-    "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.2": {
-      "sha512": "MNe7GSTBf3jQx5vYrXF0NZvn6l7hUKF6J54ENfAgCO8y6xjN1XUmKKWG464LP2ye6QqDiA1dkaWEZBYnhoZzjg==",
+    "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.6": {
+      "sha512": "0Zn6nR/6g+90MxskZyOOMPQvnPnrrGu6bytPwkV+azDcTtCSuQ1+GJUrg8Klmnrjk1i6zMpw2lXijl+tw7Q3kA==",
       "type": "package",
-      "path": "microsoft.extensions.dependencyinjection.abstractions/9.0.2",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/9.0.6",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2331,7 +2802,7 @@
         "lib/netstandard2.0/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
         "lib/netstandard2.1/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
         "lib/netstandard2.1/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
-        "microsoft.extensions.dependencyinjection.abstractions.9.0.2.nupkg.sha512",
+        "microsoft.extensions.dependencyinjection.abstractions.9.0.6.nupkg.sha512",
         "microsoft.extensions.dependencyinjection.abstractions.nuspec",
         "useSharedDesignerContext.txt"
       ]
@@ -2388,6 +2859,25 @@
         "microsoft.extensions.diagnostics.abstractions.9.0.2.nupkg.sha512",
         "microsoft.extensions.diagnostics.abstractions.nuspec",
         "useSharedDesignerContext.txt"
+      ]
+    },
+    "Microsoft.Extensions.Features/9.0.6": {
+      "sha512": "q3VizRxWXP185iqK4bFFsADAuLNaJX6IUsc3lE8/efc5xp1Wu7iYPgJPFUj2Ur4X0d7gfeHkprtY72ThmwA05Q==",
+      "type": "package",
+      "path": "microsoft.extensions.features/9.0.6",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net462/Microsoft.Extensions.Features.dll",
+        "lib/net462/Microsoft.Extensions.Features.xml",
+        "lib/net9.0/Microsoft.Extensions.Features.dll",
+        "lib/net9.0/Microsoft.Extensions.Features.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.Features.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.Features.xml",
+        "microsoft.extensions.features.9.0.6.nupkg.sha512",
+        "microsoft.extensions.features.nuspec"
       ]
     },
     "Microsoft.Extensions.FileProviders.Abstractions/9.0.2": {
@@ -2540,10 +3030,10 @@
         "microsoft.extensions.localization.abstractions.nuspec"
       ]
     },
-    "Microsoft.Extensions.Logging/9.0.2": {
-      "sha512": "loV/0UNpt2bD+6kCDzFALVE63CDtqzPeC0LAetkdhiEr/tTNbvOlQ7CBResH7BQBd3cikrwiBfaHdyHMFUlc2g==",
+    "Microsoft.Extensions.Logging/9.0.6": {
+      "sha512": "XBzjitTFaQhF8EbJ645vblZezV1p52ePTxKHoVkRidHF11Xkjxg94qr0Rvp2qyxK2vBJ4OIZ41NB15YUyxTGMQ==",
       "type": "package",
-      "path": "microsoft.extensions.logging/9.0.2",
+      "path": "microsoft.extensions.logging/9.0.6",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2565,15 +3055,15 @@
         "lib/netstandard2.0/Microsoft.Extensions.Logging.xml",
         "lib/netstandard2.1/Microsoft.Extensions.Logging.dll",
         "lib/netstandard2.1/Microsoft.Extensions.Logging.xml",
-        "microsoft.extensions.logging.9.0.2.nupkg.sha512",
+        "microsoft.extensions.logging.9.0.6.nupkg.sha512",
         "microsoft.extensions.logging.nuspec",
         "useSharedDesignerContext.txt"
       ]
     },
-    "Microsoft.Extensions.Logging.Abstractions/9.0.2": {
-      "sha512": "dV9s2Lamc8jSaqhl2BQSPn/AryDIH2sSbQUyLitLXV0ROmsb+SROnn2cH939JFbsNrnf3mIM3GNRKT7P0ldwLg==",
+    "Microsoft.Extensions.Logging.Abstractions/9.0.6": {
+      "sha512": "LFnyBNK7WtFmKdnHu3v0HOYQ8BcjYuy0jdC9pgCJ/rbLKoJEG9/dBzSKMEeeWDbDeoWS0TIxOC8a9CM5ufca3A==",
       "type": "package",
-      "path": "microsoft.extensions.logging.abstractions/9.0.2",
+      "path": "microsoft.extensions.logging.abstractions/9.0.6",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2636,15 +3126,15 @@
         "lib/net9.0/Microsoft.Extensions.Logging.Abstractions.xml",
         "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll",
         "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.xml",
-        "microsoft.extensions.logging.abstractions.9.0.2.nupkg.sha512",
+        "microsoft.extensions.logging.abstractions.9.0.6.nupkg.sha512",
         "microsoft.extensions.logging.abstractions.nuspec",
         "useSharedDesignerContext.txt"
       ]
     },
-    "Microsoft.Extensions.Options/9.0.2": {
-      "sha512": "zr98z+AN8+isdmDmQRuEJ/DAKZGUTHmdv3t0ZzjHvNqvA44nAgkXE9kYtfoN6581iALChhVaSw2Owt+Z2lVbkQ==",
+    "Microsoft.Extensions.Options/9.0.6": {
+      "sha512": "wUPhNM1zsI58Dy10xRdF2+pnsisiUuETg5ZBncyAEEUm/CQ9Q1vmivyUWH8RDbAlqyixf2dJNQ2XZb7HsKUEQw==",
       "type": "package",
-      "path": "microsoft.extensions.options/9.0.2",
+      "path": "microsoft.extensions.options/9.0.6",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2681,7 +3171,7 @@
         "lib/netstandard2.0/Microsoft.Extensions.Options.xml",
         "lib/netstandard2.1/Microsoft.Extensions.Options.dll",
         "lib/netstandard2.1/Microsoft.Extensions.Options.xml",
-        "microsoft.extensions.options.9.0.2.nupkg.sha512",
+        "microsoft.extensions.options.9.0.6.nupkg.sha512",
         "microsoft.extensions.options.nuspec",
         "useSharedDesignerContext.txt"
       ]
@@ -2714,10 +3204,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "Microsoft.Extensions.Primitives/9.0.2": {
-      "sha512": "puBMtKe/wLuYa7H6docBkLlfec+h8L35DXqsDKKJgW0WY5oCwJ3cBJKcDaZchv6knAyqOMfsl6VUbaR++E5LXA==",
+    "Microsoft.Extensions.Primitives/9.0.6": {
+      "sha512": "BHniU24QV67qp1pJknqYSofAPYGmijGI8D+ci9yfw33iuFdyOeB9lWTg78ThyYLyQwZw3s0vZ36VMb0MqbUuLw==",
       "type": "package",
-      "path": "microsoft.extensions.primitives/9.0.2",
+      "path": "microsoft.extensions.primitives/9.0.6",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2737,7 +3227,7 @@
         "lib/net9.0/Microsoft.Extensions.Primitives.xml",
         "lib/netstandard2.0/Microsoft.Extensions.Primitives.dll",
         "lib/netstandard2.0/Microsoft.Extensions.Primitives.xml",
-        "microsoft.extensions.primitives.9.0.2.nupkg.sha512",
+        "microsoft.extensions.primitives.9.0.6.nupkg.sha512",
         "microsoft.extensions.primitives.nuspec",
         "useSharedDesignerContext.txt"
       ]
@@ -3125,6 +3615,34 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "System.Net.ServerSentEvents/9.0.6": {
+      "sha512": "gLRGZulz4D11qb9tGKlgxdSIQ8kB//x7u1nPJ8NaDyf1MZM+nLbzefXOWR9MUR+yGT/eI2iYTyj6pxwvQ5AzeQ==",
+      "type": "package",
+      "path": "system.net.serversentevents/9.0.6",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.Net.ServerSentEvents.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/System.Net.ServerSentEvents.targets",
+        "lib/net462/System.Net.ServerSentEvents.dll",
+        "lib/net462/System.Net.ServerSentEvents.xml",
+        "lib/net8.0/System.Net.ServerSentEvents.dll",
+        "lib/net8.0/System.Net.ServerSentEvents.xml",
+        "lib/net9.0/System.Net.ServerSentEvents.dll",
+        "lib/net9.0/System.Net.ServerSentEvents.xml",
+        "lib/netstandard2.0/System.Net.ServerSentEvents.dll",
+        "lib/netstandard2.0/System.Net.ServerSentEvents.xml",
+        "system.net.serversentevents.9.0.6.nupkg.sha512",
+        "system.net.serversentevents.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
     "System.Runtime.CompilerServices.Unsafe/5.0.0": {
       "sha512": "ZD9TMpsmYJLrxbbmdvhwt9YEgG5WntEnZ/d1eH8JBX9LBp+Ju8BSBhUGbZMNVHHomWo2KVImJhTDl2hIgw/6MA==",
       "type": "package",
@@ -3259,6 +3777,36 @@
         "version.txt"
       ]
     },
+    "System.Threading.Channels/9.0.6": {
+      "sha512": "2MaNJVkG2yJiXQbZrrcYoJ55ehV+aX0zqR6rWJkO/Qj7jTsArWthrQ7iWywUf/sE5ylJWX/iLH2kKfwSRdkWsA==",
+      "type": "package",
+      "path": "system.threading.channels/9.0.6",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.Threading.Channels.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/System.Threading.Channels.targets",
+        "lib/net462/System.Threading.Channels.dll",
+        "lib/net462/System.Threading.Channels.xml",
+        "lib/net8.0/System.Threading.Channels.dll",
+        "lib/net8.0/System.Threading.Channels.xml",
+        "lib/net9.0/System.Threading.Channels.dll",
+        "lib/net9.0/System.Threading.Channels.xml",
+        "lib/netstandard2.0/System.Threading.Channels.dll",
+        "lib/netstandard2.0/System.Threading.Channels.xml",
+        "lib/netstandard2.1/System.Threading.Channels.dll",
+        "lib/netstandard2.1/System.Threading.Channels.xml",
+        "system.threading.channels.9.0.6.nupkg.sha512",
+        "system.threading.channels.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
     "ZstdSharp.Port/0.7.3": {
       "sha512": "U9Ix4l4cl58Kzz1rJzj5hoVTjmbx1qGMwzAcbv1j/d3NzrFaESIurQyg+ow4mivCgkE3S413y+U9k4WdnEIkRA==",
       "type": "package",
@@ -3289,6 +3837,7 @@
       "Microsoft.AspNetCore.Components.WebAssembly >= 9.0.2",
       "Microsoft.AspNetCore.Components.WebAssembly.Authentication >= 9.0.2",
       "Microsoft.AspNetCore.Components.WebAssembly.DevServer >= 9.0.2",
+      "Microsoft.AspNetCore.SignalR.Client >= 9.0.6",
       "Microsoft.AspNetCore.WebUtilities >= 9.0.2",
       "Microsoft.Extensions.Http >= 9.0.2",
       "Microsoft.NET.ILLink.Tasks >= 9.0.2",
@@ -3301,19 +3850,19 @@
   },
   "packageFolders": {
     "C:\\Users\\ugora\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "D:\\Visual Studio\\SDK\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\Frontend.csproj",
+      "projectUniqueName": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Frontend\\Frontend.csproj",
       "projectName": "Frontend",
-      "projectPath": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\Frontend.csproj",
+      "projectPath": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Frontend\\Frontend.csproj",
       "packagesPath": "C:\\Users\\ugora\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\",
+      "outputPath": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Frontend\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "D:\\Visual Studio\\SDK\\NuGetPackages"
       ],
       "configFilePaths": [
         "C:\\Users\\ugora\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -3325,15 +3874,14 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "c:\\Users\\ugora\\Desktop\\modhub\\src\\Shared\\Shared.csproj": {
-              "projectPath": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Shared\\Shared.csproj"
+            "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Shared\\Shared.csproj": {
+              "projectPath": "c:\\Users\\ugora\\Desktop\\modhub\\modhubPlatform\\src\\Shared\\Shared.csproj"
             }
           }
         }
@@ -3370,6 +3918,10 @@
             "suppressParent": "All",
             "target": "Package",
             "version": "[9.0.2, )"
+          },
+          "Microsoft.AspNetCore.SignalR.Client": {
+            "target": "Package",
+            "version": "[9.0.6, )"
           },
           "Microsoft.AspNetCore.WebUtilities": {
             "target": "Package",
