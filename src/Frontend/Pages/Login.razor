@@ -195,8 +195,8 @@
         try
         {
             // Redirection vers l'authentification Google OAuth
-            // Utiliser l'URI relative pour éviter les problèmes de correspondance d'URI
-            var redirectUri = NavigationManager.BaseUri.TrimEnd('/') + "/signin-google";
+            // Utiliser l'endpoint API backend pour le callback
+            var redirectUri = NavigationManager.BaseUri.TrimEnd('/') + "/api/OAuth/google-callback";
             
             // Afficher l'URI pour diagnostic
             Console.WriteLine($"Google OAuth redirectUri: {redirectUri}");
