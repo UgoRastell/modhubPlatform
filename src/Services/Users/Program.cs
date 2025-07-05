@@ -154,6 +154,12 @@ void RegisterServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<IUserService, UserService>();
     
+    // OAuth Service
+    builder.Services.Configure<GoogleOAuthSettings>(
+        builder.Configuration.GetSection("Authentication:Google"));
+    builder.Services.AddHttpClient();
+    builder.Services.AddScoped<IOAuthService, OAuthService>();
+    
     // Email Service
     builder.Services.Configure<EmailSettings>(
         builder.Configuration.GetSection("EmailSettings"));
