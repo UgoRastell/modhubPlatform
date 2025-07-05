@@ -310,7 +310,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "usersservice",
-          "Port": 5001
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/api/OAuth/{everything}",
@@ -325,7 +325,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "usersservice",
-          "Port": 5001
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/signin-google",
