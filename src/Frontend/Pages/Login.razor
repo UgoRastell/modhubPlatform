@@ -195,7 +195,11 @@
         try
         {
             // Redirection vers l'authentification Google OAuth
-            var redirectUri = "https://modhub.ovh/signin-google";
+            // Utiliser l'URI relative pour éviter les problèmes de correspondance d'URI
+            var redirectUri = NavigationManager.BaseUri.TrimEnd('/') + "/signin-google";
+            
+            // Afficher l'URI pour diagnostic
+            Console.WriteLine($"Google OAuth redirectUri: {redirectUri}");
             var authorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
             
             var queryParams = new Dictionary<string, string>
