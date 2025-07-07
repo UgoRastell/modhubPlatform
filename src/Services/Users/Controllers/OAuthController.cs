@@ -152,7 +152,7 @@ public class OAuthController : ControllerBase
     /// </summary>
     /// <param name="request">Requête contenant le code d'autorisation</param>
     /// <returns>Réponse d'authentification avec token JWT</returns>
-    [AllowAnonymous]
+    [Authorize(Policy = "AllowAnonymous")]
     [HttpPost("google-callback")]
     public async Task<ActionResult<ExternalAuthResponse>> GoogleCallback([FromBody] GoogleAuthCodeRequestDto request)
     {

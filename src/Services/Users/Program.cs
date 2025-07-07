@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -16,6 +17,21 @@ ConfigureLogging(builder);
 
 // Configuration des services
 builder.Services.AddControllers();
+
+// Configuration des politiques d'autorisation
+builder.Services.AddAuthorization(options => 
+{
+    // Politique par défaut qui exige l'authentification
+    options.DefaultPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+        
+    // Politique spécifique pour les endpoints OAuth qui permet l'accès anonyme
+    options.AddPolicy("AllowAnonymous", policy => 
+    {
+        policy.RequireAssertion(_ => true);
+    });
+});
 
 // Configuration de MongoDB
 ConfigureMongoDb(builder);
