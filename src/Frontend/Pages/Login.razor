@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using MudBlazor
 @using Microsoft.AspNetCore.Components.Web
+@using System.Text.Json
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -188,27 +189,35 @@
         }
     }
     
-    private void HandleGoogleSignIn()
+    private async Task SignInWithGoogle(string returnUrl = null)
     {
-        isLoading = true;
-        errorMessage = string.Empty;
-        
         try
         {
-            // Redirection vers l'authentification Google OAuth en utilisant le service centralisé
+            isLoading = true;
+            
+            // Récupérer le client ID et redirect URI de façon centralisée
+            var clientId = OAuthConfig.GetGoogleClientId();
             var redirectUri = OAuthConfig.GetGoogleRedirectUri();
             
-            // Afficher l'URI pour diagnostic
-            Console.WriteLine($"Google OAuth redirectUri: {redirectUri}");
+            // Construire l'URL d'autorisation Google OAuth avec OpenID Connect
             var authorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
             
+            // Préparer les paramètres de la requête avec OpenID Connect explicite
             var queryParams = new Dictionary<string, string>
             {
-                { "client_id", OAuthConfig.GetGoogleClientId() },
-                { "redirect_uri", redirectUri },
+                { "client_id", clientId },
                 { "response_type", "code" },
+                { "redirect_uri", redirectUri },
+                // Explicitement demander OpenID Connect avec email vérifié
                 { "scope", "openid email profile" },
+                // Demander l'inclusion du claim email_verified dans l'ID token
+                { "claims", JsonSerializer.Serialize(new { 
+                    id_token = new { 
+                        email_verified = new { essential = true } 
+                    }
+                }) },
                 { "access_type", "offline" },
+                { "prompt", "consent" },  // Force le consentement explicite
                 { "state", Guid.NewGuid().ToString() }
             };
             
@@ -228,5 +237,11 @@
             isLoading = false;
             errorMessage = $"Erreur: {ex.Message}";
         }
+    }
+    
+    private void HandleGoogleSignIn()
+    {
+        // Appelle la méthode SignInWithGoogle avec le returnUrl actuel
+        SignInWithGoogle(returnUrl).ConfigureAwait(false);
     }
 }

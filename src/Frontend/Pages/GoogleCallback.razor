@@ -18,6 +18,9 @@
 </MudContainer>
 
 @code {
+    private string errorMessage = string.Empty;
+    private bool loading = true;
+    
     protected override async Task OnInitializedAsync()
     {
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
@@ -81,16 +84,28 @@
                 
                 // En cas d'échec de la réponse du serveur
                 // Analyser la réponse pour détecter des erreurs spécifiques
-                if (responseContent.Contains("email n'est pas vérifié") || responseContent.Contains("email not verified"))
+                if (responseContent.Contains("email n'est pas vérifié") || 
+                    responseContent.Contains("email not verified") || 
+                    responseContent.Contains("email_verified\":\"false"))
                 {
-                    Snackbar.Add("Votre compte Google doit avoir un email vérifié pour pouvoir s'authentifier", Severity.Warning);
-                    NavigationManager.NavigateTo("/login?error=email_not_verified");
+                    errorMessage = "Votre compte Google doit avoir un email vérifié pour pouvoir vous authentifier. "  +
+                        "Veuillez vérifier votre email Google ou utiliser un autre compte.";
+                    Snackbar.Add(errorMessage, Severity.Warning, config => { config.RequireInteraction = true; });
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    errorMessage = "L'authentification Google a échoué. Vérifiez que vos informations sont correctes et réessayez.";
+                    Snackbar.Add(errorMessage, Severity.Error);
                 }
                 else
                 {
-                    Snackbar.Add("Erreur lors de l'authentification avec Google", Severity.Error);
-                    NavigationManager.NavigateTo("/login?error=auth_failed");
+                    errorMessage = $"Erreur lors de l'authentification avec Google. Code: {response.StatusCode}";
+                    Snackbar.Add(errorMessage, Severity.Error);
                 }
+                
+                // Rediriger vers la page de login avec un paramètre d'erreur approprié
+                NavigationManager.NavigateTo("/login?error=auth_failed");
+                loading = false;
             }
             catch (Exception ex)
             {
