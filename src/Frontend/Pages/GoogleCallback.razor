@@ -8,6 +8,7 @@
 @inject ILocalStorageService LocalStorageService
 @inject ISnackbar Snackbar
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IOAuthConfigService OAuthConfig
 
 <PageTitle>Authentification Google - ModHub</PageTitle>
 
@@ -30,8 +31,8 @@
                 var tokenRequest = new GoogleAuthCodeRequest
                 {
                     Code = code,
-                    RedirectUri = "https://modhub.ovh/signin-google",
-                    ClientId = "59693042860-ruj3b321ntsr25mt4m8shfi7acpsog83.apps.googleusercontent.com"
+                    RedirectUri = OAuthConfig.GetGoogleRedirectUri(),
+                    ClientId = OAuthConfig.GetGoogleClientId()
                 };
                 
                 // Logging pour débogage

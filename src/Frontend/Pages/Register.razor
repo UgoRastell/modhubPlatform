@@ -8,6 +8,7 @@
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
+@inject IOAuthConfigService OAuthConfig
 
 <PageTitle>Inscription - ModHub</PageTitle>
 
@@ -203,13 +204,16 @@
         
         try
         {
-            // Redirection vers l'authentification Google OAuth
-            var redirectUri = NavigationManager.BaseUri + "signin-google";
+            // Redirection vers l'authentification Google OAuth en utilisant le service centralisé
+            var redirectUri = OAuthConfig.GetGoogleRedirectUri();
+            
+            // Afficher l'URI pour diagnostic
+            Console.WriteLine($"Google OAuth redirectUri: {redirectUri}");
             var authorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
             
             var queryParams = new Dictionary<string, string>
             {
-                { "client_id", "809448317022-j15ftsa8viduc70o0e02b7u90tfrtscv.apps.googleusercontent.com" },
+                { "client_id", OAuthConfig.GetGoogleClientId() },
                 { "redirect_uri", redirectUri },
                 { "response_type", "code" },
                 { "scope", "openid email profile" },
