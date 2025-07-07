@@ -80,8 +80,17 @@
                 }
                 
                 // En cas d'échec de la réponse du serveur
-                Snackbar.Add("Erreur lors de l'authentification avec Google", Severity.Error);
-                NavigationManager.NavigateTo("/login?error=auth_failed");
+                // Analyser la réponse pour détecter des erreurs spécifiques
+                if (responseContent.Contains("email n'est pas vérifié") || responseContent.Contains("email not verified"))
+                {
+                    Snackbar.Add("Votre compte Google doit avoir un email vérifié pour pouvoir s'authentifier", Severity.Warning);
+                    NavigationManager.NavigateTo("/login?error=email_not_verified");
+                }
+                else
+                {
+                    Snackbar.Add("Erreur lors de l'authentification avec Google", Severity.Error);
+                    NavigationManager.NavigateTo("/login?error=auth_failed");
+                }
             }
             catch (Exception ex)
             {
