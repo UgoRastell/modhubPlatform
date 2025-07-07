@@ -34,25 +34,8 @@
                     ClientId = "961049468680-2h3khj8eid7dfs4hd3l6gq2v91mb0qle.apps.googleusercontent.com"
                 };
                 
-                // Logging pour débogage
-                Console.WriteLine("Envoi de la requête à l'API:");
-                Console.WriteLine($"Code: {tokenRequest.Code}");
-                Console.WriteLine($"RedirectUri: {tokenRequest.RedirectUri}");
-                Console.WriteLine($"ClientId: {tokenRequest.ClientId}");
-                
-                // Sérialiser manuellement pour vérifier le format JSON exact
-                var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-                var jsonContent = JsonSerializer.Serialize(tokenRequest, options);
-                Console.WriteLine($"Contenu JSON envoyé: {jsonContent}");
-                
                 // Appeler le backend pour échanger le code contre un token JWT
-                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-                var response = await HttpClient.PostAsync("api/OAuth/google-callback", content);
-                
-                // Logging de la réponse
-                Console.WriteLine($"Statut de la réponse: {response.StatusCode}");
-                var responseContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Contenu de la réponse: {responseContent}");
+                var response = await HttpClient.PostAsJsonAsync("api/OAuth/google-callback", tokenRequest);
                 
                 if (response.IsSuccessStatusCode)
                 {

@@ -303,6 +303,36 @@
       "FileCacheOptions": {
         "TtlSeconds": 86400
       }
+    },
+    {
+      "DownstreamPathTemplate": "/api/OAuth/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "usersservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/OAuth/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT" ],
+      "FileCacheOptions": {
+        "TtlSeconds": 0
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/signin-google",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "usersservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/signin-google",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "FileCacheOptions": {
+        "TtlSeconds": 0
+      }
     }
   ]
 }
