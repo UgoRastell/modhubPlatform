@@ -635,6 +635,48 @@ namespace ModsService.Controllers
         }
 
         /// <summary>
+        /// Soumettre une évaluation pour un mod
+        /// </summary>
+        /// <param name="modId">ID du mod à évaluer</param>
+        /// <param name="ratingDto">Données de l'évaluation (note 1-5)</param>
+        /// <returns>Succès ou message d'erreur</returns>
+        [HttpPost("{modId}/ratings")]
+        [Authorize] // Nécessite un utilisateur authentifié pour éviter le spam, ajuster selon votre logique
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> RateMod(string modId, [FromBody] ModRatingDto ratingDto)
+        {
+            try
+            {
+                if (ratingDto == null || ratingDto.Rating < 1 || ratingDto.Rating > 5)
+                {
+                    return BadRequest(new { Success = false, Message = "La note doit être comprise entre 1 et 5." });
+                }
+
+                var mod = await _modRepository.GetByIdAsync(modId);
+                if (mod == null)
+                {
+                    return NotFound(new { Success = false, Message = "Mod non trouvé" });
+                }
+
+                // Calculer la nouvelle moyenne
+                var newReviewCount = mod.ReviewCount + 1;
+                var newAverage = ((mod.Rating * mod.ReviewCount) + ratingDto.Rating) / newReviewCount;
+
+                await _modRepository.UpdateRatingAsync(modId, newAverage, newReviewCount);
+
+                return Ok(new { Success = true, Message = "Évaluation enregistrée", Data = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de l'évaluation du mod {ModId}", modId);
+                return StatusCode(500, new { Success = false, Message = $"Erreur lors de l'évaluation: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
         /// Crée un objet anonyme contenant les métadonnées du mod pour les réponses API
         /// </summary>
         private object CreateModMetadataResponse(Mod mod)

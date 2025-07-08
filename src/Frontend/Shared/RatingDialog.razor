@@ -135,16 +135,7 @@
             @GetRatingLabel(selectedRating)
         </div>
         
-        <div class="comment-section">
-            <MudTextField @bind-Value="comment"
-                          Label="Commentaire (optionnel)"
-                          Placeholder="Partagez votre expérience avec ce mod..."
-                          Lines="4"
-                          Variant="Variant.Outlined"
-                          MaxLength="500"
-                          Counter="500"
-                          HelperText="Décrivez ce que vous avez aimé ou n'avez pas aimé" />
-        </div>
+
     </DialogContent>
     
     <DialogActions>
@@ -183,7 +174,7 @@
     
     private int selectedRating = 0;
     private int hoveredRating = 0;
-    private string comment = string.Empty;
+
     private bool isSubmitting = false;
     
     private void SelectRating(int rating)
@@ -224,8 +215,7 @@
         {
             var ratingRequest = new ModRatingRequest
             {
-                Rating = selectedRating,
-                Comment = comment
+                Rating = selectedRating
             };
             
             var response = await ModService.RateModAsync(ModId, ratingRequest);
