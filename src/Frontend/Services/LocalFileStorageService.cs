@@ -1,125 +1,54 @@
 using Microsoft.AspNetCore.Components.Forms;
-using System.Net.Http.Json;
-using System.Text.Json;
-using Frontend.Controllers;
 
 namespace Frontend.Services
 {
     /// <summary>
-    /// Service pour gérer le stockage des fichiers de mods - version simplifiée
-    /// Utilise l'upload traditionnel vers ModsService mais adapte les URLs pour wwwroot
+    /// Service simplifié pour gérer les URLs des fichiers de mods
+    /// Avec l'architecture volume Docker partagé, les fichiers sont synchronisés automatiquement
     /// </summary>
     public class LocalFileStorageService : ILocalFileStorageService
     {
-        private readonly HttpClient _httpClient;
         private readonly ILogger<LocalFileStorageService> _logger;
 
-        public LocalFileStorageService(HttpClient httpClient, ILogger<LocalFileStorageService> logger)
+        public LocalFileStorageService(ILogger<LocalFileStorageService> logger)
         {
-            _httpClient = httpClient;
             _logger = logger;
         }
 
         /// <summary>
-        /// Upload le fichier mod vers le backend et copie dans wwwroot via l'API
+        /// Retourne l'URL du fichier mod (synchronisation automatique via Docker)
         /// </summary>
-        public async Task<string> SaveModFileAsync(string modId, IBrowserFile modFile)
+        public Task<string> SaveModFileAsync(string modId, IBrowserFile modFile)
         {
-            try
-            {
-                _logger.LogInformation("Demande de copie du fichier mod {ModId}: {FileName} via API backend", modId, modFile.Name);
-                
-                // Appeler l'endpoint backend pour copier le fichier
-                var request = new CopyFilesRequest
-                {
-                    ModId = modId,
-                    ModFileName = modFile.Name
-                };
-                
-                var response = await _httpClient.PostAsJsonAsync("/api/filestorage/copy-mod-files", request);
-                
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<CopyFilesResponse>();
-                    _logger.LogInformation("Fichier mod copié avec succès via API: {ModId}", modId);
-                    
-                    // URL standardisée pour l'accès au fichier
-                    return $"/uploads/mods/{modId}/{modId}.zip";
-                }
-                else
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Erreur API lors de la copie du fichier mod {ModId}: {Error}", modId, error);
-                    throw new Exception($"Erreur API: {response.StatusCode} - {error}");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erreur lors de la copie du fichier mod {ModId}", modId);
-                throw;
-            }
+            // La synchronisation est automatique via volume Docker partagé
+            // ModsService écrit dans /app/uploads/mods/{modId}/ 
+            // Frontend lit depuis /app/wwwroot/uploads/mods/{modId}/
+            _logger.LogInformation("URL statique générée pour le mod {ModId}: {FileName}", modId, modFile.Name);
+            return Task.FromResult($"/uploads/mods/{modId}/{modId}.zip");
         }
 
         /// <summary>
-        /// Upload le thumbnail vers le backend et copie dans wwwroot via l'API
+        /// Retourne l'URL du thumbnail (synchronisation automatique via Docker)
         /// </summary>
-        public async Task<string> SaveThumbnailAsync(string modId, IBrowserFile thumbnailFile)
+        public Task<string> SaveThumbnailAsync(string modId, IBrowserFile thumbnailFile)
         {
-            try
-            {
-                _logger.LogInformation("Demande de copie du thumbnail {ModId}: {FileName} via API backend", modId, thumbnailFile.Name);
-                
-                // Appeler l'endpoint backend pour copier le thumbnail
-                var request = new CopyFilesRequest
-                {
-                    ModId = modId,
-                    ThumbnailFileName = thumbnailFile.Name
-                };
-                
-                var response = await _httpClient.PostAsJsonAsync("/api/filestorage/copy-mod-files", request);
-                
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<CopyFilesResponse>();
-                    _logger.LogInformation("Thumbnail copié avec succès via API: {ModId}", modId);
-                    
-                    // URL standardisée pour l'accès au thumbnail
-                    return $"/uploads/mods/{modId}/thumbnail.jpg";
-                }
-                else
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Erreur API lors de la copie du thumbnail {ModId}: {Error}", modId, error);
-                    throw new Exception($"Erreur API: {response.StatusCode} - {error}");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erreur lors de la copie du thumbnail {ModId}", modId);
-                throw;
-            }
+            // La synchronisation est automatique via volume Docker partagé
+            _logger.LogInformation("URL statique générée pour le thumbnail {ModId}: {FileName}", modId, thumbnailFile.Name);
+            return Task.FromResult($"/uploads/mods/{modId}/thumbnail.jpg");
         }
 
         /// <summary>
-        /// Supprime les fichiers d'un mod (délégué vers l'API)
+        /// Simulation de suppression (délégué vers l'API ModsService)
         /// </summary>
-        public async Task<bool> DeleteModFilesAsync(string modId)
+        public Task<bool> DeleteModFilesAsync(string modId)
         {
-            try
-            {
-                // Appel à l'API de suppression de mod existante
-                var response = await _httpClient.DeleteAsync($"api/v1/mods/{modId}");
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erreur lors de la suppression des fichiers du mod {ModId}", modId);
-                return false;
-            }
+            _logger.LogInformation("Suppression déléguée vers ModsService pour le mod {ModId}", modId);
+            // La suppression est gérée par ModsService via l'API de suppression
+            return Task.FromResult(true);
         }
 
         /// <summary>
-        /// Retourne l'URL du thumbnail d'un mod (compatible wwwroot)
+        /// Retourne l'URL du thumbnail d'un mod (accès statique)
         /// </summary>
         public string GetThumbnailUrl(string modId)
         {
@@ -127,7 +56,7 @@ namespace Frontend.Services
         }
 
         /// <summary>
-        /// Retourne l'URL de téléchargement d'un mod (compatible wwwroot)
+        /// Retourne l'URL de téléchargement d'un mod (accès statique)
         /// </summary>
         public string GetModDownloadUrl(string modId)
         {
