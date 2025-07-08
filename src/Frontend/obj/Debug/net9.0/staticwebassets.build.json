@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "0/3H/IvyVzZ5eSj44MaWeCvWUAl/efH/rNOhgVuL5rM=",
+  "Hash": "q10UZi7zkMYQynZ8xJzmcuUf0DPsMzkIyG7mcNDS2Vg=",
   "Source": "Frontend",
   "BasePath": "/",
   "Mode": "Root",
@@ -94,8 +94,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "manifest",
-      "Fingerprint": "1qinau7v0v",
-      "Integrity": "iXDfK9MmIcEEjjj+uBFkI42qj2t5zah4neJVZaQc7XY=",
+      "Fingerprint": "zhn3ajrfk1",
+      "Integrity": "SYCu+eztudrIyftzQuE9ANH15b/5C6LgMwt0CxT9y/I=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "obj\\Debug\\net9.0\\blazor.boot.json"
@@ -304,8 +304,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "symbol",
-      "Fingerprint": "c6iiykzge9",
-      "Integrity": "hI5uib/uFshPtxOAcdBc8+8YHGM81bfYdkcmb+mQdCc=",
+      "Fingerprint": "iu3of2rmas",
+      "Integrity": "ehBhmg5JdTV0R3KouGFZz5yCdB6hN6dELagrG6kbmvs=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "obj\\Debug\\net9.0\\Frontend.pdb"
@@ -325,8 +325,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
-      "Fingerprint": "4xnxajv68d",
-      "Integrity": "qCJZKuDBVM3UnmL6Ae0XNgaoDRzd2mgsAJfEqfPzY7c=",
+      "Fingerprint": "ythph20s0x",
+      "Integrity": "hh+up1h1GTUTY2z0QtnW5mTDwEVLprTXjIlQ0sh5gdg=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\webcil\\Frontend.wasm"
@@ -1459,8 +1459,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "symbol",
-      "Fingerprint": "a9w430kkqq",
-      "Integrity": "smBD+94O45CRBlc/7nuUFpMrxMTGcRu+dmlgd5RCTuU=",
+      "Fingerprint": "oc717do1oz",
+      "Integrity": "eFaK+GdwJJZXIQwy89QzrQudPc9EELcwMHoi2mFJ5LQ=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Shared\\bin\\Debug\\net9.0\\Shared.pdb"
@@ -1480,8 +1480,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
-      "Fingerprint": "t00w64lhbm",
-      "Integrity": "Ha58PgFnwLZcrz+TBPQ5i32SBhT2HXxGO17lDmnXaEI=",
+      "Fingerprint": "aq2tljxa5r",
+      "Integrity": "EqQZ/+OIKpgCCB3keaETZfGfOb525SgwTbSwZrZnHfM=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\webcil\\Shared.wasm"
@@ -5855,12 +5855,12 @@
       "OriginalItemSpec": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map"
     },
     {
-      "Identity": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\5oz7yg4z9z-a9w430kkqq.gz",
+      "Identity": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\5oz7yg4z9z-oc717do1oz.gz",
       "SourceId": "Frontend",
       "SourceType": "Computed",
       "ContentRoot": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\",
       "BasePath": "/",
-      "RelativePath": "_framework/Shared#[.{fingerprint=a9w430kkqq}]!.pdb.gz",
+      "RelativePath": "_framework/Shared#[.{fingerprint=oc717do1oz}]!.pdb.gz",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Alternative",
@@ -5869,8 +5869,8 @@
       "RelatedAsset": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Shared.pdb",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "nsyb4679zh",
-      "Integrity": "GW/Q60A+NADlCtGxmJzih6xM2SMdgvQa/QTslSgz2Q0=",
+      "Fingerprint": "dsk75i6wjt",
+      "Integrity": "A45x+MUpbxTB72L6qdXOnh73gNLWKXZ0QIjbVAkoChU=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Shared.pdb"
@@ -6233,12 +6233,12 @@
       "OriginalItemSpec": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Microsoft.Extensions.Configuration.Json.wasm"
     },
     {
-      "Identity": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\820j4a4l7m-c6iiykzge9.gz",
+      "Identity": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\820j4a4l7m-iu3of2rmas.gz",
       "SourceId": "Frontend",
       "SourceType": "Computed",
       "ContentRoot": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\",
       "BasePath": "/",
-      "RelativePath": "_framework/Frontend#[.{fingerprint=c6iiykzge9}]!.pdb.gz",
+      "RelativePath": "_framework/Frontend#[.{fingerprint=iu3of2rmas}]!.pdb.gz",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Alternative",
@@ -6247,8 +6247,8 @@
       "RelatedAsset": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Frontend.pdb",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "cwt5m9aacy",
-      "Integrity": "nODwVWBlgrh6HsaLBDfG0S8Q5ORxLNq29VFbNhQy+WI=",
+      "Fingerprint": "8g38gijvvl",
+      "Integrity": "eEuqBfjHHfIPlgz1Ktr+cQQUQdbRW7unfppGZUF4EhQ=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Frontend.pdb"
@@ -7871,12 +7871,12 @@
       "OriginalItemSpec": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\System.IO.FileSystem.wasm"
     },
     {
-      "Identity": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\idv3gmpu33-4xnxajv68d.gz",
+      "Identity": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\idv3gmpu33-ythph20s0x.gz",
       "SourceId": "Frontend",
       "SourceType": "Computed",
       "ContentRoot": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\",
       "BasePath": "/",
-      "RelativePath": "_framework/Frontend#[.{fingerprint=4xnxajv68d}]!.wasm.gz",
+      "RelativePath": "_framework/Frontend#[.{fingerprint=ythph20s0x}]!.wasm.gz",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Alternative",
@@ -7885,8 +7885,8 @@
       "RelatedAsset": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Frontend.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "55doj9yug7",
-      "Integrity": "ia8P5/47ziQ4YxbP12PF9p5lnehn8SFDfEV2xHhKyd4=",
+      "Fingerprint": "1bzjzc15rj",
+      "Integrity": "fTxcjLpJvgpzyYZlIDJQ8dZty5FeZSllOAy3ERMYk6c=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Frontend.wasm"
@@ -8774,7 +8774,7 @@
       "OriginalItemSpec": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\System.Reflection.Emit.wasm"
     },
     {
-      "Identity": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\njn95cf9xo-1qinau7v0v.gz",
+      "Identity": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\njn95cf9xo-zhn3ajrfk1.gz",
       "SourceId": "Frontend",
       "SourceType": "Computed",
       "ContentRoot": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\",
@@ -8788,8 +8788,8 @@
       "RelatedAsset": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\blazor.boot.json",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "qpa8cdtdx8",
-      "Integrity": "wicNZW12shqgShaYlofWJDttJXauWyrgqZwm9EWrLUc=",
+      "Fingerprint": "fzfqbn6p3t",
+      "Integrity": "leXYhUjMrq3x5Lu8I9HYCCZnHuPs2HA2Fm1hDEoCSE0=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\blazor.boot.json"
@@ -9551,12 +9551,12 @@
       "OriginalItemSpec": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map"
     },
     {
-      "Identity": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\sgf3f4t1rs-t00w64lhbm.gz",
+      "Identity": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\sgf3f4t1rs-aq2tljxa5r.gz",
       "SourceId": "Frontend",
       "SourceType": "Computed",
       "ContentRoot": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\",
       "BasePath": "/",
-      "RelativePath": "_framework/Shared#[.{fingerprint=t00w64lhbm}]!.wasm.gz",
+      "RelativePath": "_framework/Shared#[.{fingerprint=aq2tljxa5r}]!.wasm.gz",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Alternative",
@@ -9565,8 +9565,8 @@
       "RelatedAsset": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Shared.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "5o2xp073g3",
-      "Integrity": "O4u38OEodpaTmAAAxr64Rx7HtR44b4lX1Al/eCAzaxU=",
+      "Fingerprint": "aph3lqbs9g",
+      "Integrity": "XgkPw7EOeZtqpNwSjFAuP40GM2MOB8LG7JLoiqHNwcw=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Shared.wasm"
@@ -12886,11 +12886,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"iXDfK9MmIcEEjjj+uBFkI42qj2t5zah4neJVZaQc7XY=\""
+          "Value": "\"SYCu+eztudrIyftzQuE9ANH15b/5C6LgMwt0CxT9y/I=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -12900,18 +12900,18 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-iXDfK9MmIcEEjjj+uBFkI42qj2t5zah4neJVZaQc7XY="
+          "Value": "sha256-SYCu+eztudrIyftzQuE9ANH15b/5C6LgMwt0CxT9y/I="
         }
       ]
     },
     {
       "Route": "_framework/blazor.boot.json",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\njn95cf9xo-1qinau7v0v.gz",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\njn95cf9xo-zhn3ajrfk1.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000070891819"
+          "Quality": "0.000070916956"
         }
       ],
       "ResponseHeaders": [
@@ -12921,11 +12921,11 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "14105"
+          "Value": "14100"
         },
         {
           "Name": "ETag",
-          "Value": "\"wicNZW12shqgShaYlofWJDttJXauWyrgqZwm9EWrLUc=\""
+          "Value": "\"leXYhUjMrq3x5Lu8I9HYCCZnHuPs2HA2Fm1hDEoCSE0=\""
         },
         {
           "Name": "Last-Modified",
@@ -12949,19 +12949,19 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"iXDfK9MmIcEEjjj+uBFkI42qj2t5zah4neJVZaQc7XY=\""
+          "Value": "W/\"SYCu+eztudrIyftzQuE9ANH15b/5C6LgMwt0CxT9y/I=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-iXDfK9MmIcEEjjj+uBFkI42qj2t5zah4neJVZaQc7XY="
+          "Value": "sha256-SYCu+eztudrIyftzQuE9ANH15b/5C6LgMwt0CxT9y/I="
         }
       ]
     },
     {
       "Route": "_framework/blazor.boot.json.gz",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\njn95cf9xo-1qinau7v0v.gz",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\njn95cf9xo-zhn3ajrfk1.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -12970,7 +12970,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "14105"
+          "Value": "14100"
         },
         {
           "Name": "Content-Type",
@@ -12978,7 +12978,7 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"wicNZW12shqgShaYlofWJDttJXauWyrgqZwm9EWrLUc=\""
+          "Value": "\"leXYhUjMrq3x5Lu8I9HYCCZnHuPs2HA2Fm1hDEoCSE0=\""
         },
         {
           "Name": "Last-Modified",
@@ -13000,7 +13000,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-wicNZW12shqgShaYlofWJDttJXauWyrgqZwm9EWrLUc="
+          "Value": "sha256-leXYhUjMrq3x5Lu8I9HYCCZnHuPs2HA2Fm1hDEoCSE0="
         }
       ]
     },
@@ -13066,7 +13066,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
+          "Value": "Fri, 17 Jan 2025 20:14:04 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -13119,7 +13119,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
+          "Value": "Fri, 17 Jan 2025 20:14:04 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -13509,7 +13509,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:39 GMT"
+          "Value": "Thu, 16 Jan 2025 19:03:16 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -13570,7 +13570,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:39 GMT"
+          "Value": "Thu, 16 Jan 2025 19:03:16 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -13662,7 +13662,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:39 GMT"
+          "Value": "Thu, 16 Jan 2025 19:03:16 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -13762,7 +13762,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:39 GMT"
+          "Value": "Thu, 16 Jan 2025 19:03:16 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -13823,7 +13823,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:39 GMT"
+          "Value": "Thu, 16 Jan 2025 19:03:16 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -13876,7 +13876,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:39 GMT"
+          "Value": "Thu, 16 Jan 2025 19:03:16 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -13960,7 +13960,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:39 GMT"
+          "Value": "Thu, 16 Jan 2025 19:03:16 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -14013,7 +14013,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:39 GMT"
+          "Value": "Thu, 16 Jan 2025 19:03:16 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -14793,7 +14793,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:39 GMT"
+          "Value": "Thu, 16 Jan 2025 19:03:22 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -14854,7 +14854,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:39 GMT"
+          "Value": "Thu, 16 Jan 2025 19:03:22 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -14991,7 +14991,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:39 GMT"
+          "Value": "Thu, 16 Jan 2025 19:03:22 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15044,7 +15044,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:39 GMT"
+          "Value": "Thu, 16 Jan 2025 19:03:22 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15526,168 +15526,7 @@
       ]
     },
     {
-      "Route": "_framework/Frontend.4xnxajv68d.wasm",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Frontend.wasm",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "1862421"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"qCJZKuDBVM3UnmL6Ae0XNgaoDRzd2mgsAJfEqfPzY7c=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:36 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "4xnxajv68d"
-        },
-        {
-          "Name": "label",
-          "Value": "_framework/Frontend.wasm"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-qCJZKuDBVM3UnmL6Ae0XNgaoDRzd2mgsAJfEqfPzY7c="
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Frontend.4xnxajv68d.wasm",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\idv3gmpu33-4xnxajv68d.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "0.000001964876"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "508937"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"ia8P5/47ziQ4YxbP12PF9p5lnehn8SFDfEV2xHhKyd4=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "W/\"qCJZKuDBVM3UnmL6Ae0XNgaoDRzd2mgsAJfEqfPzY7c=\""
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "4xnxajv68d"
-        },
-        {
-          "Name": "label",
-          "Value": "_framework/Frontend.wasm"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-qCJZKuDBVM3UnmL6Ae0XNgaoDRzd2mgsAJfEqfPzY7c="
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Frontend.4xnxajv68d.wasm.gz",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\idv3gmpu33-4xnxajv68d.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "508937"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/wasm"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"ia8P5/47ziQ4YxbP12PF9p5lnehn8SFDfEV2xHhKyd4=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "4xnxajv68d"
-        },
-        {
-          "Name": "label",
-          "Value": "_framework/Frontend.wasm.gz"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-ia8P5/47ziQ4YxbP12PF9p5lnehn8SFDfEV2xHhKyd4="
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Frontend.c6iiykzge9.pdb",
+      "Route": "_framework/Frontend.iu3of2rmas.pdb",
       "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Frontend.pdb",
       "Selectors": [],
       "ResponseHeaders": [
@@ -15697,7 +15536,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "871184"
+          "Value": "873652"
         },
         {
           "Name": "Content-Type",
@@ -15705,11 +15544,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"hI5uib/uFshPtxOAcdBc8+8YHGM81bfYdkcmb+mQdCc=\""
+          "Value": "\"ehBhmg5JdTV0R3KouGFZz5yCdB6hN6dELagrG6kbmvs=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:32 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:40 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15719,7 +15558,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "c6iiykzge9"
+          "Value": "iu3of2rmas"
         },
         {
           "Name": "label",
@@ -15727,18 +15566,18 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-hI5uib/uFshPtxOAcdBc8+8YHGM81bfYdkcmb+mQdCc="
+          "Value": "sha256-ehBhmg5JdTV0R3KouGFZz5yCdB6hN6dELagrG6kbmvs="
         }
       ]
     },
     {
-      "Route": "_framework/Frontend.c6iiykzge9.pdb",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\820j4a4l7m-c6iiykzge9.gz",
+      "Route": "_framework/Frontend.iu3of2rmas.pdb",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\820j4a4l7m-iu3of2rmas.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000001477768"
+          "Quality": "0.000001474170"
         }
       ],
       "ResponseHeaders": [
@@ -15748,15 +15587,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "676695"
+          "Value": "678347"
         },
         {
           "Name": "ETag",
-          "Value": "\"nODwVWBlgrh6HsaLBDfG0S8Q5ORxLNq29VFbNhQy+WI=\""
+          "Value": "\"eEuqBfjHHfIPlgz1Ktr+cQQUQdbRW7unfppGZUF4EhQ=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15776,13 +15615,13 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"hI5uib/uFshPtxOAcdBc8+8YHGM81bfYdkcmb+mQdCc=\""
+          "Value": "W/\"ehBhmg5JdTV0R3KouGFZz5yCdB6hN6dELagrG6kbmvs=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "c6iiykzge9"
+          "Value": "iu3of2rmas"
         },
         {
           "Name": "label",
@@ -15790,13 +15629,13 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-hI5uib/uFshPtxOAcdBc8+8YHGM81bfYdkcmb+mQdCc="
+          "Value": "sha256-ehBhmg5JdTV0R3KouGFZz5yCdB6hN6dELagrG6kbmvs="
         }
       ]
     },
     {
-      "Route": "_framework/Frontend.c6iiykzge9.pdb.gz",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\820j4a4l7m-c6iiykzge9.gz",
+      "Route": "_framework/Frontend.iu3of2rmas.pdb.gz",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\820j4a4l7m-iu3of2rmas.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -15805,7 +15644,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "676695"
+          "Value": "678347"
         },
         {
           "Name": "Content-Type",
@@ -15813,11 +15652,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"nODwVWBlgrh6HsaLBDfG0S8Q5ORxLNq29VFbNhQy+WI=\""
+          "Value": "\"eEuqBfjHHfIPlgz1Ktr+cQQUQdbRW7unfppGZUF4EhQ=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15835,7 +15674,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "c6iiykzge9"
+          "Value": "iu3of2rmas"
         },
         {
           "Name": "label",
@@ -15843,7 +15682,7 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-nODwVWBlgrh6HsaLBDfG0S8Q5ORxLNq29VFbNhQy+WI="
+          "Value": "sha256-eEuqBfjHHfIPlgz1Ktr+cQQUQdbRW7unfppGZUF4EhQ="
         }
       ]
     },
@@ -15858,7 +15697,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "871184"
+          "Value": "873652"
         },
         {
           "Name": "Content-Type",
@@ -15866,11 +15705,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"hI5uib/uFshPtxOAcdBc8+8YHGM81bfYdkcmb+mQdCc=\""
+          "Value": "\"ehBhmg5JdTV0R3KouGFZz5yCdB6hN6dELagrG6kbmvs=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:32 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:40 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15880,18 +15719,18 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-hI5uib/uFshPtxOAcdBc8+8YHGM81bfYdkcmb+mQdCc="
+          "Value": "sha256-ehBhmg5JdTV0R3KouGFZz5yCdB6hN6dELagrG6kbmvs="
         }
       ]
     },
     {
       "Route": "_framework/Frontend.pdb",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\820j4a4l7m-c6iiykzge9.gz",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\820j4a4l7m-iu3of2rmas.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000001477768"
+          "Quality": "0.000001474170"
         }
       ],
       "ResponseHeaders": [
@@ -15901,15 +15740,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "676695"
+          "Value": "678347"
         },
         {
           "Name": "ETag",
-          "Value": "\"nODwVWBlgrh6HsaLBDfG0S8Q5ORxLNq29VFbNhQy+WI=\""
+          "Value": "\"eEuqBfjHHfIPlgz1Ktr+cQQUQdbRW7unfppGZUF4EhQ=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15929,19 +15768,19 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"hI5uib/uFshPtxOAcdBc8+8YHGM81bfYdkcmb+mQdCc=\""
+          "Value": "W/\"ehBhmg5JdTV0R3KouGFZz5yCdB6hN6dELagrG6kbmvs=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-hI5uib/uFshPtxOAcdBc8+8YHGM81bfYdkcmb+mQdCc="
+          "Value": "sha256-ehBhmg5JdTV0R3KouGFZz5yCdB6hN6dELagrG6kbmvs="
         }
       ]
     },
     {
       "Route": "_framework/Frontend.pdb.gz",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\820j4a4l7m-c6iiykzge9.gz",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\820j4a4l7m-iu3of2rmas.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -15950,7 +15789,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "676695"
+          "Value": "678347"
         },
         {
           "Name": "Content-Type",
@@ -15958,11 +15797,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"nODwVWBlgrh6HsaLBDfG0S8Q5ORxLNq29VFbNhQy+WI=\""
+          "Value": "\"eEuqBfjHHfIPlgz1Ktr+cQQUQdbRW7unfppGZUF4EhQ=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15980,7 +15819,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-nODwVWBlgrh6HsaLBDfG0S8Q5ORxLNq29VFbNhQy+WI="
+          "Value": "sha256-eEuqBfjHHfIPlgz1Ktr+cQQUQdbRW7unfppGZUF4EhQ="
         }
       ]
     },
@@ -15995,7 +15834,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "1862421"
+          "Value": "1869589"
         },
         {
           "Name": "Content-Type",
@@ -16003,11 +15842,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"qCJZKuDBVM3UnmL6Ae0XNgaoDRzd2mgsAJfEqfPzY7c=\""
+          "Value": "\"hh+up1h1GTUTY2z0QtnW5mTDwEVLprTXjIlQ0sh5gdg=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:36 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:41 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -16017,18 +15856,18 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-qCJZKuDBVM3UnmL6Ae0XNgaoDRzd2mgsAJfEqfPzY7c="
+          "Value": "sha256-hh+up1h1GTUTY2z0QtnW5mTDwEVLprTXjIlQ0sh5gdg="
         }
       ]
     },
     {
       "Route": "_framework/Frontend.wasm",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\idv3gmpu33-4xnxajv68d.gz",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\idv3gmpu33-ythph20s0x.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000001964876"
+          "Quality": "0.000001955830"
         }
       ],
       "ResponseHeaders": [
@@ -16038,15 +15877,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "508937"
+          "Value": "511291"
         },
         {
           "Name": "ETag",
-          "Value": "\"ia8P5/47ziQ4YxbP12PF9p5lnehn8SFDfEV2xHhKyd4=\""
+          "Value": "\"fTxcjLpJvgpzyYZlIDJQ8dZty5FeZSllOAy3ERMYk6c=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -16066,19 +15905,19 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"qCJZKuDBVM3UnmL6Ae0XNgaoDRzd2mgsAJfEqfPzY7c=\""
+          "Value": "W/\"hh+up1h1GTUTY2z0QtnW5mTDwEVLprTXjIlQ0sh5gdg=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-qCJZKuDBVM3UnmL6Ae0XNgaoDRzd2mgsAJfEqfPzY7c="
+          "Value": "sha256-hh+up1h1GTUTY2z0QtnW5mTDwEVLprTXjIlQ0sh5gdg="
         }
       ]
     },
     {
       "Route": "_framework/Frontend.wasm.gz",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\idv3gmpu33-4xnxajv68d.gz",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\idv3gmpu33-ythph20s0x.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -16087,7 +15926,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "508937"
+          "Value": "511291"
         },
         {
           "Name": "Content-Type",
@@ -16095,11 +15934,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"ia8P5/47ziQ4YxbP12PF9p5lnehn8SFDfEV2xHhKyd4=\""
+          "Value": "\"fTxcjLpJvgpzyYZlIDJQ8dZty5FeZSllOAy3ERMYk6c=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -16117,7 +15956,168 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-ia8P5/47ziQ4YxbP12PF9p5lnehn8SFDfEV2xHhKyd4="
+          "Value": "sha256-fTxcjLpJvgpzyYZlIDJQ8dZty5FeZSllOAy3ERMYk6c="
+        }
+      ]
+    },
+    {
+      "Route": "_framework/Frontend.ythph20s0x.wasm",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Frontend.wasm",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "1869589"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/wasm"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"hh+up1h1GTUTY2z0QtnW5mTDwEVLprTXjIlQ0sh5gdg=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 08 Jul 2025 07:11:41 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "ythph20s0x"
+        },
+        {
+          "Name": "label",
+          "Value": "_framework/Frontend.wasm"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-hh+up1h1GTUTY2z0QtnW5mTDwEVLprTXjIlQ0sh5gdg="
+        }
+      ]
+    },
+    {
+      "Route": "_framework/Frontend.ythph20s0x.wasm",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\idv3gmpu33-ythph20s0x.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "0.000001955830"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "511291"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"fTxcjLpJvgpzyYZlIDJQ8dZty5FeZSllOAy3ERMYk6c=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/wasm"
+        },
+        {
+          "Name": "ETag",
+          "Value": "W/\"hh+up1h1GTUTY2z0QtnW5mTDwEVLprTXjIlQ0sh5gdg=\""
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "ythph20s0x"
+        },
+        {
+          "Name": "label",
+          "Value": "_framework/Frontend.wasm"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-hh+up1h1GTUTY2z0QtnW5mTDwEVLprTXjIlQ0sh5gdg="
+        }
+      ]
+    },
+    {
+      "Route": "_framework/Frontend.ythph20s0x.wasm.gz",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\idv3gmpu33-ythph20s0x.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "511291"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/wasm"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"fTxcjLpJvgpzyYZlIDJQ8dZty5FeZSllOAy3ERMYk6c=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "ythph20s0x"
+        },
+        {
+          "Name": "label",
+          "Value": "_framework/Frontend.wasm.gz"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-fTxcjLpJvgpzyYZlIDJQ8dZty5FeZSllOAy3ERMYk6c="
         }
       ]
     },
@@ -31916,305 +31916,7 @@
       ]
     },
     {
-      "Route": "_framework/Shared.a9w430kkqq.pdb",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Shared.pdb",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "12056"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/octet-stream"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"smBD+94O45CRBlc/7nuUFpMrxMTGcRu+dmlgd5RCTuU=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:14 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "a9w430kkqq"
-        },
-        {
-          "Name": "label",
-          "Value": "_framework/Shared.pdb"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-smBD+94O45CRBlc/7nuUFpMrxMTGcRu+dmlgd5RCTuU="
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Shared.a9w430kkqq.pdb",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\5oz7yg4z9z-a9w430kkqq.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "0.000137249520"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "7285"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"GW/Q60A+NADlCtGxmJzih6xM2SMdgvQa/QTslSgz2Q0=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/octet-stream"
-        },
-        {
-          "Name": "ETag",
-          "Value": "W/\"smBD+94O45CRBlc/7nuUFpMrxMTGcRu+dmlgd5RCTuU=\""
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "a9w430kkqq"
-        },
-        {
-          "Name": "label",
-          "Value": "_framework/Shared.pdb"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-smBD+94O45CRBlc/7nuUFpMrxMTGcRu+dmlgd5RCTuU="
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Shared.a9w430kkqq.pdb.gz",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\5oz7yg4z9z-a9w430kkqq.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "7285"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/octet-stream"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"GW/Q60A+NADlCtGxmJzih6xM2SMdgvQa/QTslSgz2Q0=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "a9w430kkqq"
-        },
-        {
-          "Name": "label",
-          "Value": "_framework/Shared.pdb.gz"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-GW/Q60A+NADlCtGxmJzih6xM2SMdgvQa/QTslSgz2Q0="
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Shared.pdb",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Shared.pdb",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "12056"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/octet-stream"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"smBD+94O45CRBlc/7nuUFpMrxMTGcRu+dmlgd5RCTuU=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:14 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "sha256-smBD+94O45CRBlc/7nuUFpMrxMTGcRu+dmlgd5RCTuU="
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Shared.pdb",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\5oz7yg4z9z-a9w430kkqq.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "0.000137249520"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "7285"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"GW/Q60A+NADlCtGxmJzih6xM2SMdgvQa/QTslSgz2Q0=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/octet-stream"
-        },
-        {
-          "Name": "ETag",
-          "Value": "W/\"smBD+94O45CRBlc/7nuUFpMrxMTGcRu+dmlgd5RCTuU=\""
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "sha256-smBD+94O45CRBlc/7nuUFpMrxMTGcRu+dmlgd5RCTuU="
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Shared.pdb.gz",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\5oz7yg4z9z-a9w430kkqq.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "7285"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/octet-stream"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"GW/Q60A+NADlCtGxmJzih6xM2SMdgvQa/QTslSgz2Q0=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "sha256-GW/Q60A+NADlCtGxmJzih6xM2SMdgvQa/QTslSgz2Q0="
-        }
-      ]
-    },
-    {
-      "Route": "_framework/Shared.t00w64lhbm.wasm",
+      "Route": "_framework/Shared.aq2tljxa5r.wasm",
       "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Shared.wasm",
       "Selectors": [],
       "ResponseHeaders": [
@@ -32232,11 +31934,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"Ha58PgFnwLZcrz+TBPQ5i32SBhT2HXxGO17lDmnXaEI=\""
+          "Value": "\"EqQZ/+OIKpgCCB3keaETZfGfOb525SgwTbSwZrZnHfM=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:36 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:41 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -32246,7 +31948,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "t00w64lhbm"
+          "Value": "aq2tljxa5r"
         },
         {
           "Name": "label",
@@ -32254,18 +31956,18 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-Ha58PgFnwLZcrz+TBPQ5i32SBhT2HXxGO17lDmnXaEI="
+          "Value": "sha256-EqQZ/+OIKpgCCB3keaETZfGfOb525SgwTbSwZrZnHfM="
         }
       ]
     },
     {
-      "Route": "_framework/Shared.t00w64lhbm.wasm",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\sgf3f4t1rs-t00w64lhbm.gz",
+      "Route": "_framework/Shared.aq2tljxa5r.wasm",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\sgf3f4t1rs-aq2tljxa5r.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000447227191"
+          "Quality": "0.000444839858"
         }
       ],
       "ResponseHeaders": [
@@ -32275,15 +31977,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "2235"
+          "Value": "2247"
         },
         {
           "Name": "ETag",
-          "Value": "\"O4u38OEodpaTmAAAxr64Rx7HtR44b4lX1Al/eCAzaxU=\""
+          "Value": "\"XgkPw7EOeZtqpNwSjFAuP40GM2MOB8LG7JLoiqHNwcw=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -32303,13 +32005,13 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"Ha58PgFnwLZcrz+TBPQ5i32SBhT2HXxGO17lDmnXaEI=\""
+          "Value": "W/\"EqQZ/+OIKpgCCB3keaETZfGfOb525SgwTbSwZrZnHfM=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "t00w64lhbm"
+          "Value": "aq2tljxa5r"
         },
         {
           "Name": "label",
@@ -32317,13 +32019,13 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-Ha58PgFnwLZcrz+TBPQ5i32SBhT2HXxGO17lDmnXaEI="
+          "Value": "sha256-EqQZ/+OIKpgCCB3keaETZfGfOb525SgwTbSwZrZnHfM="
         }
       ]
     },
     {
-      "Route": "_framework/Shared.t00w64lhbm.wasm.gz",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\sgf3f4t1rs-t00w64lhbm.gz",
+      "Route": "_framework/Shared.aq2tljxa5r.wasm.gz",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\sgf3f4t1rs-aq2tljxa5r.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -32332,7 +32034,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "2235"
+          "Value": "2247"
         },
         {
           "Name": "Content-Type",
@@ -32340,11 +32042,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"O4u38OEodpaTmAAAxr64Rx7HtR44b4lX1Al/eCAzaxU=\""
+          "Value": "\"XgkPw7EOeZtqpNwSjFAuP40GM2MOB8LG7JLoiqHNwcw=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -32362,7 +32064,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "t00w64lhbm"
+          "Value": "aq2tljxa5r"
         },
         {
           "Name": "label",
@@ -32370,7 +32072,305 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-O4u38OEodpaTmAAAxr64Rx7HtR44b4lX1Al/eCAzaxU="
+          "Value": "sha256-XgkPw7EOeZtqpNwSjFAuP40GM2MOB8LG7JLoiqHNwcw="
+        }
+      ]
+    },
+    {
+      "Route": "_framework/Shared.oc717do1oz.pdb",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Shared.pdb",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "12056"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/octet-stream"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"eFaK+GdwJJZXIQwy89QzrQudPc9EELcwMHoi2mFJ5LQ=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 08 Jul 2025 07:09:28 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "oc717do1oz"
+        },
+        {
+          "Name": "label",
+          "Value": "_framework/Shared.pdb"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-eFaK+GdwJJZXIQwy89QzrQudPc9EELcwMHoi2mFJ5LQ="
+        }
+      ]
+    },
+    {
+      "Route": "_framework/Shared.oc717do1oz.pdb",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\5oz7yg4z9z-oc717do1oz.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "0.000137268360"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "7284"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"A45x+MUpbxTB72L6qdXOnh73gNLWKXZ0QIjbVAkoChU=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/octet-stream"
+        },
+        {
+          "Name": "ETag",
+          "Value": "W/\"eFaK+GdwJJZXIQwy89QzrQudPc9EELcwMHoi2mFJ5LQ=\""
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "oc717do1oz"
+        },
+        {
+          "Name": "label",
+          "Value": "_framework/Shared.pdb"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-eFaK+GdwJJZXIQwy89QzrQudPc9EELcwMHoi2mFJ5LQ="
+        }
+      ]
+    },
+    {
+      "Route": "_framework/Shared.oc717do1oz.pdb.gz",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\5oz7yg4z9z-oc717do1oz.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "7284"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/octet-stream"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"A45x+MUpbxTB72L6qdXOnh73gNLWKXZ0QIjbVAkoChU=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "oc717do1oz"
+        },
+        {
+          "Name": "label",
+          "Value": "_framework/Shared.pdb.gz"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-A45x+MUpbxTB72L6qdXOnh73gNLWKXZ0QIjbVAkoChU="
+        }
+      ]
+    },
+    {
+      "Route": "_framework/Shared.pdb",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\bin\\Debug\\net9.0\\wwwroot\\_framework\\Shared.pdb",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "12056"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/octet-stream"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"eFaK+GdwJJZXIQwy89QzrQudPc9EELcwMHoi2mFJ5LQ=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 08 Jul 2025 07:09:28 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-eFaK+GdwJJZXIQwy89QzrQudPc9EELcwMHoi2mFJ5LQ="
+        }
+      ]
+    },
+    {
+      "Route": "_framework/Shared.pdb",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\5oz7yg4z9z-oc717do1oz.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "0.000137268360"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "7284"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"A45x+MUpbxTB72L6qdXOnh73gNLWKXZ0QIjbVAkoChU=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/octet-stream"
+        },
+        {
+          "Name": "ETag",
+          "Value": "W/\"eFaK+GdwJJZXIQwy89QzrQudPc9EELcwMHoi2mFJ5LQ=\""
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-eFaK+GdwJJZXIQwy89QzrQudPc9EELcwMHoi2mFJ5LQ="
+        }
+      ]
+    },
+    {
+      "Route": "_framework/Shared.pdb.gz",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\5oz7yg4z9z-oc717do1oz.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "7284"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/octet-stream"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"A45x+MUpbxTB72L6qdXOnh73gNLWKXZ0QIjbVAkoChU=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-A45x+MUpbxTB72L6qdXOnh73gNLWKXZ0QIjbVAkoChU="
         }
       ]
     },
@@ -32393,11 +32393,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"Ha58PgFnwLZcrz+TBPQ5i32SBhT2HXxGO17lDmnXaEI=\""
+          "Value": "\"EqQZ/+OIKpgCCB3keaETZfGfOb525SgwTbSwZrZnHfM=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:36 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:41 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -32407,18 +32407,18 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-Ha58PgFnwLZcrz+TBPQ5i32SBhT2HXxGO17lDmnXaEI="
+          "Value": "sha256-EqQZ/+OIKpgCCB3keaETZfGfOb525SgwTbSwZrZnHfM="
         }
       ]
     },
     {
       "Route": "_framework/Shared.wasm",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\sgf3f4t1rs-t00w64lhbm.gz",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\sgf3f4t1rs-aq2tljxa5r.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000447227191"
+          "Quality": "0.000444839858"
         }
       ],
       "ResponseHeaders": [
@@ -32428,15 +32428,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "2235"
+          "Value": "2247"
         },
         {
           "Name": "ETag",
-          "Value": "\"O4u38OEodpaTmAAAxr64Rx7HtR44b4lX1Al/eCAzaxU=\""
+          "Value": "\"XgkPw7EOeZtqpNwSjFAuP40GM2MOB8LG7JLoiqHNwcw=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -32456,19 +32456,19 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"Ha58PgFnwLZcrz+TBPQ5i32SBhT2HXxGO17lDmnXaEI=\""
+          "Value": "W/\"EqQZ/+OIKpgCCB3keaETZfGfOb525SgwTbSwZrZnHfM=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-Ha58PgFnwLZcrz+TBPQ5i32SBhT2HXxGO17lDmnXaEI="
+          "Value": "sha256-EqQZ/+OIKpgCCB3keaETZfGfOb525SgwTbSwZrZnHfM="
         }
       ]
     },
     {
       "Route": "_framework/Shared.wasm.gz",
-      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\sgf3f4t1rs-t00w64lhbm.gz",
+      "AssetFile": "c:\\Users\\ugora\\Desktop\\modhub\\src\\Frontend\\obj\\Debug\\net9.0\\compressed\\sgf3f4t1rs-aq2tljxa5r.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -32477,7 +32477,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "2235"
+          "Value": "2247"
         },
         {
           "Name": "Content-Type",
@@ -32485,11 +32485,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"O4u38OEodpaTmAAAxr64Rx7HtR44b4lX1Al/eCAzaxU=\""
+          "Value": "\"XgkPw7EOeZtqpNwSjFAuP40GM2MOB8LG7JLoiqHNwcw=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 07 Jul 2025 08:27:38 GMT"
+          "Value": "Tue, 08 Jul 2025 07:11:42 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -32507,7 +32507,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-O4u38OEodpaTmAAAxr64Rx7HtR44b4lX1Al/eCAzaxU="
+          "Value": "sha256-XgkPw7EOeZtqpNwSjFAuP40GM2MOB8LG7JLoiqHNwcw="
         }
       ]
     },

@@ -731,14 +731,14 @@
         
         var altText = $"Miniature du mod {mod.Name}";
         
-        if (!string.IsNullOrEmpty(mod.Author))
+        if (!string.IsNullOrEmpty(mod.CreatorName))
         {
-            altText += $" par {mod.Author}";
+            altText += $" par {mod.CreatorName}";
         }
         
-        if (!string.IsNullOrEmpty(mod.Game))
+        if (!string.IsNullOrEmpty(mod.GameName))
         {
-            altText += $" pour {mod.Game}";
+            altText += $" pour {mod.GameName}";
         }
         
         return altText;
