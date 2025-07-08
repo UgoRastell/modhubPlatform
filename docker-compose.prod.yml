@@ -137,7 +137,11 @@ services:
       - ./docker/nginx.prod.conf:/etc/nginx/nginx.conf:ro
       - ./docker/letsencrypt/live/modhub.ovh:/etc/nginx/ssl:ro
       - ./docker/letsencrypt/www:/var/www/certbot:rw
-      - mod_files:/uploads:ro
+      # CORRECTION: Cohérence avec dev - bind-mount explicite
+      - type: bind
+        source: ./docker/data/uploads
+        target: /uploads
+        read_only: true
     depends_on:
       - frontend
       - gateway
