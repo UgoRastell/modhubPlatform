@@ -805,6 +805,32 @@ namespace ModsService.Controllers
             }
         }
 
+        /// <summary>
+        /// Télécharge un mod spécifique - Endpoint POST pour conformité avec le cahier des charges
+        /// Redirige vers DownloadsController qui contient la logique sécurisée complète
+        /// </summary>
+        [HttpPost("{modId}/download")]
+        public async Task<IActionResult> DownloadModPost(string modId, [FromQuery] string? version = null)
+        {
+            try
+            {
+                _logger.LogInformation($"Demande de téléchargement POST pour le mod {modId}");
+                
+                // Rediriger vers DownloadsController avec la logique sécurisée complète
+                // Cela évite la duplication de code et garantit la cohérence
+                return RedirectToAction("DownloadMod", "Downloads", new { modId, version });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Erreur lors de la redirection de téléchargement pour le mod {modId}");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = $"Erreur lors du téléchargement: {ex.Message}"
+                });
+            }
+        }
+
         // Méthode utilitaire pour s'assurer qu'un répertoire existe
         private void EnsureDirectoryExists(string path)
         {
