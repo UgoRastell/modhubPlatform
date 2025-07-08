@@ -295,49 +295,25 @@ namespace Frontend.Services
         {
             try
             {
-                await SetAuthHeaderAsync();
-                
-                // Utiliser POST selon le cahier des charges et l'endpoint backend
-                string url = $"api/v1/mods/{modId}/download";
-                if (!string.IsNullOrEmpty(versionId))
-                {
-                    url += $"?version={Uri.EscapeDataString(versionId)}";
-                }
+                // Pour télécharger, nous n'avons pas besoin de faire un appel HTTP préalable ;
+                // il suffit de générer l'URL correcte (GET) que le navigateur ouvrira directement.
 
-                // POST request selon les spécifications
-                var response = await _httpClient.PostAsync(url, null);
-                
-                if (response.IsSuccessStatusCode)
+                string relativeUrl = string.IsNullOrEmpty(versionId)
+                    ? $"api/v1/mods/{modId}/download"
+                    : $"api/v1/mods/{modId}/versions/{Uri.EscapeDataString(versionId)}/download";
+
+                var baseUrl = _httpClient.BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
+                var fullUrl = $"{baseUrl}/{relativeUrl}";
+
+                return new ApiResponse<string>
                 {
-                    // Vérifier si c'est une redirection (fichier direct) ou une URL
-                    if (response.Headers.Location != null)
-                    {
-                        return new ApiResponse<string> { Success = true, Data = response.Headers.Location.ToString() };
-                    }
-                    
-                    // Sinon, construire l'URL de téléchargement direct
-                    var baseUrl = _httpClient.BaseAddress?.ToString().TrimEnd('/') ?? "";
-                    var downloadUrl = $"{baseUrl}/{url.TrimStart('/')}".Replace("/download", "/download");
-                    return new ApiResponse<string> { Success = true, Data = downloadUrl };
-                }
-                
-                // Gestion des erreurs spécifiques
-                var errorContent = await response.Content.ReadAsStringAsync();
-                return new ApiResponse<string> { 
-                    Success = false, 
-                    Message = response.StatusCode switch
-                    {
-                        System.Net.HttpStatusCode.NotFound => "Mod ou version non trouvé",
-                        System.Net.HttpStatusCode.Unauthorized => "Authentification requise",
-                        System.Net.HttpStatusCode.TooManyRequests => "Quota de téléchargement dépassé",
-                        System.Net.HttpStatusCode.BadRequest => $"Erreur de validation: {errorContent}",
-                        _ => $"Erreur de téléchargement: {response.ReasonPhrase}"
-                    }
+                    Success = true,
+                    Data = fullUrl
                 };
             }
             catch (Exception ex)
             {
-                return new ApiResponse<string> { Success = false, Message = $"Erreur de connexion: {ex.Message}" };
+                return new ApiResponse<string> { Success = false, Message = $"Erreur lors de la génération de l'URL: {ex.Message}" };
             }
         }
         
