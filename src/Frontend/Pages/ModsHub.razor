@@ -671,8 +671,21 @@
             return "/images/mod-placeholder.png";
         }
         
-        // Solution robuste: servir via ModsService qui a déjà UseStaticFiles configuré
-        return $"https://modsservice.modhub.ovh/uploads/mods/{mod.Id}/thumbnail.jpg";
+        // Utilise l'URL fournie par l'API si disponible ;
+        // Si l'URL est absolue on la retourne telle quelle, sinon on la résout relativement
+        if (!string.IsNullOrWhiteSpace(mod.ThumbnailUrl))
+        {
+            // Absolue (http/https) -> on renvoie tel quel
+            if (Uri.IsWellFormedUriString(mod.ThumbnailUrl, UriKind.Absolute))
+            {
+                return mod.ThumbnailUrl;
+            }
+            // Relative -> on préfixe avec le domaine courant (NavigationManager.BaseUri)
+            return $"{NavigationManager.BaseUri.TrimEnd('/')}{mod.ThumbnailUrl}";
+        }
+
+        // Fallback placeholder si aucune miniature disponible
+        return "/images/mod-placeholder.png";
     }
     
     /// <summary>
