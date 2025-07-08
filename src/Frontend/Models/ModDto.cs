@@ -13,6 +13,9 @@ namespace Frontend.Models
         public string ShortDescription { get; set; } = string.Empty;
         public string CreatorId { get; set; } = string.Empty;
         public string CreatorName { get; set; } = string.Empty;
+
+        [JsonPropertyName("author")] // Author (fallback si CreatorName non fourni)
+        public string Author { get; set; } = string.Empty;
         public string GameId { get; set; } = string.Empty;
         public string GameName { get; set; } = string.Empty;
         public string CategoryId { get; set; } = string.Empty;
