@@ -28,12 +28,22 @@ namespace Frontend.Services
             {
                 _logger.LogInformation("Copie du fichier mod {ModId}: {FileName} vers wwwroot", modId, modFile.Name);
                 
-                // Créer le dossier de destination
-                var modDirectory = Path.Combine("wwwroot", "uploads", "mods", modId);
+                // Créer le dossier de destination - utiliser le chemin absolu
+                var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                var modDirectory = Path.Combine(webRootPath, "uploads", "mods", modId);
+                
+                _logger.LogInformation("Répertoire de travail actuel: {WorkingDir}", Directory.GetCurrentDirectory());
+                _logger.LogInformation("Chemin webroot: {WebRootPath}", webRootPath);
+                _logger.LogInformation("Tentative de création du dossier mod: {Directory}", modDirectory);
+                
                 if (!Directory.Exists(modDirectory))
                 {
                     Directory.CreateDirectory(modDirectory);
-                    _logger.LogInformation("Dossier créé: {Directory}", modDirectory);
+                    _logger.LogInformation("Dossier créé avec succès: {Directory}", modDirectory);
+                }
+                else
+                {
+                    _logger.LogInformation("Dossier existe déjà: {Directory}", modDirectory);
                 }
                 
                 // Nom du fichier de destination
@@ -66,12 +76,22 @@ namespace Frontend.Services
             {
                 _logger.LogInformation("Copie du thumbnail {ModId}: {FileName} vers wwwroot", modId, thumbnailFile.Name);
                 
-                // Créer le dossier de destination
-                var modDirectory = Path.Combine("wwwroot", "uploads", "mods", modId);
+                // Créer le dossier de destination - utiliser le chemin absolu
+                var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                var modDirectory = Path.Combine(webRootPath, "uploads", "mods", modId);
+                
+                _logger.LogInformation("Répertoire de travail actuel: {WorkingDir}", Directory.GetCurrentDirectory());
+                _logger.LogInformation("Chemin webroot: {WebRootPath}", webRootPath);
+                _logger.LogInformation("Tentative de création du dossier thumbnail: {Directory}", modDirectory);
+                
                 if (!Directory.Exists(modDirectory))
                 {
                     Directory.CreateDirectory(modDirectory);
-                    _logger.LogInformation("Dossier créé: {Directory}", modDirectory);
+                    _logger.LogInformation("Dossier créé avec succès: {Directory}", modDirectory);
+                }
+                else
+                {
+                    _logger.LogInformation("Dossier existe déjà: {Directory}", modDirectory);
                 }
                 
                 // Déterminer l'extension du fichier
