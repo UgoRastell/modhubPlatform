@@ -661,74 +661,32 @@
         NavigationManager.NavigateTo($"/mod/{modId}");
     }
     
+    /// <summary>
+    /// SIMPLIFIÉE: Retourne l'URL de miniature avec volume Docker partagé
+    /// </summary>
     private string GetModThumbnail(string? thumbnailUrl)
     {
         // Cas 1: URL vide ou null -> image par défaut
         if (string.IsNullOrWhiteSpace(thumbnailUrl))
         {
-            Console.WriteLine("ModsHub: URL de miniature vide, utilisation de l'image par défaut");
             return "/images/mod-placeholder.png";
         }
 
-        // Cas 2: URL absolue déjà complète
+        // Cas 2: URL absolue externe -> utiliser telle quelle
         if (thumbnailUrl.StartsWith("http://") || thumbnailUrl.StartsWith("https://"))
         {
-            Console.WriteLine($"ModsHub: URL absolue utilisée: {thumbnailUrl}");
             return thumbnailUrl;
         }
 
-        // Cas 3: Pour les miniatures de mods - UTILISER LES FICHIERS STATIQUES FRONTEND
-        if (thumbnailUrl.Contains("/uploads/mods/") && thumbnailUrl.Contains("thumbnail"))
+        // Cas 3: URL relative valide -> utiliser directement
+        // Le volume Docker partagé garantit l'accès aux fichiers /uploads/mods/
+        if (thumbnailUrl.StartsWith("/"))
         {
-            // Utiliser directement l'URL relative, elle sera servie par le frontend statique
-            Console.WriteLine($"ModsHub: URL de miniature statique frontend: {thumbnailUrl}");
             return thumbnailUrl;
-        }
-
-        // Cas 4: Reconstruire l'URL basée sur l'ID du mod extrait pour fichiers statiques
-        string modId = GetModIdFromThumbnailUrl(thumbnailUrl);
-        if (!string.IsNullOrEmpty(modId))
-        {
-            // Construire l'URL relative pour fichiers statiques frontend
-            string staticUrl = $"/uploads/mods/{modId}/thumbnail.jpg";
-            Console.WriteLine($"ModsHub: URL de miniature statique reconstruite: {staticUrl}");
-            return staticUrl;
-        }
-
-        // Cas 5: URL relative qui ne commence pas par / -> ajouter le /
-        if (!thumbnailUrl.StartsWith("/"))
-        {
-            string fixedUrl = $"/{thumbnailUrl}";
-            Console.WriteLine($"ModsHub: URL de miniature corrigée: {fixedUrl}");
-            return fixedUrl;
         }
         
-        // Cas 6: Fallback - utiliser telle quelle pour fichiers statiques
-        Console.WriteLine($"ModsHub: URL de miniature utilisée telle quelle: {thumbnailUrl}");
-        return thumbnailUrl;
-    }
-    
-    // Extraire l'ID du mod à partir de l'URL de la miniature
-    private string GetModIdFromThumbnailUrl(string thumbnailUrl)
-    {
-        try
-        {
-            // Format typique: /uploads/mods/68614955ea7069aaa24b9cfc/thumbnail.jpg
-            string[] parts = thumbnailUrl.Split('/');
-            // L'ID du mod est généralement le dernier segment avant "thumbnail.jpg"
-            for (int i = 0; i < parts.Length; i++)
-            {
-                if (i < parts.Length - 1 && parts[i+1].StartsWith("thumbnail"))
-                {
-                    return parts[i];
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erreur lors de l'extraction de l'ID du mod: {ex.Message}");
-        }
-        return string.Empty;
+        // Cas 4: Ajouter le / manquant pour URL relative
+        return $"/{thumbnailUrl}";
     }
     
     /// <summary>
