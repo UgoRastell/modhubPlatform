@@ -147,6 +147,25 @@ namespace ModsService.Repositories
             }
         }
 
+        public async Task IncrementDownloadCountAsync(string id)
+        {
+            try
+            {
+                var filter = Builders<Mod>.Filter.Eq(m => m.Id, id);
+                var update = Builders<Mod>.Update
+                    .Inc(m => m.DownloadCount, 1)
+                    .Set(m => m.UpdatedAt, DateTime.UtcNow);
+
+                await _modsCollection.UpdateOneAsync(filter, update);
+                _logger.LogDebug("Incrémentation du compteur de téléchargements pour le mod {ModId}", id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de l'incrémentation du compteur de téléchargements pour le mod {ModId}", id);
+                throw;
+            }
+        }
+
         private SortDefinition<Mod> GetSortDefinition(string sortBy)
         {
             return sortBy?.ToLower() switch

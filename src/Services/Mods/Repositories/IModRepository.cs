@@ -17,5 +17,10 @@ namespace ModsService.Repositories
         /// Met à jour la note moyenne et le nombre d'avis pour un mod.
         /// </summary>
         Task UpdateRatingAsync(string id, double averageRating, int reviewCount);
+        
+        /// <summary>
+        /// Incrémente le compteur de téléchargements d'un mod de façon atomique et persistante.
+        /// </summary>
+        Task IncrementDownloadCountAsync(string id);
     }
 }

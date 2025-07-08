@@ -552,14 +552,10 @@ namespace ModsService.Controllers
                     return NotFound(new { Success = false, Message = "Fichier du mod non trouvé" });
                 }
                 
-                // Incrémenter le compteur de téléchargements
-                // Note: Cela devrait idéalement être fait de manière asynchrone pour ne pas bloquer le téléchargement
-                // TODO: Implémenter un service dédié pour enregistrer les téléchargements
+                // Incrémenter le compteur de téléchargements de façon persistante
                 try
                 {
-                    // Mise à jour temporaire du compteur (à remplacer par une implémentation plus robuste)
-                    mod.DownloadCount++;
-                    // Cette implémentation simplifiée serait à remplacer par un service dédié
+                    await _modRepository.IncrementDownloadCountAsync(modId);
                 }
                 catch (Exception ex)
                 {
