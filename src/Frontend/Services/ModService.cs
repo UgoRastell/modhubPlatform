@@ -193,8 +193,16 @@ namespace Frontend.Services
             try
             {
                 await SetAuthHeaderAsync();
+
+                string relative = $"api/v1/mods/{modId}/ratings";
+                var baseUrl = _httpClient.BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
+                if (baseUrl.EndsWith("/mods-service", StringComparison.OrdinalIgnoreCase))
+                {
+                    baseUrl = baseUrl.Substring(0, baseUrl.Length - "/mods-service".Length);
+                }
+                var url = $"{baseUrl}/{relative}";
                 
-                var response = await _httpClient.PostAsJsonAsync($"api/v1/mods/{modId}/ratings", request);
+                var response = await _httpClient.PostAsJsonAsync(url, request);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -291,7 +299,7 @@ namespace Frontend.Services
             }
         }
 
-        public async Task<ApiResponse<string>> DownloadModAsync(string modId, string? versionId = null)
+        public Task<ApiResponse<string>> DownloadModAsync(string modId, string? versionId = null)
         {
             try
             {
@@ -310,15 +318,18 @@ namespace Frontend.Services
                 }
                 var fullUrl = $"{baseUrl}/{relativeUrl}";
 
-                return new ApiResponse<string>
+                var result = new ApiResponse<string>
                 {
                     Success = true,
                     Data = fullUrl
                 };
+
+                return Task.FromResult(result);
             }
             catch (Exception ex)
             {
-                return new ApiResponse<string> { Success = false, Message = $"Erreur lors de la génération de l'URL: {ex.Message}" };
+                var err = new ApiResponse<string> { Success = false, Message = $"Erreur lors de la génération de l'URL: {ex.Message}" };
+                return Task.FromResult(err);
             }
         }
         

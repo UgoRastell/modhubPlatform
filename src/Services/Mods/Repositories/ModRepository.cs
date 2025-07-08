@@ -127,6 +127,26 @@ namespace ModsService.Repositories
             }
         }
 
+        public async Task UpdateRatingAsync(string id, double averageRating, int reviewCount)
+        {
+            try
+            {
+                var filter = Builders<Mod>.Filter.Eq(m => m.Id, id);
+                var update = Builders<Mod>.Update
+                    .Set(m => m.Rating, averageRating)
+                    .Set(m => m.ReviewCount, reviewCount)
+                    .Set(m => m.UpdatedAt, DateTime.UtcNow);
+
+                await _modsCollection.UpdateOneAsync(filter, update);
+                _logger.LogInformation("Mise à jour du rating du mod {ModId} -> Average={Average}, Count={Count}", id, averageRating, reviewCount);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de la mise à jour du rating du mod {ModId}", id);
+                throw;
+            }
+        }
+
         private SortDefinition<Mod> GetSortDefinition(string sortBy)
         {
             return sortBy?.ToLower() switch

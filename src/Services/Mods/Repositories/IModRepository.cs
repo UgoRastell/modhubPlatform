@@ -12,5 +12,10 @@ namespace ModsService.Repositories
         Task<List<Mod>> GetByCreatorIdAsync(string creatorId);
         Task<int> GetTotalCountAsync();
         Task CreateAsync(Mod mod);
+        
+        /// <summary>
+        /// Met à jour la note moyenne et le nombre d'avis pour un mod.
+        /// </summary>
+        Task UpdateRatingAsync(string id, double averageRating, int reviewCount);
     }
 }
