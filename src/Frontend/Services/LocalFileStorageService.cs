@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Forms;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Frontend.Controllers;
 
 namespace Frontend.Services
 {
@@ -20,45 +21,37 @@ namespace Frontend.Services
         }
 
         /// <summary>
-        /// Upload le fichier mod vers le backend et copie dans wwwroot
+        /// Upload le fichier mod vers le backend et copie dans wwwroot via l'API
         /// </summary>
         public async Task<string> SaveModFileAsync(string modId, IBrowserFile modFile)
         {
             try
             {
-                _logger.LogInformation("Copie du fichier mod {ModId}: {FileName} vers wwwroot", modId, modFile.Name);
+                _logger.LogInformation("Demande de copie du fichier mod {ModId}: {FileName} via API backend", modId, modFile.Name);
                 
-                // Créer le dossier de destination - utiliser le chemin absolu
-                var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-                var modDirectory = Path.Combine(webRootPath, "uploads", "mods", modId);
-                
-                _logger.LogInformation("Répertoire de travail actuel: {WorkingDir}", Directory.GetCurrentDirectory());
-                _logger.LogInformation("Chemin webroot: {WebRootPath}", webRootPath);
-                _logger.LogInformation("Tentative de création du dossier mod: {Directory}", modDirectory);
-                
-                if (!Directory.Exists(modDirectory))
+                // Appeler l'endpoint backend pour copier le fichier
+                var request = new CopyFilesRequest
                 {
-                    Directory.CreateDirectory(modDirectory);
-                    _logger.LogInformation("Dossier créé avec succès: {Directory}", modDirectory);
+                    ModId = modId,
+                    ModFileName = modFile.Name
+                };
+                
+                var response = await _httpClient.PostAsJsonAsync("/api/filestorage/copy-mod-files", request);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<CopyFilesResponse>();
+                    _logger.LogInformation("Fichier mod copié avec succès via API: {ModId}", modId);
+                    
+                    // URL standardisée pour l'accès au fichier
+                    return $"/uploads/mods/{modId}/{modId}.zip";
                 }
                 else
                 {
-                    _logger.LogInformation("Dossier existe déjà: {Directory}", modDirectory);
+                    var error = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Erreur API lors de la copie du fichier mod {ModId}: {Error}", modId, error);
+                    throw new Exception($"Erreur API: {response.StatusCode} - {error}");
                 }
-                
-                // Nom du fichier de destination
-                var fileName = $"{modId}.zip";
-                var filePath = Path.Combine(modDirectory, fileName);
-                
-                // Copier le fichier
-                using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-                using var modStream = modFile.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024); // 50 MB max
-                await modStream.CopyToAsync(fileStream);
-                
-                _logger.LogInformation("Fichier mod copié avec succès: {FilePath}", filePath);
-                
-                // URL standardisée pour l'accès au fichier
-                return $"/uploads/mods/{modId}/{fileName}";
             }
             catch (Exception ex)
             {
@@ -68,49 +61,37 @@ namespace Frontend.Services
         }
 
         /// <summary>
-        /// Upload le thumbnail vers le backend et copie dans wwwroot
+        /// Upload le thumbnail vers le backend et copie dans wwwroot via l'API
         /// </summary>
         public async Task<string> SaveThumbnailAsync(string modId, IBrowserFile thumbnailFile)
         {
             try
             {
-                _logger.LogInformation("Copie du thumbnail {ModId}: {FileName} vers wwwroot", modId, thumbnailFile.Name);
+                _logger.LogInformation("Demande de copie du thumbnail {ModId}: {FileName} via API backend", modId, thumbnailFile.Name);
                 
-                // Créer le dossier de destination - utiliser le chemin absolu
-                var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-                var modDirectory = Path.Combine(webRootPath, "uploads", "mods", modId);
-                
-                _logger.LogInformation("Répertoire de travail actuel: {WorkingDir}", Directory.GetCurrentDirectory());
-                _logger.LogInformation("Chemin webroot: {WebRootPath}", webRootPath);
-                _logger.LogInformation("Tentative de création du dossier thumbnail: {Directory}", modDirectory);
-                
-                if (!Directory.Exists(modDirectory))
+                // Appeler l'endpoint backend pour copier le thumbnail
+                var request = new CopyFilesRequest
                 {
-                    Directory.CreateDirectory(modDirectory);
-                    _logger.LogInformation("Dossier créé avec succès: {Directory}", modDirectory);
+                    ModId = modId,
+                    ThumbnailFileName = thumbnailFile.Name
+                };
+                
+                var response = await _httpClient.PostAsJsonAsync("/api/filestorage/copy-mod-files", request);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<CopyFilesResponse>();
+                    _logger.LogInformation("Thumbnail copié avec succès via API: {ModId}", modId);
+                    
+                    // URL standardisée pour l'accès au thumbnail
+                    return $"/uploads/mods/{modId}/thumbnail.jpg";
                 }
                 else
                 {
-                    _logger.LogInformation("Dossier existe déjà: {Directory}", modDirectory);
+                    var error = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Erreur API lors de la copie du thumbnail {ModId}: {Error}", modId, error);
+                    throw new Exception($"Erreur API: {response.StatusCode} - {error}");
                 }
-                
-                // Déterminer l'extension du fichier
-                var extension = Path.GetExtension(thumbnailFile.Name).ToLowerInvariant();
-                if (string.IsNullOrEmpty(extension)) extension = ".jpg";
-                
-                // Nom du fichier de destination
-                var fileName = $"thumbnail{extension}";
-                var filePath = Path.Combine(modDirectory, fileName);
-                
-                // Copier le fichier
-                using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-                using var thumbnailStream = thumbnailFile.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024); // 5 MB max
-                await thumbnailStream.CopyToAsync(fileStream);
-                
-                _logger.LogInformation("Thumbnail copié avec succès: {FilePath}", filePath);
-                
-                // URL standardisée pour l'accès au thumbnail
-                return $"/uploads/mods/{modId}/{fileName}";
             }
             catch (Exception ex)
             {

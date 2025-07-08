@@ -161,6 +161,9 @@ services:
       - gateway
     ports:
       - "80"
+    volumes:
+      # Volume partagé pour les fichiers statiques (mods, thumbnails)
+      - ./docker/data/uploads:/app/wwwroot/uploads
     networks:
       - default
     logging:

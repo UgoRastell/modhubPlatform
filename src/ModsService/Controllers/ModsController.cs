@@ -806,6 +806,137 @@ namespace ModsService.Controllers
         }
 
         /// <summary>
+        /// Copie les fichiers d'un mod vers le wwwroot du Frontend pour accès statique
+        /// </summary>
+        [HttpPost("{modId}/copy-to-frontend")]
+        [Authorize]
+        public async Task<IActionResult> CopyToFrontend(string modId)
+        {
+            try
+            {
+                _logger.LogInformation("[COPY_FRONTEND] Début de la copie des fichiers pour le mod {ModId}", modId);
+
+                // Vérifier que le mod existe
+                var mod = await _modService.GetModByIdAsync(modId);
+                if (mod?.Data == null)
+                {
+                    return NotFound($"Mod {modId} non trouvé");
+                }
+
+                var frontendUrl = "https://modhub.ovh"; // URL du frontend
+                var copiedFiles = new List<string>();
+
+                // Chemin source dans ModsService
+                var sourceDirectory = Path.Combine("/app/uploads/mods", modId);
+                
+                if (!Directory.Exists(sourceDirectory))
+                {
+                    _logger.LogWarning("[COPY_FRONTEND] Dossier source inexistant: {Path}", sourceDirectory);
+                    return BadRequest("Fichiers source non trouvés");
+                }
+
+                // Copier le thumbnail
+                var thumbnailSource = Path.Combine(sourceDirectory, "thumbnail.jpg");
+                if (File.Exists(thumbnailSource))
+                {
+                    var success = await CopyFileToFrontend(thumbnailSource, modId, "thumbnail.jpg", frontendUrl);
+                    if (success)
+                    {
+                        copiedFiles.Add($"/uploads/mods/{modId}/thumbnail.jpg");
+                        _logger.LogInformation("[COPY_FRONTEND] Thumbnail copié: {ModId}", modId);
+                    }
+                }
+
+                // Copier le fichier ZIP (chercher tous les .zip dans le dossier)
+                var zipFiles = Directory.GetFiles(sourceDirectory, "*.zip");
+                foreach (var zipFile in zipFiles)
+                {
+                    var fileName = Path.GetFileName(zipFile);
+                    var success = await CopyFileToFrontend(zipFile, modId, $"{modId}.zip", frontendUrl);
+                    if (success)
+                    {
+                        copiedFiles.Add($"/uploads/mods/{modId}/{modId}.zip");
+                        _logger.LogInformation("[COPY_FRONTEND] Fichier ZIP copié: {ModId} -> {FileName}", modId, fileName);
+                    }
+                }
+
+                _logger.LogInformation("[COPY_FRONTEND] Copie terminée pour le mod {ModId}. {Count} fichiers copiés", 
+                    modId, copiedFiles.Count);
+
+                return Ok(new
+                {
+                    Success = true,
+                    ModId = modId,
+                    CopiedFiles = copiedFiles,
+                    Message = $"{copiedFiles.Count} fichier(s) copié(s) avec succès vers le Frontend"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[COPY_FRONTEND] Erreur lors de la copie des fichiers pour le mod {ModId}", modId);
+                return StatusCode(500, new
+                {
+                    Success = false,
+                    ModId = modId,
+                    Message = $"Erreur lors de la copie: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Copie un fichier vers le dossier wwwroot/uploads du Frontend via volume Docker partagé
+        /// </summary>
+        private async Task<bool> CopyFileToFrontend(string sourceFilePath, string modId, string targetFileName, string frontendUrl)
+        {
+            try
+            {
+                // Chemin de destination dans le volume Docker partagé
+                // Le volume ./docker/data/uploads est monté à la fois dans :
+                // - ModsService : /app/uploads (écriture)
+                // - Frontend : /app/wwwroot/uploads (lecture)
+                // Les fichiers sont placés dans mods/{modId}/ pour accès statique
+                var frontendUploadsPath = "/app/uploads/mods";
+                var targetDirectory = Path.Combine(frontendUploadsPath, modId);
+                var targetFilePath = Path.Combine(targetDirectory, targetFileName);
+                
+                _logger.LogInformation("[COPY_FRONTEND] Copie {Source} -> {Target}", sourceFilePath, targetFilePath);
+                
+                // Créer le dossier de destination si nécessaire
+                if (!Directory.Exists(targetDirectory))
+                {
+                    Directory.CreateDirectory(targetDirectory);
+                    _logger.LogInformation("[COPY_FRONTEND] Dossier créé: {Directory}", targetDirectory);
+                }
+                
+                // Copier le fichier
+                await using var sourceStream = new FileStream(sourceFilePath, FileMode.Open, FileAccess.Read);
+                await using var targetStream = new FileStream(targetFilePath, FileMode.Create, FileAccess.Write);
+                await sourceStream.CopyToAsync(targetStream);
+                
+                // Vérifier que la copie a réussi
+                var sourceInfo = new FileInfo(sourceFilePath);
+                var targetInfo = new FileInfo(targetFilePath);
+                
+                if (targetInfo.Exists && targetInfo.Length == sourceInfo.Length)
+                {
+                    _logger.LogInformation("[COPY_FRONTEND] Fichier copié avec succès: {FileName} ({Size} bytes)", 
+                        targetFileName, targetInfo.Length);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogError("[COPY_FRONTEND] Échec de la vérification de copie: {FileName}", targetFileName);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[COPY_FRONTEND] Erreur lors de la copie du fichier: {FileName}", targetFileName);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Télécharge un mod spécifique - Endpoint POST pour conformité avec le cahier des charges
         /// Redirige vers DownloadsController qui contient la logique sécurisée complète
         /// </summary>
