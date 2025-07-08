@@ -119,16 +119,13 @@
         <MudText Typo="Typo.h6" Class="text-center mb-3">Votre évaluation</MudText>
         
         <div class="rating-stars-container">
-            @for (int i = 1; i <= 5; i++)
-            {
-                int starIndex = i; // Variable locale pour éviter les problèmes de closure
-                <div class="rating-star @(starIndex <= selectedRating ? "selected" : "") @(starIndex <= hoveredRating ? "hover" : "")"
-                     @onclick="@(() => SelectRating(starIndex))"
-                     @onmouseover="@(() => HoverRating(starIndex))"
-                     @onmouseleave="@(() => HoverRating(0))">
-                    <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Large" />
-                </div>
-            }
+            <MudRating @bind-SelectedValue="selectedRating"
+                       MaxValue="5"
+                       Size="Size.Large"
+                       Color="Color.Warning"
+                       HoverColor="Color.Primary"
+                       FullIcon="@Icons.Material.Filled.Star"
+                       EmptyIcon="@Icons.Material.Outlined.Star" />
         </div>
         
         <div class="rating-label">
@@ -173,19 +170,10 @@
     public int RatingCount { get; set; }
     
     private int selectedRating = 0;
-    private int hoveredRating = 0;
 
     private bool isSubmitting = false;
     
-    private void SelectRating(int rating)
-    {
-        selectedRating = rating;
-    }
-    
-    private void HoverRating(int rating)
-    {
-        hoveredRating = rating;
-    }
+
     
     private string GetRatingLabel(int rating)
     {
