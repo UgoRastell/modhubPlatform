@@ -165,8 +165,10 @@ services:
     ports:
       - "80"
     volumes:
-      # Volume partagé pour les fichiers statiques (mods, thumbnails)
-      - ./docker/data/uploads:/app/wwwroot/uploads
+      # CORRECTION: Bind-mount explicite pour Frontend (cohérent avec ModsService)
+      - type: bind
+        source: ./docker/data/uploads
+        target: /app/wwwroot/uploads
     networks:
       - default
     logging:
