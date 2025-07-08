@@ -677,29 +677,35 @@
             return thumbnailUrl;
         }
 
-        // Cas 3: Pour les miniatures de mods - POINTER VERS LE BACKEND ModsService
+        // Cas 3: Pour les miniatures de mods - UTILISER LES FICHIERS STATIQUES FRONTEND
         if (thumbnailUrl.Contains("/uploads/mods/") && thumbnailUrl.Contains("thumbnail"))
         {
-            // Construire l'URL complète vers le backend ModsService
-            // TODO: Récupérer l'URL du backend depuis la configuration
-            string backendUrl = $"https://modsservice.modhub.ovh{thumbnailUrl}";
-            Console.WriteLine($"ModsHub: URL de miniature backend: {backendUrl}");
-            return backendUrl;
+            // Utiliser directement l'URL relative, elle sera servie par le frontend statique
+            Console.WriteLine($"ModsHub: URL de miniature statique frontend: {thumbnailUrl}");
+            return thumbnailUrl;
         }
 
-        // Cas 4: Reconstruire l'URL basée sur l'ID du mod extrait
+        // Cas 4: Reconstruire l'URL basée sur l'ID du mod extrait pour fichiers statiques
         string modId = GetModIdFromThumbnailUrl(thumbnailUrl);
         if (!string.IsNullOrEmpty(modId))
         {
-            // Construire l'URL complète vers le backend ModsService
-            string backendUrl = $"https://modsservice.modhub.ovh/uploads/mods/{modId}/thumbnail.jpg";
-            Console.WriteLine($"ModsHub: URL de miniature reconstruite vers backend: {backendUrl}");
-            return backendUrl;
+            // Construire l'URL relative pour fichiers statiques frontend
+            string staticUrl = $"/uploads/mods/{modId}/thumbnail.jpg";
+            Console.WriteLine($"ModsHub: URL de miniature statique reconstruite: {staticUrl}");
+            return staticUrl;
         }
 
-        // Cas 5: Fallback - pointer vers le backend par défaut
-        Console.WriteLine($"ModsHub: Fallback vers backend pour: {thumbnailUrl}");
-        return $"https://modsservice.modhub.ovh/uploads/mods/default/thumbnail.jpg";
+        // Cas 5: URL relative qui ne commence pas par / -> ajouter le /
+        if (!thumbnailUrl.StartsWith("/"))
+        {
+            string fixedUrl = $"/{thumbnailUrl}";
+            Console.WriteLine($"ModsHub: URL de miniature corrigée: {fixedUrl}");
+            return fixedUrl;
+        }
+        
+        // Cas 6: Fallback - utiliser telle quelle pour fichiers statiques
+        Console.WriteLine($"ModsHub: URL de miniature utilisée telle quelle: {thumbnailUrl}");
+        return thumbnailUrl;
     }
     
     // Extraire l'ID du mod à partir de l'URL de la miniature

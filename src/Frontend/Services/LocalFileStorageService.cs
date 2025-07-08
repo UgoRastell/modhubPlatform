@@ -20,46 +20,81 @@ namespace Frontend.Services
         }
 
         /// <summary>
-        /// Upload le fichier mod vers le backend et retourne l'URL d'accès
+        /// Upload le fichier mod vers le backend et copie dans wwwroot
         /// </summary>
-        public Task<string> SaveModFileAsync(string modId, IBrowserFile modFile)
+        public async Task<string> SaveModFileAsync(string modId, IBrowserFile modFile)
         {
             try
             {
-                // Pour l'instant, on retourne juste l'URL attendue
-                // L'upload réel sera fait par Upload.razor vers l'API existante
-                _logger.LogInformation("Préparation du stockage du fichier mod {ModId}: {FileName}", modId, modFile.Name);
+                _logger.LogInformation("Copie du fichier mod {ModId}: {FileName} vers wwwroot", modId, modFile.Name);
+                
+                // Créer le dossier de destination
+                var modDirectory = Path.Combine("wwwroot", "uploads", "mods", modId);
+                if (!Directory.Exists(modDirectory))
+                {
+                    Directory.CreateDirectory(modDirectory);
+                    _logger.LogInformation("Dossier créé: {Directory}", modDirectory);
+                }
+                
+                // Nom du fichier de destination
+                var fileName = $"{modId}.zip";
+                var filePath = Path.Combine(modDirectory, fileName);
+                
+                // Copier le fichier
+                using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+                using var modStream = modFile.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024); // 50 MB max
+                await modStream.CopyToAsync(fileStream);
+                
+                _logger.LogInformation("Fichier mod copié avec succès: {FilePath}", filePath);
                 
                 // URL standardisée pour l'accès au fichier
-                return Task.FromResult($"/uploads/mods/{modId}/{modId}.zip");
+                return $"/uploads/mods/{modId}/{fileName}";
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la préparation du stockage du fichier mod {ModId}", modId);
+                _logger.LogError(ex, "Erreur lors de la copie du fichier mod {ModId}", modId);
                 throw;
             }
         }
 
         /// <summary>
-        /// Upload le thumbnail vers le backend et retourne l'URL d'accès
+        /// Upload le thumbnail vers le backend et copie dans wwwroot
         /// </summary>
-        public Task<string> SaveThumbnailAsync(string modId, IBrowserFile thumbnailFile)
+        public async Task<string> SaveThumbnailAsync(string modId, IBrowserFile thumbnailFile)
         {
             try
             {
-                // Pour l'instant, on retourne juste l'URL attendue
-                // L'upload réel sera fait par Upload.razor vers l'API existante
-                _logger.LogInformation("Préparation du stockage du thumbnail {ModId}: {FileName}", modId, thumbnailFile.Name);
+                _logger.LogInformation("Copie du thumbnail {ModId}: {FileName} vers wwwroot", modId, thumbnailFile.Name);
                 
-                // URL standardisée pour l'accès au thumbnail
+                // Créer le dossier de destination
+                var modDirectory = Path.Combine("wwwroot", "uploads", "mods", modId);
+                if (!Directory.Exists(modDirectory))
+                {
+                    Directory.CreateDirectory(modDirectory);
+                    _logger.LogInformation("Dossier créé: {Directory}", modDirectory);
+                }
+                
+                // Déterminer l'extension du fichier
                 var extension = Path.GetExtension(thumbnailFile.Name).ToLowerInvariant();
                 if (string.IsNullOrEmpty(extension)) extension = ".jpg";
                 
-                return Task.FromResult($"/uploads/mods/{modId}/thumbnail{extension}");
+                // Nom du fichier de destination
+                var fileName = $"thumbnail{extension}";
+                var filePath = Path.Combine(modDirectory, fileName);
+                
+                // Copier le fichier
+                using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+                using var thumbnailStream = thumbnailFile.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024); // 5 MB max
+                await thumbnailStream.CopyToAsync(fileStream);
+                
+                _logger.LogInformation("Thumbnail copié avec succès: {FilePath}", filePath);
+                
+                // URL standardisée pour l'accès au thumbnail
+                return $"/uploads/mods/{modId}/{fileName}";
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la préparation du stockage du thumbnail {ModId}", modId);
+                _logger.LogError(ex, "Erreur lors de la copie du thumbnail {ModId}", modId);
                 throw;
             }
         }
