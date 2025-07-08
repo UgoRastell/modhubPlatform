@@ -303,6 +303,11 @@ namespace Frontend.Services
                     : $"api/v1/mods/{modId}/versions/{Uri.EscapeDataString(versionId)}/download";
 
                 var baseUrl = _httpClient.BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
+                // Si BaseAddress contient le segment supplémentaire "/mods-service", on le retire pour cibler correctement la route Gateway
+                if (baseUrl.EndsWith("/mods-service", StringComparison.OrdinalIgnoreCase))
+                {
+                    baseUrl = baseUrl.Substring(0, baseUrl.Length - "/mods-service".Length);
+                }
                 var fullUrl = $"{baseUrl}/{relativeUrl}";
 
                 return new ApiResponse<string>
