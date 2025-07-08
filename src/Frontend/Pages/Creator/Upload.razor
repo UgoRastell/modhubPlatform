@@ -16,6 +16,7 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @inject ILocalFileStorageService LocalFileStorage
+@inject ILogger<Upload> Logger
 @attribute [Authorize(Roles = "Creator")]
 
 <PageTitle>ModHub - Publier un mod</PageTitle>
@@ -307,17 +308,28 @@
                     if (uploadResult?.Id != null)
                     {
                         // Copier automatiquement les fichiers vers wwwroot/uploads/mods
+                        Logger.LogInformation("[UPLOAD] Début de la copie des fichiers pour le mod {ModId}", uploadResult.Id);
                         Snackbar.Add("Upload réussi, copie des fichiers en cours...", Severity.Info);
                         
-                        // Copier le thumbnail
-                        var thumbnailUrl = await LocalFileStorage.SaveThumbnailAsync(uploadResult.Id, thumbnailFile);
-                        Console.WriteLine($"Thumbnail copié: {thumbnailUrl}");
-                        
-                        // Copier le fichier ZIP
-                        var modFileUrl = await LocalFileStorage.SaveModFileAsync(uploadResult.Id, modFile);
-                        Console.WriteLine($"Fichier mod copié: {modFileUrl}");
-                        
-                        Snackbar.Add("Mod publié et fichiers copiés avec succès!", Severity.Success);
+                        try
+                        {
+                            // Copier le thumbnail
+                            Logger.LogInformation("[UPLOAD] Copie du thumbnail pour le mod {ModId}", uploadResult.Id);
+                            var thumbnailUrl = await LocalFileStorage.SaveThumbnailAsync(uploadResult.Id, thumbnailFile);
+                            Logger.LogInformation("[UPLOAD] Thumbnail copié avec succès: {ThumbnailUrl}", thumbnailUrl);
+                            
+                            // Copier le fichier ZIP
+                            Logger.LogInformation("[UPLOAD] Copie du fichier ZIP pour le mod {ModId}", uploadResult.Id);
+                            var modFileUrl = await LocalFileStorage.SaveModFileAsync(uploadResult.Id, modFile);
+                            Logger.LogInformation("[UPLOAD] Fichier mod copié avec succès: {ModFileUrl}", modFileUrl);
+                            
+                            Snackbar.Add("Mod publié et fichiers copiés avec succès!", Severity.Success);
+                        }
+                        catch (Exception fileEx)
+                        {
+                            Logger.LogError(fileEx, "[UPLOAD] Erreur lors de la copie des fichiers pour le mod {ModId}", uploadResult.Id);
+                            Snackbar.Add($"Mod publié mais erreur lors de la copie: {fileEx.Message}", Severity.Warning);
+                        }
                     }
                     else
                     {
