@@ -56,6 +56,9 @@ builder.Services.AddScoped<IModerationService, ModerationService>();
 builder.Services.AddScoped<IForumService, ForumService>();
 builder.Services.AddScoped<ForumSignalRService>();
 
+// Service de stockage local des fichiers
+builder.Services.AddScoped<ILocalFileStorageService, LocalFileStorageService>();
+
 // Configuration des services MudBlazor
 builder.Services.AddMudServices(config =>
 {
