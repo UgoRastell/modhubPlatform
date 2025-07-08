@@ -577,8 +577,14 @@ namespace ModsService.Controllers
                 // Retourner le fichier sous forme de stream pour optimiser la mémoire
                 var stream = new FileStream(physicalPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
                 
-                // Définir les headers pour permettre la reprise de téléchargement
-                Response.Headers.Add("Accept-Ranges", "bytes");
+                // Définir les headers pour forcer le téléchargement
+                Response.Headers["Accept-Ranges"] = "bytes";
+                Response.Headers["Content-Disposition"] = $"attachment; filename=\"{fileName}\"";
+                Response.Headers["Content-Length"] = new FileInfo(physicalPath).Length.ToString();
+                
+                // Headers de sécurité pour le téléchargement
+                Response.Headers["X-Content-Type-Options"] = "nosniff";
+                Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
                 
                 return File(stream, mimeType, fileName);
             }
@@ -588,7 +594,7 @@ namespace ModsService.Controllers
                 return StatusCode(500, new { Success = false, Message = $"Erreur lors du téléchargement: {ex.Message}" });
             }
         }
-        
+
         /// <summary>
         /// Télécharger une version spécifique d'un mod
         /// </summary>
