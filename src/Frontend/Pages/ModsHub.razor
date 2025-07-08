@@ -12,6 +12,7 @@
 @inject IDialogService DialogService
 @inject IJSRuntime JSRuntime
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IUserService UserService
 
 <PageTitle>Hub des Mods - ModHub</PageTitle>
 
@@ -519,6 +520,9 @@
     private int activeCreators = 0;
     private int supportedGames = 0;
     
+    // Cache pour stocker les noms de créateurs déjà récupérés
+    private readonly Dictionary<string, string?> creatorNameCache = new();
+    
     // Timer pour la recherche
     private Timer? searchTimer;
     
@@ -546,6 +550,9 @@
             if (response.Success && response.Data != null)
             {
                 mods = response.Data.Items.ToList();
+                // Enrichit les mods avec les noms de créateurs manquants
+                await PopulateCreatorNamesAsync(mods);
+                
                 totalPages = (int)Math.Ceiling((double)response.Data.TotalCount / pageSize);
                 totalMods = response.Data.TotalCount;
             }
@@ -585,6 +592,47 @@
         }
     }
     
+    /// <summary>
+    /// Récupère et met en cache les noms d'utilisateurs des créateurs pour les mods affichés.
+    /// </summary>
+    private async Task PopulateCreatorNamesAsync(List<ModDto> modList)
+    {
+        // Identifie les IDs de créateurs à récupérer (manquants ou non en cache)
+        var idsToFetch = modList
+            .Where(m => string.IsNullOrWhiteSpace(m.CreatorName) && !string.IsNullOrWhiteSpace(m.CreatorId))
+            .Select(m => m.CreatorId)
+            .Distinct()
+            .Where(id => !creatorNameCache.ContainsKey(id))
+            .ToList();
+
+        // Appels API parallèles pour réduire la latence
+        var fetchTasks = idsToFetch.Select(async id =>
+        {
+            var resp = await UserService.GetUserProfileAsync(id);
+            if (resp.Success && resp.Data != null && !string.IsNullOrWhiteSpace(resp.Data.Username))
+            {
+                creatorNameCache[id] = resp.Data.Username;
+            }
+            else
+            {
+                creatorNameCache[id] = string.Empty;
+            }
+        });
+
+        await Task.WhenAll(fetchTasks);
+
+        // Attribue les noms aux mods
+        foreach (var mod in modList)
+        {
+            if (!string.IsNullOrWhiteSpace(mod.CreatorId) &&
+                creatorNameCache.TryGetValue(mod.CreatorId, out var username) &&
+                !string.IsNullOrWhiteSpace(username))
+            {
+                mod.CreatorName = username!;
+            }
+        }
+    }
+
     private async Task OnSearchKeyUp(KeyboardEventArgs e)
     {
         searchTimer?.Dispose();
