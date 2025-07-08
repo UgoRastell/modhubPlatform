@@ -5,11 +5,13 @@
 @using System.Threading
 @using System
 @implements IDisposable
+@using Microsoft.AspNetCore.Components.Authorization
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject IModService ModService
 @inject IDialogService DialogService
 @inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Hub des Mods - ModHub</PageTitle>
 
@@ -638,6 +640,15 @@
     
     private async Task OpenRatingDialog(ModDto mod)
     {
+        // Vérifier si l'utilisateur est authentifié avant d'autoriser la notation
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState?.User?.Identity == null || !authState.User.Identity.IsAuthenticated)
+        {
+            Snackbar.Add("Vous devez être connecté pour noter un mod.", Severity.Warning);
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
         var parameters = new DialogParameters<RatingDialog>
         {
             { x => x.ModId, mod.Id },
