@@ -399,7 +399,7 @@
                             </MudCardHeader>
                             
                             <div style="position: relative;">
-                                <MudCardMedia Image="@GetModThumbnail(mod.ThumbnailUrl)" 
+                                <MudCardMedia Image="@GetModThumbnail(mod)" 
                                               Height="180" 
                                               loading="lazy"
                                               alt="@GetImageAltText(mod)"
@@ -662,31 +662,17 @@
     }
     
     /// <summary>
-    /// SIMPLIFIÉE: Retourne l'URL de miniature avec volume Docker partagé
+    /// Génère l'URL de la miniature du mod via ModsService API
     /// </summary>
-    private string GetModThumbnail(string? thumbnailUrl)
+    private string GetModThumbnail(ModDto mod)
     {
-        // Cas 1: URL vide ou null -> image par défaut
-        if (string.IsNullOrWhiteSpace(thumbnailUrl))
+        if (mod == null || string.IsNullOrWhiteSpace(mod.Id))
         {
             return "/images/mod-placeholder.png";
         }
-
-        // Cas 2: URL absolue externe -> utiliser telle quelle
-        if (thumbnailUrl.StartsWith("http://") || thumbnailUrl.StartsWith("https://"))
-        {
-            return thumbnailUrl;
-        }
-
-        // Cas 3: URL relative valide -> utiliser directement
-        // Le volume Docker partagé garantit l'accès aux fichiers /uploads/mods/
-        if (thumbnailUrl.StartsWith("/"))
-        {
-            return thumbnailUrl;
-        }
         
-        // Cas 4: Ajouter le / manquant pour URL relative
-        return $"/{thumbnailUrl}";
+        // Solution robuste: servir via ModsService qui a déjà UseStaticFiles configuré
+        return $"https://modsservice.modhub.ovh/uploads/mods/{mod.Id}/thumbnail.jpg";
     }
     
     /// <summary>
