@@ -96,7 +96,10 @@ services:
       - LOGSTASH_HOST=logstash
       - LOGSTASH_PORT=5000
     volumes:
-      - ./docker/data/uploads:/app/uploads
+      # CORRECTION: Bind-mount absolu pour forcer la synchronisation
+      - type: bind
+        source: ./docker/data/uploads
+        target: /app/uploads
     depends_on:
       - mongodb
       - rabbitmq
