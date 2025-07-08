@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using ModsService.Repositories;
 using System.Text;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.StaticFiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -110,20 +111,44 @@ else
 }
 
 // Configuration améliorée des fichiers statiques pour les uploads
+var provider = new FileExtensionContentTypeProvider();
+// Ajouter des types MIME explicites pour sécurité
+provider.Mappings[".zip"] = "application/zip";
+provider.Mappings[".7z"] = "application/x-7z-compressed";
+provider.Mappings[".rar"] = "application/vnd.rar";
+provider.Mappings[".jpg"] = "image/jpeg";
+provider.Mappings[".jpeg"] = "image/jpeg";
+provider.Mappings[".png"] = "image/png";
+provider.Mappings[".gif"] = "image/gif";
+provider.Mappings[".webp"] = "image/webp";
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(uploadsDir),
     RequestPath = "/uploads",
-    ServeUnknownFileTypes = true, // Permet de servir tous types de fichiers
+    ContentTypeProvider = provider,
+    ServeUnknownFileTypes = false, // Sécurité : seulement les types connus
+    DefaultContentType = "application/octet-stream", // Fallback pour types inconnus si ServeUnknownFileTypes = true
     OnPrepareResponse = ctx =>
     {
-        // Ajouter des headers CORS explicites pour les images
+        // Diagnostic détaillé
+        var requestPath = ctx.Context.Request.Path.Value;
+        var physicalPath = ctx.File?.PhysicalPath ?? "N/A";
+        Console.WriteLine($"=== STATIC FILE REQUEST ===");
+        Console.WriteLine($"Request Path: {requestPath}");
+        Console.WriteLine($"Physical Path: {physicalPath}");
+        Console.WriteLine($"File Exists: {System.IO.File.Exists(physicalPath)}");
+        Console.WriteLine($"Content Type: {ctx.Context.Response.ContentType}");
+        
+        // Headers CORS et cache
         ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
         ctx.Context.Response.Headers.Append("Access-Control-Allow-Methods", "GET");
         ctx.Context.Response.Headers.Append("Cache-Control", "public, max-age=3600");
         
-        // Journalisation de l'accès aux fichiers statiques pour le débogage
-        Console.WriteLine($"Fichier statique demandé: {ctx.Context.Request.Path}");
+        // Headers de sécurité
+        ctx.Context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+        
+        Console.WriteLine($"=== END STATIC FILE REQUEST ===");
     }
 });
 
