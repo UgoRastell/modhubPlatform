@@ -455,7 +455,17 @@ namespace ModsService.Controllers
         }
 
         /// <summary>
-        /// Télécharge un fichier de mod pour une version spécifique
+        /// Télécharge un fichier de mod (POST selon cahier des charges)
+        /// </summary>
+        [HttpPost("{modId}/download")]
+        public async Task<IActionResult> DownloadModPost(string modId, [FromQuery] string? version = null)
+        {
+            // Rediriger vers DownloadsController avec la logique sécurisée complète
+            return RedirectToAction("DownloadMod", "Downloads", new { modId, version });
+        }
+
+        /// <summary>
+        /// Télécharge un fichier de mod pour une version spécifique (legacy GET)
         /// </summary>
         [HttpGet("{modId}/versions/{versionNumber}/download")]
         public async Task<IActionResult> DownloadMod(string modId, string versionNumber)

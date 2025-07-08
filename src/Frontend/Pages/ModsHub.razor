@@ -670,36 +670,36 @@
             return "/images/mod-placeholder.png";
         }
 
-        // Cas 2: Pour les miniatures de mods stockées côté serveur
-        if (thumbnailUrl.Contains("/uploads/mods/") && thumbnailUrl.Contains("thumbnail"))
+        // Cas 2: URL absolue déjà complète
+        if (thumbnailUrl.StartsWith("http://") || thumbnailUrl.StartsWith("https://"))
         {
-            // Utiliser directement l'URL telle que configurée par le backend
-            // Le ModsService sert les fichiers via /uploads grâce à StaticFileOptions
-            Console.WriteLine($"ModsHub: URL de miniature backend: {thumbnailUrl}");
+            Console.WriteLine($"ModsHub: URL absolue utilisée: {thumbnailUrl}");
             return thumbnailUrl;
         }
-        
-        // Cas 3: Extraire l'ID du mod et construire l'URL standard
-        string modId = GetModIdFromThumbnailUrl(thumbnailUrl);
-        if (!string.IsNullOrEmpty(modId))
+
+        // Cas 3: Pour les miniatures de mods - POINTER VERS LE BACKEND ModsService
+        if (thumbnailUrl.Contains("/uploads/mods/") && thumbnailUrl.Contains("thumbnail"))
         {
-            // Construire l'URL selon la configuration du backend : /uploads/mods/{modId}/thumbnail.jpg
-            string backendUrl = $"/uploads/mods/{modId}/thumbnail.jpg";
-            Console.WriteLine($"ModsHub: URL de miniature reconstruite: {backendUrl}");
+            // Construire l'URL complète vers le backend ModsService
+            // TODO: Récupérer l'URL du backend depuis la configuration
+            string backendUrl = $"https://modsservice.modhub.ovh{thumbnailUrl}";
+            Console.WriteLine($"ModsHub: URL de miniature backend: {backendUrl}");
             return backendUrl;
         }
 
-        // Cas 4: URL relative qui ne commence pas par / -> ajouter le /
-        if (!thumbnailUrl.StartsWith("/") && !thumbnailUrl.StartsWith("http"))
+        // Cas 4: Reconstruire l'URL basée sur l'ID du mod extrait
+        string modId = GetModIdFromThumbnailUrl(thumbnailUrl);
+        if (!string.IsNullOrEmpty(modId))
         {
-            string fixedUrl = $"/{thumbnailUrl}";
-            Console.WriteLine($"ModsHub: URL de miniature corrigée: {fixedUrl}");
-            return fixedUrl;
+            // Construire l'URL complète vers le backend ModsService
+            string backendUrl = $"https://modsservice.modhub.ovh/uploads/mods/{modId}/thumbnail.jpg";
+            Console.WriteLine($"ModsHub: URL de miniature reconstruite vers backend: {backendUrl}");
+            return backendUrl;
         }
-        
-        // Cas 5: URL absolue (http://, https://) ou déjà formatée correctement
-        Console.WriteLine($"ModsHub: URL de miniature utilisée telle quelle: {thumbnailUrl}");
-        return thumbnailUrl;
+
+        // Cas 5: Fallback - pointer vers le backend par défaut
+        Console.WriteLine($"ModsHub: Fallback vers backend pour: {thumbnailUrl}");
+        return $"https://modsservice.modhub.ovh/uploads/mods/default/thumbnail.jpg";
     }
     
     // Extraire l'ID du mod à partir de l'URL de la miniature
