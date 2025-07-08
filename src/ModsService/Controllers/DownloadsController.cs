@@ -55,7 +55,7 @@ namespace ModsService.Controllers
                 // Enregistrer le téléchargement et vérifier les quotas
                 var downloadResult = await _downloadService.RecordDownloadAsync(
                     modId,
-                    versionNumber,
+                    version ?? "latest",
                     userId,
                     HttpContext);
                     
@@ -155,7 +155,7 @@ namespace ModsService.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Erreur lors du téléchargement du mod {modId}, version {versionNumber}");
+                _logger.LogError(ex, $"Erreur lors du téléchargement du mod {modId}, version {version ?? "latest"}");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = "Une erreur est survenue lors du téléchargement" });
             }
         }

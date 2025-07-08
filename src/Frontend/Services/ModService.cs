@@ -297,23 +297,47 @@ namespace Frontend.Services
             {
                 await SetAuthHeaderAsync();
                 
-                string url = versionId == null
-                    ? $"api/v1/mods/{modId}/download"
-                    : $"api/v1/mods/{modId}/versions/{versionId}/download";
+                // Utiliser POST selon le cahier des charges et l'endpoint backend
+                string url = $"api/v1/mods/{modId}/download";
+                if (!string.IsNullOrEmpty(versionId))
+                {
+                    url += $"?version={Uri.EscapeDataString(versionId)}";
+                }
 
-                var response = await _httpClient.GetAsync(url);
+                // POST request selon les spécifications
+                var response = await _httpClient.PostAsync(url, null);
                 
                 if (response.IsSuccessStatusCode)
                 {
-                    var downloadUrl = await response.Content.ReadAsStringAsync();
+                    // Vérifier si c'est une redirection (fichier direct) ou une URL
+                    if (response.Headers.Location != null)
+                    {
+                        return new ApiResponse<string> { Success = true, Data = response.Headers.Location.ToString() };
+                    }
+                    
+                    // Sinon, construire l'URL de téléchargement direct
+                    var baseUrl = _httpClient.BaseAddress?.ToString().TrimEnd('/') ?? "";
+                    var downloadUrl = $"{baseUrl}/{url.TrimStart('/')}".Replace("/download", "/download");
                     return new ApiResponse<string> { Success = true, Data = downloadUrl };
                 }
                 
-                return new ApiResponse<string> { Success = false, Message = $"Échec: {response.ReasonPhrase}" };
+                // Gestion des erreurs spécifiques
+                var errorContent = await response.Content.ReadAsStringAsync();
+                return new ApiResponse<string> { 
+                    Success = false, 
+                    Message = response.StatusCode switch
+                    {
+                        System.Net.HttpStatusCode.NotFound => "Mod ou version non trouvé",
+                        System.Net.HttpStatusCode.Unauthorized => "Authentification requise",
+                        System.Net.HttpStatusCode.TooManyRequests => "Quota de téléchargement dépassé",
+                        System.Net.HttpStatusCode.BadRequest => $"Erreur de validation: {errorContent}",
+                        _ => $"Erreur de téléchargement: {response.ReasonPhrase}"
+                    }
+                };
             }
             catch (Exception ex)
             {
-                return new ApiResponse<string> { Success = false, Message = $"Erreur: {ex.Message}" };
+                return new ApiResponse<string> { Success = false, Message = $"Erreur de connexion: {ex.Message}" };
             }
         }
         
