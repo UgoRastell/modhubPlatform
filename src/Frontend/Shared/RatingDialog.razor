@@ -120,7 +120,7 @@
     <DialogActions>
         <div class="dialog-actions" style="width: 100%;">
             <MudButton Class="cancel-btn"
-                       OnClick="OnCancelClicked"
+                       OnClick="Cancel"
                        StartIcon="@Icons.Material.Filled.Cancel">
                 Annuler
             </MudButton>
@@ -136,6 +136,10 @@
 </MudDialog>
 
 @code {
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
     [CascadingParameter] 
     IMudDialogInstance MudDialog { get; set; } = default!;
     
@@ -211,8 +215,5 @@
         }
     }
     
-    private void OnCancelClicked()
-    {
-        MudDialog.Close(DialogResult.Cancel());
-    }
+
 }
