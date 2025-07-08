@@ -16,25 +16,7 @@
         margin: 20px 0;
     }
     
-    .rating-star {
-        font-size: 2.5rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        color: #e0e0e0;
-    }
-    
-    .rating-star:hover {
-        transform: scale(1.1);
-    }
-    
-    .rating-star.selected {
-        color: #ffc107;
-        text-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
-    }
-    
-    .rating-star.hover {
-        color: #ffb300;
-    }
+
     
     .current-rating-info {
         text-align: center;
@@ -138,7 +120,7 @@
     <DialogActions>
         <div class="dialog-actions" style="width: 100%;">
             <MudButton Class="cancel-btn"
-                       OnClick="Cancel"
+                       OnClick="OnCancelClicked"
                        StartIcon="@Icons.Material.Filled.Cancel">
                 Annuler
             </MudButton>
@@ -229,8 +211,8 @@
         }
     }
     
-    private void Cancel()
+    private void OnCancelClicked()
     {
-        MudDialog.Cancel();
+        MudDialog.Close(DialogResult.Cancel());
     }
 }
