@@ -79,7 +79,7 @@
       }
     },
     {
-      "DownstreamPathTemplate": "/api/v1/mods",
+      "DownstreamPathTemplate": "/api/v1/mods/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -87,8 +87,8 @@
           "Port": 8080
         }
       ],
-      "UpstreamPathTemplate": "/api/v1/mods",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "UpstreamPathTemplate": "/api/v1/mods/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -101,7 +101,7 @@
       }
     },
     {
-      "DownstreamPathTemplate": "/api/v1/mods/{everything}",
+      "DownstreamPathTemplate": "/api/v1/mods",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -109,8 +109,8 @@
           "Port": 8080
         }
       ],
-      "UpstreamPathTemplate": "/api/v1/mods/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "UpstreamPathTemplate": "/api/v1/mods",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,

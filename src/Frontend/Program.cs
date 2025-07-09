@@ -1,5 +1,6 @@
 using Frontend;
 using Frontend.Services;
+using Frontend.Services.Interfaces;
 using Frontend.Services.Forum;
 using Frontend.Services.Moderation;
 using Frontend.Theme;

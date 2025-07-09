@@ -6,7 +6,7 @@
 @using System.Globalization
 @using System.Drawing
 
-@inject IModService ModService
+@inject Frontend.Services.Interfaces.IModService ModService
 
 <div class="download-statistics-chart @(Compact ? "compact" : "")" style="@(Width != null ? $"width: {Width};" : "")">
     <div class="chart-header">

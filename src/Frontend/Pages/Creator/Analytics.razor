@@ -3,7 +3,7 @@
 @using System.Security.Claims
 @using System.Globalization
 @using Frontend.Models
-@inject IModService ModService
+@inject Frontend.Services.Interfaces.IModService ModService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @attribute [Authorize(Roles = "Creator")]

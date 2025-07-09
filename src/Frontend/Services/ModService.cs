@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Frontend.Services
 {
-    public class ModService : IModService
+    public class ModService : Frontend.Services.Interfaces.IModService
     {
         private readonly HttpClient _httpClient;
         private readonly ILocalStorageService _localStorage;

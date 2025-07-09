@@ -8,7 +8,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
-@inject IModService ModService
+@inject Frontend.Services.Interfaces.IModService ModService
 @inject IDialogService DialogService
 @inject IJSRuntime JSRuntime
 @inject AuthenticationStateProvider AuthStateProvider
@@ -223,15 +223,15 @@
 
         try
         {
-            var response = await ModService.DownloadModAsync(modId);
-            if (response.Success && !string.IsNullOrWhiteSpace(response.Data))
+            var downloadResponse = await ModService.DownloadModAsync(modId, null);
+            if (downloadResponse.Success && !string.IsNullOrWhiteSpace(downloadResponse.Data))
             {
-                await JSRuntime.InvokeVoidAsync("open", response.Data, "_blank");
+                await JSRuntime.InvokeVoidAsync("open", downloadResponse.Data, "_blank");
                 Snackbar.Add($"Téléchargement de {modName} démarré !", Severity.Success);
             }
             else
             {
-                Snackbar.Add(response.Message ?? "Erreur lors du téléchargement", Severity.Error);
+                Snackbar.Add(downloadResponse.Message ?? "Erreur lors du téléchargement", Severity.Error);
             }
         }
         catch (Exception ex)

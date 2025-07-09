@@ -1,6 +1,6 @@
 @using Frontend.Models
 @using Frontend.Services
-@inject IModService ModService
+@inject Frontend.Services.Interfaces.IModService ModService
 @inject ISnackbar Snackbar
 
 <MudDialog>
@@ -313,23 +313,24 @@
             
             if (_isEdit && !string.IsNullOrEmpty(ModId))
             {
-                var updateRequest = new ModUpdateRequest
-                {
-                    Name = _modRequest.Name,
-                    Slug = _modRequest.Slug,
-                    ShortDescription = _modRequest.ShortDescription,
-                    Description = _modRequest.Description,
-                    GameId = _modRequest.GameId,
-                    CategoryId = _modRequest.CategoryId,
-                    ThumbnailUrl = _modRequest.ThumbnailUrl,
-                    DocumentationUrl = _modRequest.DocumentationUrl,
-                    Tags = _modRequest.Tags,
-                    ScreenshotUrls = _modRequest.ScreenshotUrls,
-                    IsFeatured = _modRequest.IsFeatured,
-                    IsApproved = _modRequest.IsApproved
-                };
+                // Conversion directe vers ModDto pour édition
+var modDto = new ModDto {
+    Id = ModId,
+    Name = _modRequest.Name,
+    Slug = _modRequest.Slug,
+    ShortDescription = _modRequest.ShortDescription,
+    Description = _modRequest.Description,
+    GameId = _modRequest.GameId,
+    CategoryId = _modRequest.CategoryId,
+    ThumbnailUrl = _modRequest.ThumbnailUrl,
+    DocumentationUrl = _modRequest.DocumentationUrl,
+    Tags = _modRequest.Tags,
+    ScreenshotUrls = _modRequest.ScreenshotUrls,
+    IsFeatured = _modRequest.IsFeatured,
+    IsApproved = _modRequest.IsApproved
+};
                 
-                response = await ModService.UpdateModAsync(ModId, updateRequest);
+                response = await ModService.UpdateModAsync(ModId, modDto);
             }
             else
             {

@@ -1,7 +1,7 @@
 @using Frontend.Models
 @using Frontend.Services
 @using System.Text.Json
-@inject IModService ModService
+@inject Frontend.Services.Interfaces.IModService ModService
 @inject INotificationService NotificationService
 
 <div class="version-history-container @(IsExpanded ? "expanded" : "")">
