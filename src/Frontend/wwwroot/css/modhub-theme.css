@@ -67,6 +67,7 @@ body {
 }
 
 .surface-dark, .surface-dark * {
+    background-color: var(--secondary-bg-color) !important;
     color: var(--text-on-dark) !important;
 }
 
@@ -132,6 +133,19 @@ body {
 }
 
 /* Style des inputs */
+.surface-dark .mud-input-root,
+.surface-dark .mud-input,
+.surface-dark .mud-input-slot {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--primary-text) !important;
+}
+
+.surface-dark label,
+.surface-dark .mud-input-label {
+    color: var(--secondary-text) !important;
+}
+
+
 .mud-input {
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
