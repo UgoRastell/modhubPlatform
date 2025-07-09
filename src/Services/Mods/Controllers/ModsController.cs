@@ -16,6 +16,8 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using System.Net.Mime;
 using System.Net;
+using ModsService.Services;
+using ModsService.Models.DTOs;
 
 namespace ModsService.Controllers
 {
@@ -25,11 +27,13 @@ namespace ModsService.Controllers
     {
         private readonly IModRepository _modRepository;
         private readonly ILogger<ModsController> _logger;
+        private readonly IUserPublicService _userPublicService;
 
-        public ModsController(IModRepository modRepository, ILogger<ModsController> logger)
+        public ModsController(IModRepository modRepository, ILogger<ModsController> logger, IUserPublicService userPublicService)
         {
             _modRepository = modRepository;
             _logger = logger;
+            _userPublicService = userPublicService;
         }
 
         [HttpGet]
@@ -45,6 +49,18 @@ namespace ModsService.Controllers
                 
                 _logger.LogInformation("Récupération de {Count} mods sur un total de {TotalCount}", mods.Count, totalCount);
                 
+                // Enrichir avec les informations publiques des créateurs
+                var creatorIds = mods.Select(m => m.CreatorId).Where(id => !string.IsNullOrWhiteSpace(id)).Distinct().ToList();
+                var creatorProfiles = new Dictionary<string, PublicUserDto>();
+                foreach (var cid in creatorIds)
+                {
+                    var profile = await _userPublicService.GetPublicUserAsync(cid);
+                    if (profile != null)
+                    {
+                        creatorProfiles[cid] = profile;
+                    }
+                }
+
                 // Convertir les mods en format compatible avec le frontend ModDto
                 var modDtos = mods.Select(mod => new
                 {
@@ -54,7 +70,8 @@ namespace ModsService.Controllers
                     Description = mod.Description,
                     ShortDescription = mod.Description.Length > 100 ? mod.Description.Substring(0, 97) + "..." : mod.Description,
                     CreatorId = mod.CreatorId,
-                    CreatorName = mod.Author,
+                    CreatorName = creatorProfiles.ContainsKey(mod.CreatorId) ? creatorProfiles[mod.CreatorId].Username : mod.Author,
+                     CreatorAvatarUrl = creatorProfiles.ContainsKey(mod.CreatorId) ? creatorProfiles[mod.CreatorId].ProfilePictureUrl : null,
                     GameId = mod.GameId,
                     GameName = mod.GameName,
                     CategoryId = string.Empty,
@@ -375,6 +392,18 @@ namespace ModsService.Controllers
                 
                 _logger.LogInformation("{Count} mods trouvés pour le créateur {CreatorId}", creatorMods.Count, creatorIdClaim);
                 
+                // Enrichir avec les informations publiques des créateurs
+                var creatorIds = mods.Select(m => m.CreatorId).Where(id => !string.IsNullOrWhiteSpace(id)).Distinct().ToList();
+                var creatorProfiles = new Dictionary<string, PublicUserDto>();
+                foreach (var cid in creatorIds)
+                {
+                    var profile = await _userPublicService.GetPublicUserAsync(cid);
+                    if (profile != null)
+                    {
+                        creatorProfiles[cid] = profile;
+                    }
+                }
+
                 // Convertir les mods en format compatible avec le frontend ModDto
                 var modDtos = creatorMods.Select(mod => new
                 {
@@ -384,7 +413,8 @@ namespace ModsService.Controllers
                     Description = mod.Description,
                     ShortDescription = mod.Description.Length > 100 ? mod.Description.Substring(0, 97) + "..." : mod.Description,
                     CreatorId = mod.CreatorId,
-                    CreatorName = mod.Author,
+                    CreatorName = creatorProfiles.ContainsKey(mod.CreatorId) ? creatorProfiles[mod.CreatorId].Username : mod.Author,
+                     CreatorAvatarUrl = creatorProfiles.ContainsKey(mod.CreatorId) ? creatorProfiles[mod.CreatorId].ProfilePictureUrl : null,
                     GameId = mod.GameId,
                     GameName = mod.GameName,
                     CategoryId = string.Empty,
@@ -685,6 +715,7 @@ namespace ModsService.Controllers
             return new
             {
                 mod.Id,
+                CreatorName = !string.IsNullOrWhiteSpace(mod.CreatorId) ? (await _userPublicService.GetPublicUserAsync(mod.CreatorId))?.Username ?? mod.Author : mod.Author,
                 mod.Name,
                 mod.Description,
                 mod.FileName,
