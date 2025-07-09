@@ -80,8 +80,8 @@ services:
 
   communityservice:
     build:
-      context: ./src/Services/Community
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./src/Services/Community/Dockerfile
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
