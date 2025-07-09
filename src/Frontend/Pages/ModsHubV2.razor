@@ -112,7 +112,7 @@
 
                             <MudCardContent>
                                 <MudRating MaxValue="5" Value="@mod.AverageRating" ReadOnly="false" Color="Color.Warning" Size="Size.Small" Class="mb-1"
-                                             OnChanged="@(async v => await RateMod(mod, v))" />
+                                             OnChanged="@(async (int v) => await RateMod(mod, v))" />
                                 <MudText Typo="Typo.body2" Class="mod-description">@mod.ShortDescription</MudText>
                             </MudCardContent>
 
@@ -198,11 +198,12 @@
             {
                 try
                 {
-                    var user = await UserService.GetPublicUserAsync(m.CreatorId);
+                    var userProfileResp = await UserService.GetUserProfileAsync(m.CreatorId);
+                    var user = userProfileResp.Success ? userProfileResp.Data : null;
                     if (user != null)
                     {
-                        m.CreatorName = user.UserName;
-                        m.CreatorAvatarUrl = user.ProfilePictureUrl;
+                        m.CreatorName = user.Username;
+                        m.CreatorAvatarUrl = user.AvatarUrl;
                     }
                 }
                 catch { /* Ignorer les erreurs d'appel */ }
@@ -217,7 +218,7 @@
 
         // TODO: Replace these placeholders when real metrics are available from the API
         modsCount = totalItems;
-        downloads = mods.Sum(x => x.DownloadCount);
+        downloads = (int)mods.Sum(x => x.DownloadCount);
         creators = 0;
         supportedGames = 0;
 
@@ -292,8 +293,8 @@
         var resp = await ModService.RateModAsync(mod.Id, new ModRatingRequest { Rating = value });
         if (resp.Success)
         {
-            mod.AverageRating = ((mod.AverageRating * mod.ReviewCount) + value) / (mod.ReviewCount + 1);
-            mod.ReviewCount++;
+            mod.AverageRating = ((mod.AverageRating * mod.RatingCount) + value) / (mod.RatingCount + 1);
+            mod.RatingCount++;
             Snackbar.Add("Merci pour votre note !", Severity.Success);
         }
         else
