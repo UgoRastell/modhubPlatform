@@ -391,6 +391,9 @@ namespace ModsService.Controllers
                 }
                 
                 _logger.LogInformation("{Count} mods trouvés pour le créateur {CreatorId}", creatorMods.Count, creatorIdClaim);
+
+                // Alias pour réutiliser la logique d'enrichissement existante
+                var mods = creatorMods;
                 
                 // Enrichir avec les informations publiques des créateurs
                 var creatorIds = mods.Select(m => m.CreatorId).Where(id => !string.IsNullOrWhiteSpace(id)).Distinct().ToList();
