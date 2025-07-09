@@ -1,0 +1,200 @@
+@page "/creator/edit/{modId}"
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Authorization
+@using Frontend.Models
+@using Frontend.Services
+@using Microsoft.AspNetCore.Authorization
+@using MudBlazor
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+@inject Frontend.Services.IModService ModService
+@inject ILogger<Edit> Logger
+@attribute [Authorize(Roles = "Creator")]
+
+<PageTitle>ModHub - Modifier un mod</PageTitle>
+
+<style>
+    .edit-section {
+        background: linear-gradient(180deg, rgba(21,21,35,0.95) 0%, rgba(42,45,80,0.85) 100%);
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 1px 6px rgba(0,0,0,0.1);
+        overflow: hidden;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .edit-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+        pointer-events: none;
+    }
+
+    .gradient-title {
+        background: linear-gradient(90deg, var(--mud-palette-primary), var(--mud-palette-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        font-weight: bold;
+        position: relative;
+    }
+</style>
+
+<AuthorizeView Roles="Creator">
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
+            <MudText Typo="Typo.h2" Align="Align.Center" Class="gradient-title mb-8">Modifier un mod</MudText>
+
+            @if (isLoading)
+            {
+                <div class="d-flex justify-center my-8">
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                </div>
+            }
+            else if (loadError != null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Elevation="0">@loadError</MudAlert>
+            }
+            else
+            {
+                <MudPaper Elevation="3" Class="edit-section px-4 py-6 mb-8">
+                    <MudGrid>
+                        <MudItem xs="12" md="10" Class="mx-auto">
+                            <MudForm @ref="form" @bind-IsValid="@formValid">
+                                <MudTextField @bind-Value="model.Name" Label="Nom du mod" Required="true" RequiredError="Le nom est requis" Variant="Variant.Outlined" Class="mb-4" />
+
+                                <MudTextField @bind-Value="model.Version" Label="Version" Required="true" RequiredError="La version est requise" HelperText="Format recommandé: X.Y.Z (ex: 1.0.0)" Variant="Variant.Outlined" Class="mb-4" />
+
+                                <MudTextField @bind-Value="model.Description" Label="Description" Lines="5" Required="true" RequiredError="La description est requise" Variant="Variant.Outlined" Class="mb-4" />
+
+                                <MudTextField @bind-Value="tagsInput" Label="Tags (séparés par des virgules)" Variant="Variant.Outlined" Class="mb-4" />
+
+                                <div class="d-flex justify-space-between mt-6 gap-3">
+                                    <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="@(() => NavigationManager.NavigateTo("/creator/mods"))">Annuler</MudButton>
+
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@isSaving" OnClick="SaveModAsync">
+                                        @if (isSaving)
+                                        {
+                                            <span>Sauvegarde...</span>
+                                            <MudProgressCircular Class="ms-2" Size="Size.Small" Indeterminate="true" />
+                                        }
+                                        else
+                                        {
+                                            <span>Enregistrer</span>
+                                        }
+                                    </MudButton>
+                                </div>
+                            </MudForm>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            }
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <MudAlert Severity="Severity.Warning">Vous devez être connecté avec un compte créateur pour accéder à cette page.</MudAlert>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public string modId { get; set; } = string.Empty;
+
+    private MudForm form;
+    private bool formValid;
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private string loadError;
+
+    private ModUpdateRequest model = new();
+    private string tagsInput = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadModAsync();
+    }
+
+    private async Task LoadModAsync()
+    {
+        try
+        {
+            var response = await ModService.GetModByIdAsync(modId);
+            if (response != null && response.Success && response.Data != null)
+            {
+                var dto = response.Data;
+
+                model = new ModUpdateRequest
+                {
+                    Name = dto.Name,
+                    Description = dto.Description,
+                    Version = dto.Version,
+                    Tags = dto.Tags ?? new List<string>(),
+                    ThumbnailUrl = dto.ThumbnailUrl,
+                    GameId = dto.GameId,
+                    CategoryId = dto.CategoryId,
+                    IsFeatured = dto.IsFeatured,
+                    IsApproved = dto.IsApproved
+                };
+
+                tagsInput = string.Join(",", model.Tags);
+            }
+            else
+            {
+                loadError = response?.Message ?? "Mod introuvable";
+            }
+        }
+        catch (Exception ex)
+        {
+            loadError = $"Erreur lors du chargement du mod: {ex.Message}";
+            Logger.LogError(ex, "[EDIT] Erreur LoadModAsync");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveModAsync()
+    {
+        await form.Validate();
+        if (!formValid)
+        {
+            Snackbar.Add("Veuillez corriger les erreurs du formulaire", Severity.Warning);
+            return;
+        }
+
+        model.Tags = tagsInput.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+
+        try
+        {
+            isSaving = true;
+            var response = await ModService.UpdateModAsync(modId, model);
+            if (response != null && response.Success)
+            {
+                Snackbar.Add("Mod mis à jour avec succès", Severity.Success);
+                NavigationManager.NavigateTo("/creator/mods");
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "Échec de la mise à jour", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors de la mise à jour: {ex.Message}", Severity.Error);
+            Logger.LogError(ex, "[EDIT] SaveModAsync error");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}
