@@ -15,11 +15,13 @@ namespace Frontend.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILocalStorageService _localStorage;
+        private readonly ILogger<ModService> _logger;
 
-        public ModService(IHttpClientFactory httpClientFactory, ILocalStorageService localStorage)
+        public ModService(IHttpClientFactory httpClientFactory, ILocalStorageService localStorage, ILogger<ModService> logger)
         {
             _httpClient = httpClientFactory.CreateClient("ModsService");
             _localStorage = localStorage;
+            _logger = logger;
         }
         
         private async Task SetAuthHeaderAsync()
@@ -261,20 +263,38 @@ var query = $"api/v1/mods/creator?page={page}&pageSize={pageSize}";
                 if (!modResponse.Success)
                     return modResponse;
                 
-                // Récupérer les versions du mod
-                var versionsResponse = await _httpClient.GetFromJsonAsync<ApiResponse<List<ModVersionDto>>>($"api/v1/mods/{id}/versions");
-                
-                if (modResponse.Data != null) // Vérification de null pour éviter la déréférence
+                // Récupérer les versions du mod (peut ne pas être implémenté côté backend)
+                try
                 {
-                    if (versionsResponse != null && versionsResponse.Success && versionsResponse.Data != null)
+                    var versionsHttp = await _httpClient.GetAsync($"api/v1/mods/{id}/versions");
+                    if (versionsHttp.IsSuccessStatusCode)
                     {
-                        modResponse.Data.Versions = versionsResponse.Data;
+                        var versionsResponse = await versionsHttp.Content.ReadFromJsonAsync<ApiResponse<List<ModVersionDto>>>();
+                        if (modResponse.Data != null)
+                        {
+                            modResponse.Data.Versions = (versionsResponse != null && versionsResponse.Success && versionsResponse.Data != null)
+                                ? versionsResponse.Data
+                                : new List<ModVersionDto>();
+                        }
+                    }
+                    else if (versionsHttp.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        // Endpoint non disponible : considérer qu'il n'y a pas (encore) de gestion des versions
+                        if (modResponse.Data != null)
+                            modResponse.Data.Versions = new List<ModVersionDto>();
                     }
                     else
                     {
-                        // Si on ne peut pas récupérer les versions, initialiser une liste vide
-                        modResponse.Data.Versions = new List<ModVersionDto>();
+                        // Pour d'autres erreurs, on logge mais on continue avec les infos de base
+                        _logger.LogWarning("[GetModByIdAsync] Impossible de récupérer les versions du mod {ModId}. Statut: {Status}", id, versionsHttp.StatusCode);
                     }
+                }
+                catch (Exception exVers)
+                {
+                    // Ne pas faire échouer toute la requête si la récupération des versions échoue
+                    _logger.LogWarning(exVers, "[GetModByIdAsync] Exception lors de la récupération des versions du mod {ModId}", id);
+                    if (modResponse.Data != null)
+                        modResponse.Data.Versions = new List<ModVersionDto>();
                 }
                 
                 return modResponse;
