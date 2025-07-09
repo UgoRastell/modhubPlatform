@@ -15,14 +15,6 @@ services:
     networks:
       - modhub_network
 
-  redis:
-    image: redis:alpine
-    restart: always
-    volumes:
-      - redis_data:/data
-    networks:
-      - modhub_network
-
   usersservice:
     build:
       context: ./src/Services/Users
@@ -113,6 +105,8 @@ services:
       - communityservice
     networks:
       - modhub_network
+    ports:
+      - "8080:80"
 
   frontend:
     build:
