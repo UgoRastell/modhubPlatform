@@ -1,6 +1,7 @@
 @page "/mods"
 @page "/mods-hub"
 @using Frontend.Models
+@using Frontend.Models.ModManagement
 @using Frontend.Services
 @using System.Threading.Tasks
 @using System.Linq
@@ -110,7 +111,8 @@
                             <MudCardMedia Image="@GetModThumbnail(mod)" Height="180" />
 
                             <MudCardContent>
-                                <MudRating MaxValue="5" Value="@mod.AverageRating" ReadOnly="true" Color="Color.Warning" Size="Size.Small" Class="mb-1" />
+                                <MudRating MaxValue="5" Value="@mod.AverageRating" ReadOnly="false" Color="Color.Warning" Size="Size.Small" Class="mb-1"
+                                             OnChanged="@(async v => await RateMod(mod, v))" />
                                 <MudText Typo="Typo.body2" Class="mod-description">@mod.ShortDescription</MudText>
                             </MudCardContent>
 
@@ -191,6 +193,20 @@
         if (apiResponse.Success && apiResponse.Data != null)
         {
             mods = apiResponse.Data.Items.ToList();
+            // Compléter les informations créateur manquantes
+            foreach (var m in mods.Where(x => string.IsNullOrWhiteSpace(x.CreatorName)))
+            {
+                try
+                {
+                    var user = await UserService.GetPublicUserAsync(m.CreatorId);
+                    if (user != null)
+                    {
+                        m.CreatorName = user.UserName;
+                        m.CreatorAvatarUrl = user.ProfilePictureUrl;
+                    }
+                }
+                catch { /* Ignorer les erreurs d'appel */ }
+            }
             totalItems = apiResponse.Data.TotalCount;
         }
         else
@@ -201,7 +217,7 @@
 
         // TODO: Replace these placeholders when real metrics are available from the API
         modsCount = totalItems;
-        downloads = 0;
+        downloads = mods.Sum(x => x.DownloadCount);
         creators = 0;
         supportedGames = 0;
 
@@ -217,6 +233,7 @@
 
     private async Task DownloadMod(string modId, string modName)
     {
+        var modObj = mods.FirstOrDefault(x => x.Id == modId);
         if (isDownloading) return;
         isDownloading = true;
         StateHasChanged();
@@ -228,6 +245,11 @@
             {
                 await JSRuntime.InvokeVoidAsync("open", downloadResponse.Data, "_blank");
                 Snackbar.Add($"Téléchargement de {modName} démarré !", Severity.Success);
+                if (modObj != null)
+                {
+                    modObj.DownloadCount++;
+                    downloads++;
+                }
             }
             else
             {
@@ -256,6 +278,28 @@
         if (mod == null) return "/images/mod-placeholder.png";
         if (!string.IsNullOrWhiteSpace(mod.ThumbnailUrl)) return mod.ThumbnailUrl;
         return "/images/mod-placeholder.png";
+    }
+
+    private async Task RateMod(ModDto mod, int value)
+    {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            Snackbar.Add("Connectez-vous pour noter un mod", Severity.Warning);
+            return;
+        }
+        var resp = await ModService.RateModAsync(mod.Id, new ModRatingRequest { Rating = value });
+        if (resp.Success)
+        {
+            mod.AverageRating = ((mod.AverageRating * mod.ReviewCount) + value) / (mod.ReviewCount + 1);
+            mod.ReviewCount++;
+            Snackbar.Add("Merci pour votre note !", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(resp.Message ?? "Erreur lors de l'envoi de la note", Severity.Error);
+        }
     }
 
     private string GetAvatarInitial(string? name)
