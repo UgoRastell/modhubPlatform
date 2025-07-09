@@ -38,14 +38,12 @@ services:
       - JWT__Audience=ModsGamingPlatformUsers
       - REDIS__ConnectionString=redis:6379
     ports:
-      - "8080:8080"
+      - "8080:80"
     depends_on:
       - mongodb
       - redis
     networks:
       - modhub_network
-    ports:
-      - "8080:80"
 
   modsservice:
     build:
