@@ -333,6 +333,21 @@
       "FileCacheOptions": {
         "TtlSeconds": 0
       }
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/users/{userId}/mods",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "modsservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/users/{userId}/mods",
+      "UpstreamHttpMethod": [ "GET" ],
+      "FileCacheOptions": {
+        "TtlSeconds": 30
+      }
     }
   ]
 }
