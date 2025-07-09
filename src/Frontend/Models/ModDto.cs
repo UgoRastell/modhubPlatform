@@ -13,6 +13,7 @@ namespace Frontend.Models
         public string ShortDescription { get; set; } = string.Empty;
         public string CreatorId { get; set; } = string.Empty;
         public string CreatorName { get; set; } = string.Empty;
+        public string CreatorAvatarUrl { get; set; } = string.Empty;
 
         [JsonPropertyName("author")] // Author (fallback si CreatorName non fourni)
         public string Author { get; set; } = string.Empty;
