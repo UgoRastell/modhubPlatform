@@ -38,7 +38,7 @@ services:
       - JWT__Audience=ModsGamingPlatformUsers
       - REDIS__ConnectionString=redis:6379
     ports:
-      - "8080:80"
+      - "8080:8080"
     depends_on:
       - mongodb
       - redis
@@ -101,6 +101,8 @@ services:
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_HTTP_PORTS=80
       - Services__UsersService=http://usersservice:8080
       - Services__ModsService=http://modsservice:8080
       - Services__PaymentsService=http://paymentsservice:8080
