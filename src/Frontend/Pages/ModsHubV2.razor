@@ -112,7 +112,7 @@
 
                             <MudCardContent>
                                 <MudRating MaxValue="5"
-                       SelectedValue="@mod.UserRating"
+                       SelectedValue="@((int)(mod.UserRating ?? 0))"
                        SelectedValueChanged="@(async (int v) => await RateMod(mod, v))"
                        ReadOnly="@(mod.UserRating != null)"
                        Color="Color.Warning"

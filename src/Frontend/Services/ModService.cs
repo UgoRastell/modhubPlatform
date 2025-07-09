@@ -204,14 +204,7 @@ var query = $"api/v1/mods/creator?page={page}&pageSize={pageSize}";
             {
                 await SetAuthHeaderAsync();
 
-                string relative = $"api/v1/mods/{modId}/ratings";
-                var baseUrl = _httpClient.BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
-                if (baseUrl.EndsWith("/mods-service", StringComparison.OrdinalIgnoreCase))
-                {
-                    baseUrl = baseUrl.Substring(0, baseUrl.Length - "/mods-service".Length);
-                }
-                var url = $"{baseUrl}/{relative}";
-                
+                var url = $"api/v1/mods/{modId}/ratings";
                 var response = await _httpClient.PostAsJsonAsync(url, request);
                 
                 if (response.IsSuccessStatusCode)
