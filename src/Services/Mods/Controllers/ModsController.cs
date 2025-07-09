@@ -715,7 +715,7 @@ namespace ModsService.Controllers
             return new
             {
                 mod.Id,
-                CreatorName = !string.IsNullOrWhiteSpace(mod.CreatorId) ? (await _userPublicService.GetPublicUserAsync(mod.CreatorId))?.Username ?? mod.Author : mod.Author,
+                
                 mod.Name,
                 mod.Description,
                 mod.FileName,
