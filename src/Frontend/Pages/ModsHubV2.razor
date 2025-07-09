@@ -115,7 +115,7 @@
                             </MudCardContent>
 
                             <MudCardActions Class="justify-space-between">
-                                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download" OnClick="@(() => DownloadMod(mod.Id))">Télécharger</MudButton>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download" Disabled="@isDownloading" OnClick="@(() => DownloadMod(mod.Id, mod.Name))">Télécharger</MudButton>
                                 <MudText Typo="Typo.caption">@($"{mod.DownloadCount:N0} téléchargements")</MudText>
                             </MudCardActions>
                         </MudCard>
@@ -160,6 +160,7 @@
     // --- STATE -----------------------------------------------------------
     private List<ModDto> mods = new();
     private bool isLoading = true;
+    private bool isDownloading = false;
 
     // Filters & paging
     private string searchTerm = string.Empty;
@@ -214,10 +215,34 @@
         await LoadDataAsync();
     }
 
-    private async Task DownloadMod(string modId)
+    private async Task DownloadMod(string modId, string modName)
     {
-        var response = await ModService.DownloadModAsync(modId);
-        Snackbar.Add(response.Success ? "Téléchargement lancé" : $"Erreur: {response.Message}", response.Success ? Severity.Success : Severity.Error);
+        if (isDownloading) return;
+        isDownloading = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await ModService.DownloadModAsync(modId);
+            if (response.Success && !string.IsNullOrWhiteSpace(response.Data))
+            {
+                await JSRuntime.InvokeVoidAsync("open", response.Data, "_blank");
+                Snackbar.Add($"Téléchargement de {modName} démarré !", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "Erreur lors du téléchargement", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur de téléchargement: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isDownloading = false;
+            StateHasChanged();
+        }
     }
 
     private void ViewModDetails(string modId)
