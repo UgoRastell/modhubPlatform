@@ -126,7 +126,14 @@ namespace Frontend.Services
             {
                 await SetAuthHeaderAsync();
                 // Envoi du ModDto (structure attendue par le backend)
-                var response = await _httpClient.PutAsJsonAsync($"api/v1/mods/{id}", modDto);
+                string relative = $"api/v1/mods/{id}";
+                var baseUrl = _httpClient.BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
+                if (baseUrl.EndsWith("/mods-service", StringComparison.OrdinalIgnoreCase))
+                {
+                    baseUrl = baseUrl.Substring(0, baseUrl.Length - "/mods-service".Length);
+                }
+                var url = $"{baseUrl}/{relative}";
+                var response = await _httpClient.PutAsJsonAsync(url, modDto);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -474,7 +481,7 @@ else
             }
         }
         
-        public async Task<List<ModInfo>> GetCreatorModsAsync(string creatorId, string status = null)
+        public async Task<List<ModInfo>> GetCreatorModsAsync(string creatorId, string? status = null)
         {
             try
             {
