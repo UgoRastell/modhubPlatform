@@ -168,7 +168,8 @@ namespace Frontend.Services
             {
                 await SetAuthHeaderAsync();
                 
-                var query = $"api/v1/users/{userId}/mods?page={page}&pageSize={pageSize}";
+                // Correction: use authenticated creator endpoint instead of (nonexistent) users/{id}/mods
+var query = $"api/v1/mods/creator?page={page}&pageSize={pageSize}";
                 
                 var response = await _httpClient.GetFromJsonAsync<ApiResponse<PagedResult<ModDto>>>(query);
                 return response ?? new ApiResponse<PagedResult<ModDto>> { Success = false, Message = "Échec de la récupération des mods de l'utilisateur" };
@@ -381,7 +382,47 @@ namespace Frontend.Services
                 await SetAuthHeaderAsync();
                 
                 // Appel API avec pagination
-                var response = await _httpClient.GetFromJsonAsync<ApiResponse<PagedResult<ModDto>>>($"api/v1/users/{userId}/mods?page={page}&pageSize={pageSize}");
+                // Correction: backend endpoint for creator's own mods is /api/v1/mods/creator
+// The service previously targeted /api/v1/users/{userId}/mods which does not exist and resulted in 404.
+// We now target the valid endpoint and adapt the response (ApiResponse<List<ModDto>>) into the expected
+// ApiResponse<PagedResult<ModDto>> so that callers remain unaffected.
+var rawResponse = await _httpClient.GetFromJsonAsync<ApiResponse<List<ModDto>>>($"api/v1/mods/creator?page={page}&pageSize={pageSize}");
+
+// Transform the raw list response into a paged result expected by the UI layer.
+ApiResponse<PagedResult<ModDto>> response;
+if (rawResponse != null && rawResponse.Success && rawResponse.Data != null)
+{
+    var items = rawResponse.Data;
+    var paged = new PagedResult<ModDto>
+    {
+        Items = items,
+        TotalCount = items.Count,
+        PageIndex = page,
+        PageSize = pageSize
+    };
+
+    response = new ApiResponse<PagedResult<ModDto>>
+    {
+        Success = true,
+        Message = rawResponse.Message ?? "Mods récupérés avec succès",
+        Data = paged
+    };
+}
+else
+{
+    response = new ApiResponse<PagedResult<ModDto>>
+    {
+        Success = false,
+        Message = rawResponse?.Message ?? "Échec de récupération des mods de l'utilisateur",
+        Data = new PagedResult<ModDto>
+        {
+            Items = new List<ModDto>(),
+            TotalCount = 0,
+            PageIndex = page,
+            PageSize = pageSize
+        }
+    };
+}
                 
                 return response ?? new ApiResponse<PagedResult<ModDto>>
                 {
