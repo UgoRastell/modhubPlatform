@@ -32,7 +32,7 @@
                              AdornmentIcon="@Icons.Material.Filled.Email" />
                 <ValidationMessage For="@(() => loginModel.Email)" />
                 
-                <MudTextField @bind-Value="loginModel.Password" Style="color:white;"
+                <MudTextField @bind-Value="loginModel.Password" Class="mt-3 white-input"
                              Label="Mot de passe"
                              HelperText="Entrez votre mot de passe"
                              InputType="@passwordInputType"
@@ -107,6 +107,17 @@
     }
     
     .login-button:hover {
+        box-shadow: 0 0 12px #00aaff80;
+        transform: translateY(-2px);
+    }
+
+    /* ensure white text inside password field */
+    .white-input input {
+        color: #ffffff !important;
+    }
+    .white-input input::placeholder {
+        color: #a7b2c2 !important;
+    }
         box-shadow: 0 0 12px #00aaff80;
         transform: translateY(-2px);
     }
