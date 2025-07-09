@@ -36,6 +36,19 @@ builder.Services.AddSingleton(mongoDbSettings);
 // Register repositories
 builder.Services.AddSingleton<IModRepository, ModRepository>();
 
+// Memory cache for user profile caching
+builder.Services.AddMemoryCache();
+
+// HttpClient for UsersService
+builder.Services.AddHttpClient("UsersService", client =>
+{
+    var baseUrl = builder.Configuration["UsersService:BaseUrl"] ?? "http://gateway";
+    client.BaseAddress = new Uri(baseUrl);
+});
+
+// User public service for creator enrichment
+builder.Services.AddScoped<ModsService.Services.IUserPublicService, ModsService.Services.UserPublicService>();
+
 // Configure API Explorer
 builder.Services.AddEndpointsApiExplorer();
 

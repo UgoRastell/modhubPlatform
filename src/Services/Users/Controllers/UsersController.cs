@@ -213,6 +213,35 @@ public class UsersController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(PublicUserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPublicProfile(string id)
+    {
+        if (string.IsNullOrEmpty(id))
+        {
+            return BadRequest(new { message = "Id utilisateur manquant" });
+        }
+
+        var profile = await _userService.GetProfileAsync(id);
+        if (profile == null)
+        {
+            return NotFound(new { message = "Profil non trouvé" });
+        }
+
+        var publicDto = new PublicUserDto
+        {
+            Id = profile.Id,
+            Username = profile.Username,
+            ProfilePictureUrl = profile.ProfilePictureUrl
+        };
+
+        // Mise en cache HTTP côté client/intermédiaire pour limiter la charge (60s)
+        Response.Headers["Cache-Control"] = "public, max-age=60";
+        return Ok(publicDto);
+    }
+
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
