@@ -9,6 +9,9 @@
     --primary-text: #f5f7fa;
     --secondary-text: #a7b2c2;
     --border-color: #2f3441;
+    /* Couleurs de texte par surface */
+    --text-on-dark: #f5f7fa;   /* texte clair sur fond foncé */
+    --text-on-light: #1b1f27;  /* texte foncé sur fond clair */
     
     /* Variables MudBlazor custom */
     --mud-palette-black: #000000;
@@ -58,8 +61,17 @@
 body {
     font-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
     background-color: var(--main-bg-color);
+    color: var(--text-on-dark);
     margin: 0;
     padding: 0;
+}
+
+.surface-dark {
+    color: var(--text-on-dark);
+}
+
+.surface-light {
+    color: var(--text-on-light);
 }
 
 /* Style global pour tous les éléments MudBlazor */
