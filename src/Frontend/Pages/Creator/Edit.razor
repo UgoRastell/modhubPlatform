@@ -240,7 +240,15 @@
         try
         {
             isSaving = true;
-            var response = await ModService.UpdateModAsync(modId, model);
+            // Conversion ModUpdateRequest -> ModDto (aligné backend)
+            var modDto = loadedMod ?? new ModDto();
+            modDto.Name = model.Name;
+            modDto.Description = model.Description;
+            modDto.Version = model.Version;
+            modDto.Tags = tagsInput.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+            // Ajouter ici d’autres champs si besoin (Slug, Categories, etc.)
+
+            var response = await ModService.UpdateModAsync(modId, modDto);
             if (response == null || !response.Success)
             {
                 Snackbar.Add(response?.Message ?? "Échec de la mise à jour", Severity.Error);

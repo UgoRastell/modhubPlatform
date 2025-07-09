@@ -120,13 +120,13 @@ namespace Frontend.Services
             }
         }
 
-        public async Task<ApiResponse<ModDto>> UpdateModAsync(string id, ModUpdateRequest request)
+        public async Task<ApiResponse<ModDto>> UpdateModAsync(string id, ModDto modDto)
         {
             try
             {
                 await SetAuthHeaderAsync();
-                
-                var response = await _httpClient.PutAsJsonAsync($"api/v1/mods/{id}", request);
+                // Envoi du ModDto (structure attendue par le backend)
+                var response = await _httpClient.PutAsJsonAsync($"api/v1/mods/{id}", modDto);
                 
                 if (response.IsSuccessStatusCode)
                 {
