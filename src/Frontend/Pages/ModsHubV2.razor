@@ -111,8 +111,13 @@
                             <MudCardMedia Image="@GetModThumbnail(mod)" Height="180" />
 
                             <MudCardContent>
-                                <MudRating MaxValue="5" Value="@mod.AverageRating" ReadOnly="false" Color="Color.Warning" Size="Size.Small" Class="mb-1"
-                                             OnChanged="@(async (int v) => await RateMod(mod, v))" />
+                                <MudRating MaxValue="5"
+                       SelectedValue="@mod.UserRating"
+                       SelectedValueChanged="@(async (int v) => await RateMod(mod, v))"
+                       ReadOnly="@(mod.UserRating != null)"
+                       Color="Color.Warning"
+                       Size="Size.Small"
+                       Class="mb-1" />
                                 <MudText Typo="Typo.body2" Class="mod-description">@mod.ShortDescription</MudText>
                             </MudCardContent>
 
@@ -295,6 +300,7 @@
         {
             mod.AverageRating = ((mod.AverageRating * mod.RatingCount) + value) / (mod.RatingCount + 1);
             mod.RatingCount++;
+            mod.UserRating = value;
             Snackbar.Add("Merci pour votre note !", Severity.Success);
         }
         else

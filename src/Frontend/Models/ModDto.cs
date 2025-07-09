@@ -55,5 +55,8 @@ namespace Frontend.Models
         // Propriété supplémentaire présente dans la réponse backend
         [JsonPropertyName("isNew")]
         public bool IsNew { get; set; }
+
+        [JsonIgnore]
+        public int? UserRating { get; set; }
     }
 }
