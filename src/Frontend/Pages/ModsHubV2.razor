@@ -93,17 +93,30 @@
                 @foreach (var mod in mods)
                 {
                     <MudItem xs="12" sm="6" md="4" lg="3">
-                        <MudCard Class="mod-card">
+                        <MudCard Class="mod-card" Outlined="true" Elevation="1">
+                            <MudCardHeader>
+                                <CardHeaderAvatar>
+                                    <MudAvatar Size="Size.Medium" Image="@mod.CreatorAvatarUrl" Text="@GetAvatarInitial(mod.CreatorName)" Color="Color.Primary" />
+                                </CardHeaderAvatar>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.subtitle1" Class="mod-title">@mod.Name</MudText>
+                                    <MudText Typo="Typo.caption" Class="mod-author">@mod.CreatorName ?? "Créateur inconnu"</MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Surface" OnClick="@(() => ViewModDetails(mod.Id))" />
+                                </CardHeaderActions>
+                            </MudCardHeader>
+
                             <MudCardMedia Image="@GetModThumbnail(mod)" Height="180" />
+
                             <MudCardContent>
-                                <MudText Typo="Typo.subtitle1" Class="mod-title">@mod.Name</MudText>
-                                <MudText Typo="Typo.caption" Class="mod-author">@mod.CreatorName ?? "Créateur inconnu"</MudText>
-                                <MudRating MaxValue="5" Value="@(mod.AverageRating)" ReadOnly="true" Color="Color.Warning" Size="Size.Small" />
+                                <MudRating MaxValue="5" Value="@mod.AverageRating" ReadOnly="true" Color="Color.Warning" Size="Size.Small" Class="mb-1" />
                                 <MudText Typo="Typo.body2" Class="mod-description">@mod.ShortDescription</MudText>
                             </MudCardContent>
+
                             <MudCardActions Class="justify-space-between">
                                 <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download" OnClick="@(() => DownloadMod(mod.Id))">Télécharger</MudButton>
-                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Surface" OnClick="@(() => ViewModDetails(mod.Id))" />
+                                <MudText Typo="Typo.caption">@($"{mod.DownloadCount:N0} téléchargements")</MudText>
                             </MudCardActions>
                         </MudCard>
                     </MudItem>
@@ -218,6 +231,12 @@
         if (mod == null) return "/images/mod-placeholder.png";
         if (!string.IsNullOrWhiteSpace(mod.ThumbnailUrl)) return mod.ThumbnailUrl;
         return "/images/mod-placeholder.png";
+    }
+
+    private string GetAvatarInitial(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        return name.Trim()[0].ToString().ToUpper();
     }
 
     public void Dispose() { }
