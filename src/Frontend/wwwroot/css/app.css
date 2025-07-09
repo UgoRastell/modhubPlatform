@@ -1,16 +1,5 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    color: #ffffff;
-}
-
-/* Forcer tous les textes en blanc pour l'application */
-.mud-typography {
-    color: #ffffff !important;
-}
-
-/* S'assurer que les textes secondaires sont également blancs */
-.mud-typography-body2, .mud-typography-caption, .mud-typography-subtitle2 {
-    color: #ffffff !important;
 }
 
 a, .btn-link {
