@@ -40,8 +40,8 @@ main {
 }
 
 .mud-paper {
-    background-color: var(--bg-secondary, #232634);
-    color: rgb(255, 255, 255);
+    background-color: #ffffff; /* global white background */
+    color: var(--text-on-light, #1b1f27); /* dark text for readability */
 }
 
 .mud-table {
