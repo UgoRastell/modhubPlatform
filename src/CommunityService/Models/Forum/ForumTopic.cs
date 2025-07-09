@@ -111,6 +111,69 @@ namespace CommunityService.Models.Forum
         /// Date de la dernière activité (réponse ou modification)
         /// </summary>
         public DateTime LastActivityAt { get; set; } = DateTime.UtcNow;
+
+        // ----- Legacy properties expected by services (for backward compatibility) -----
+        /// <summary>
+        /// Nombre total de messages (réponses + message initial).
+        /// Cette valeur reflète <c>Stats.ReplyCount + 1</c>.
+        /// </summary>
+        [BsonIgnore]
+        public int PostCount
+        {
+            get => Stats?.ReplyCount + 1 ?? 1;
+            set
+            {
+                if (Stats == null) Stats = new TopicStats();
+                Stats.ReplyCount = Math.Max(0, value - 1);
+            }
+        }
+
+        /// <summary>
+        /// Nombre de vues du sujet (proxy vers <see cref="TopicStats.ViewCount" />).
+        /// </summary>
+        [BsonIgnore]
+        public int ViewCount
+        {
+            get => Stats?.ViewCount ?? 0;
+            set
+            {
+                if (Stats == null) Stats = new TopicStats();
+                Stats.ViewCount = value;
+            }
+        }
+
+        /// <summary>
+        /// Brève description (legacy: certaines requêtes utilisent Description).
+        /// </summary>
+        public string Description { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Identifiant de l'utilisateur de la dernière activité (proxy vers Stats.LastReplyUserId).
+        /// </summary>
+        [BsonIgnore]
+        public string? LastActivityByUserId
+        {
+            get => Stats?.LastReplyUserId;
+            set
+            {
+                if (Stats == null) Stats = new TopicStats();
+                Stats.LastReplyUserId = value;
+            }
+        }
+
+        /// <summary>
+        /// Nom d'utilisateur de la dernière activité (proxy vers Stats.LastReplyUsername).
+        /// </summary>
+        [BsonIgnore]
+        public string? LastActivityByUsername
+        {
+            get => Stats?.LastReplyUsername;
+            set
+            {
+                if (Stats == null) Stats = new TopicStats();
+                Stats.LastReplyUsername = value;
+            }
+        }
     }
     
     /// <summary>

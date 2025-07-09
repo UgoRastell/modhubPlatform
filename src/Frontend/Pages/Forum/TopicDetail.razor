@@ -383,17 +383,17 @@
     }
     
     // Handlers d'événements SignalR
-    private void HandleMessageReceived(string username, string message)
+    private void HandleMessageReceived(ForumPost post)
     {
         // Créer un nouveau post avec le message reçu
         var newPost = new ForumPostViewModel
         {
-            Id = Guid.NewGuid().ToString(),
-            TopicId = TopicId,
-            AuthorId = "live", // Sera remplacé par l'ID réel lors du rechargement complet
-            AuthorName = username,
-            Content = message,
-            CreatedAt = DateTime.UtcNow,
+            Id = post.Id,
+            TopicId = post.TopicId,
+            AuthorId = post.CreatedByUserId,
+            AuthorName = post.CreatedByUsername,
+            Content = post.Content,
+            CreatedAt = post.CreatedAt,
             IsEdited = false,
             LikesCount = 0
         };

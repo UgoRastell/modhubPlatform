@@ -1,5 +1,9 @@
 using Microsoft.AspNetCore.SignalR;
+using System;
 using System.Threading.Tasks;
+
+using CommunityService.Services.Forums;
+using CommunityService.Models.Forum;
 
 namespace CommunityService.Hubs
 {
@@ -8,6 +12,12 @@ namespace CommunityService.Hubs
     /// </summary>
     public class ForumHub : Hub
     {
+        private readonly IForumService _forumService;
+
+        public ForumHub(IForumService forumService)
+        {
+            _forumService = forumService;
+        }
         /// <summary>
         /// Rejoint un groupe spécifique à un sujet du forum
         /// </summary>
@@ -34,8 +44,37 @@ namespace CommunityService.Hubs
         /// <param name="username">Nom de l'utilisateur</param>
         public async Task SendMessage(string topicId, string message, string username)
         {
-            // Notification en temps réel envoyée à tous les membres du groupe
-            await Clients.Group($"topic_{topicId}").SendAsync("ReceiveMessage", username, message);
+            // 1. Persister le message dans MongoDB via le service domaine
+            ForumPost? forumPost = null;
+    try
+            {
+                var topic = await _forumService.GetTopicByIdAsync(topicId);
+                if (topic is null)
+                {
+                    await Clients.Caller.SendAsync("Error", "Topic introuvable");
+                    return;
+                }
+
+                forumPost = new ForumPost
+                {
+                    TopicId = topicId,
+                    CategoryId = topic.CategoryId,
+                    Content = message,
+                    CreatedByUsername = username,
+                    CreatedByUserId = Context.ConnectionId
+                };
+
+                await _forumService.CreatePostAsync(forumPost);
+
+        // 2. Diffuser le message aux membres du groupe après succès
+        await Clients.Group($"topic_{topicId}").SendAsync("ReceiveMessage", forumPost);
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", ex.Message);
+            }
+            // 2. Diffuser le message aux membres du groupe
+            await Clients.Group($"topic_{topicId}").SendAsync("ReceiveMessage", forumPost);
         }
 
         /// <summary>

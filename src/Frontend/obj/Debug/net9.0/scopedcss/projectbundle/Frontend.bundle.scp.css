@@ -119,7 +119,8 @@ main[b-gknvvqa2uj] {
 }
 
 .mud-paper[b-gknvvqa2uj] {
-    background-color: var(--bg-secondary, #232634);
+    background-color: var(--bg-secondary, #232634); /* dark background */
+    color: #ffffff; /* white text */
 }
 
 .mud-table[b-gknvvqa2uj] {

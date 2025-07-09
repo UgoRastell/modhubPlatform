@@ -92,6 +92,14 @@ namespace CommunityService.Models.Moderation
         /// </summary>
         public ModeratorAction? Action { get; set; }
         
+        // Legacy alias property for backward compatibility with older services consuming "ModeratorAction" directly
+        [JsonIgnore]
+        public ModeratorAction? ModeratorAction
+        {
+            get => Action;
+            set => Action = value;
+        }
+        
         /// <summary>
         /// Niveau de priorité du signalement
         /// </summary>
@@ -102,6 +110,7 @@ namespace CommunityService.Models.Moderation
     public enum ContentType
     {
         ForumPost,
+        Mod,
         WikiPage,
         Comment,
         ModListing,
@@ -141,6 +150,7 @@ namespace CommunityService.Models.Moderation
     {
         NoAction,
         ContentRemoved,
+        ContentWarningAdded,
         ContentEdited,
         UserWarned,
         UserSuspended,

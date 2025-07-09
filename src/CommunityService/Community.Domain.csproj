@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Domain library containing Forum models & services, no MVC controllers -->
+  <PropertyGroup>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>CommunityService</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Accès MongoDB pour ForumService -->
+    <PackageReference Include="MongoDB.Driver" Version="2.25.4" />
+  </ItemGroup>
+
+  <!-- Only compile Models and Services folders -->
+  <ItemGroup>
+    <Compile Include="Models\**\*.cs" />
+    <Compile Include="Services\**\*.cs" />
+  </ItemGroup>
+
+  <!-- Need MVC refs for attributes used in data annotations inside models -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+</Project>

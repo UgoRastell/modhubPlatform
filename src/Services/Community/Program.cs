@@ -1,5 +1,7 @@
 using CommunityService.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using CommunityService.Services.Forums;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,25 @@ builder.Services.AddAuthentication("Bearer");
 
 // Register Moderation Services
 builder.Services.AddScoped<Community.Services.Moderation.IContentReportingService, Community.Services.Moderation.ContentReportingService>();
+
+// MongoDB configuration (uses connection string "MongoDb" from appsettings or environment)
+builder.Services.AddSingleton<IMongoClient>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("MongoDb") ?? "mongodb://localhost:27017";
+    return new MongoClient(connectionString);
+});
+
+builder.Services.AddSingleton<IMongoDatabase>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var databaseName = configuration.GetValue<string>("MongoDatabaseName") ?? "modhub";
+    var client = sp.GetRequiredService<IMongoClient>();
+    return client.GetDatabase(databaseName);
+});
+
+// Forum domain services
+builder.Services.AddScoped<CommunityService.Services.Forums.IForumService, CommunityService.Services.Forums.ForumService>();
 
 // Add SignalR services
 builder.Services.AddSignalR(options =>

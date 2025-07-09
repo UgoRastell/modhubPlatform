@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using CommunityService.Models.Forum;
 
@@ -178,6 +179,37 @@ namespace CommunityService.Services.Forums
         /// Nombre de membres actifs sur le forum
         /// </summary>
         public int ActiveMembers { get; set; }
+        
+        // ---- Legacy properties expected by older service code ----
+        /// <summary>
+        /// Nombre total d'utilisateurs actifs (alias de ActiveMembers)
+        /// </summary>
+        [JsonIgnore]
+        public int TotalActiveUsers
+        {
+            get => ActiveMembers;
+            set => ActiveMembers = value;
+        }
+
+        /// <summary>
+        /// Date et heure de la dernière activité (alias de LastPostDate)
+        /// </summary>
+        [JsonIgnore]
+        public DateTime? LastActivityAt
+        {
+            get => LastPostDate;
+            set => LastPostDate = value;
+        }
+
+        /// <summary>
+        /// Nom d'utilisateur du dernier contributeur (alias de LastActiveUsername)
+        /// </summary>
+        [JsonIgnore]
+        public string? LastActivityByUsername
+        {
+            get => LastActiveUsername;
+            set => LastActiveUsername = value;
+        }
         
         /// <summary>
         /// Date du dernier message

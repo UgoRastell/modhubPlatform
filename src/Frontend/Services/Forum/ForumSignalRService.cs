@@ -1,4 +1,4 @@
-using Frontend.Models.Forum;
+using Frontend.Models.Forum; // import ForumPost model
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -16,7 +16,7 @@ namespace Frontend.Services.Forum
         private string _currentUsername = string.Empty;
         
         // Événements que les composants peuvent écouter
-        public event Action<string, string>? OnMessageReceived;
+        public event Action<ForumPost>? OnMessageReceived;
         public event Action<string>? OnUserTyping;
         public event Action<string>? OnUserOnline;
         public event Action<string>? OnUserOffline;
@@ -64,9 +64,9 @@ namespace Frontend.Services.Forum
                 .Build();
                 
             // Configurer la réception des messages
-            _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+            _hubConnection.On<ForumPost>("ReceiveMessage", (post) =>
             {
-                OnMessageReceived?.Invoke(user, message);
+                OnMessageReceived?.Invoke(post);
             });
             
             _hubConnection.On<string>("UserIsTyping", (username) =>

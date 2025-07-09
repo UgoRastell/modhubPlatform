@@ -871,7 +871,7 @@ namespace CommunityService.Services.Forums
                 var postsCount = await _postsCollection.CountDocumentsAsync(_ => true);
                 
                 // Compter les utilisateurs actifs (qui ont posté au moins un message)
-                var activeUsersCount = await _postsCollection.Distinct<string>("CreatedByUserId", _ => true).ToListAsync();
+                var activeUsers = await _postsCollection.Distinct<string>("CreatedByUserId", Builders<ForumPost>.Filter.Empty).ToListAsync();
                 
                 // Trouver le dernier message
                 var lastPost = await _postsCollection.Find(_ => true)
@@ -883,7 +883,7 @@ namespace CommunityService.Services.Forums
                     TotalCategories = (int)categoriesCount,
                     TotalTopics = (int)topicsCount,
                     TotalPosts = (int)postsCount,
-                    TotalActiveUsers = activeUsersCount.Count,
+                    TotalActiveUsers = activeUsers.Count,
                     LastActivityAt = lastPost?.CreatedAt ?? DateTime.MinValue,
                     LastActivityByUsername = lastPost?.CreatedByUsername ?? "Aucun"
                 };
