@@ -3,6 +3,7 @@
 @using Frontend.Models
 @using Frontend.Services
 @using System.Threading.Tasks
+@using System.Linq
 @implements IDisposable
 @using Microsoft.AspNetCore.Components.Authorization
 @inject ISnackbar Snackbar
@@ -57,7 +58,7 @@
                 </MudItem>
                 <MudItem xs="6" md="3">
                     <MudSelect T="string" @bind-Value="selectedCategory" Label="Catégorie" Dense="true" Class="w-100">
-                        <MudSelectItem T="string" Value="">Toutes</MudSelectItem>
+                        <MudSelectItem T="string" Value="@string.Empty">Toutes</MudSelectItem>
                         @foreach (var cat in categories)
                         {
                             <MudSelectItem T="string" Value="@cat">@cat</MudSelectItem>
@@ -66,8 +67,8 @@
                 </MudItem>
                 <MudItem xs="6" md="3">
                     <MudSelect T="string" @bind-Value="sortBy" Label="Trier par" Dense="true" Class="w-100">
-                        <MudSelectItem T="string" Value="recent">Plus récents</MudSelectItem>
-                        <MudSelectItem T="string" Value="popular">Populaires</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("recent")">Plus récents</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("popular")">Populaires</MudSelectItem>
                     </MudSelect>
                 </MudItem>
             </MudGrid>
@@ -172,14 +173,23 @@
         isLoading = true;
         StateHasChanged();
 
-        var response = await ModService.GetMods(searchTerm, selectedCategory, sortBy, currentPage, pageSize);
-        mods = response.Items;
-        totalItems = response.Total;
+        var apiResponse = await ModService.GetModsAsync(currentPage, pageSize, searchTerm, selectedCategory, sortBy);
+        if (apiResponse.Success && apiResponse.Data != null)
+        {
+            mods = apiResponse.Data.Items.ToList();
+            totalItems = apiResponse.Data.TotalCount;
+        }
+        else
+        {
+            mods = new();
+            totalItems = 0;
+        }
 
-        modsCount = response.Metrics.ModsCount;
-        downloads = response.Metrics.Downloads;
-        creators = response.Metrics.Creators;
-        supportedGames = response.Metrics.SupportedGames;
+        // TODO: Replace these placeholders when real metrics are available from the API
+        modsCount = totalItems;
+        downloads = 0;
+        creators = 0;
+        supportedGames = 0;
 
         isLoading = false;
         StateHasChanged();
@@ -193,9 +203,8 @@
 
     private async Task DownloadMod(string modId)
     {
-        // Exemple simplifié – à implémenter selon l'API
-        var success = await ModService.DownloadMod(modId);
-        Snackbar.Add(success ? "Téléchargement lancé" : "Erreur de téléchargement", success ? Severity.Success : Severity.Error);
+        var response = await ModService.DownloadModAsync(modId);
+        Snackbar.Add(response.Success ? "Téléchargement lancé" : $"Erreur: {response.Message}", response.Success ? Severity.Success : Severity.Error);
     }
 
     private void ViewModDetails(string modId)
