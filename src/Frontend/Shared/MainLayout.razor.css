@@ -40,7 +40,7 @@ main {
 }
 
 .mud-paper {
-    background-color: #ffffff; /* global white background */
+    background-color: var(--bg-secondary, #232634); /* dark background */
     color: #ffffff; /* white text */
 }
 
