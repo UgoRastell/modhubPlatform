@@ -89,6 +89,26 @@ namespace ModsService.Controllers
         }
 
         /// <summary>
+        /// Récupère les mods créés par un utilisateur spécifique (créateur)
+        /// </summary>
+        [HttpGet("~/api/v1/users/{userId}/mods")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetModsByUser(string userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest(new ApiResponse<object> { Success = false, Message = "UserId manquant" });
+            }
+
+            var response = await _modService.GetModsByCreatorAsync(userId, page, pageSize);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        /// <summary>
         /// Recherche des mods
         /// </summary>
         [HttpGet("search")]
