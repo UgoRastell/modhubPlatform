@@ -14,17 +14,40 @@ namespace Frontend.Services
     {
         Task<IEnumerable<Game>> GetGamesAsync(string searchQuery = null, string sortOption = "popularity");
         Task<Game> GetGameByIdAsync(string id);
+        Task<ApiResponse<GameDto>> CreateGameAsync(GameCreateRequest request);
     }
 
     public class GameService : IGameService
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<GameService> _logger;
+        private const string BaseApiUrl = "/api/games";
 
         public GameService(HttpClient httpClient, ILogger<GameService> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
+        }
+
+        public async Task<ApiResponse<GameDto>> CreateGameAsync(GameCreateRequest request)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync($"{BaseApiUrl}", request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var created = await response.Content.ReadFromJsonAsync<GameDto>();
+                    return new ApiResponse<GameDto> { Success = true, Data = created };
+                }
+
+                var message = await response.Content.ReadAsStringAsync();
+                return new ApiResponse<GameDto> { Success = false, Message = message };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de la création du jeu");
+                return new ApiResponse<GameDto> { Success = false, Message = ex.Message };
+            }
         }
 
         public async Task<IEnumerable<Game>> GetGamesAsync(string searchQuery = null, string sortOption = "popularity")
