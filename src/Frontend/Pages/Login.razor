@@ -14,90 +14,8 @@
 
 <PageTitle>Connexion - ModHub</PageTitle>
 
-<MudGrid Justify="Justify.Center" AlignItems="AlignItems.Center" Class="login-page" Style="min-height:calc(100vh - 60px);">
-    <MudItem xs="12" sm="8" md="6" lg="4">
-        <MudPaper Elevation="4" Class="p-6 surface-dark rounded-xl">
-            <MudStack Spacing="3">
-                <MudText Typo="Typo.h4" Align="Align.Center">Connexion</MudText>
-
-                <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-                    <DataAnnotationsValidator />
-
-                    <MudTextField @bind-Value="loginModel.Email"
-                                   Label="Email"
-                                   Variant="Variant.Outlined"
-                                   InputType="InputType.Email"
-                                   Adornment="Adornment.Start"
-                                   AdornmentIcon="@Icons.Material.Filled.Email"
-                                   Class="mt-1" />
-                    <ValidationMessage For="@(() => loginModel.Email)" />
-
-                    <MudTextField @bind-Value="loginModel.Password"
-                                   Label="Mot de passe"
-                                   Variant="Variant.Outlined"
-                                   InputType="@passwordInputType"
-                                   Adornment="Adornment.Start"
-                                   AdornmentIcon="@Icons.Material.Filled.Lock">
-                        <InputContent>
-                            <MudIconButton Icon="@passwordIcon" Color="Color.Primary" OnClick="TogglePasswordVisibility" />
-                        </InputContent>
-                    </MudTextField>
-                    <ValidationMessage For="@(() => loginModel.Password)" />
-
-                    <MudCheckBox T="bool" @bind-Checked="loginModel.RememberMe" Label="Se souvenir de moi" Color="Color.Primary" />
-
-                    @if (!string.IsNullOrEmpty(errorMessage))
-                    {
-                        <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
-                    }
-
-                    <MudButton ButtonType="ButtonType.Submit"
-                               Color="Color.Primary"
-                               Variant="Variant.Filled"
-                               FullWidth="true"
-                               Disabled="@isLoading"
-                               Class="login-button mt-2">
-                        @if (isLoading)
-                        {
-                            <MudProgressCircular Size="Size.Small" Class="me-2" Indeterminate="true" />
-                            <span>Connexion...</span>
-                        }
-                        else
-                        {
-                            <span>Se connecter</span>
-                        }
-                    </MudButton>
-                </EditForm>
-
-                <MudDivider />
-
-                <MudText Align="Align.Center">Ou connectez-vous avec</MudText>
-
-                <MudButton Variant="Variant.Outlined"
-                           StartIcon="@Icons.Custom.Brands.Google"
-                           Color="Color.Error"
-                           FullWidth="true"
-                           OnClick="HandleGoogleSignIn">
-                    Google
-                </MudButton>
-
-                <MudStack Direction="Row" Justify="Justify.SpaceBetween">
-                    <MudLink Href="/register">Créer un compte</MudLink>
-                    <MudLink Href="/reset-password-request">Mot de passe oublié ?</MudLink>
-                </MudStack>
-            </MudStack>
-        </MudPaper>
-    </MudItem>
-</MudGrid>
-@*
-
-    <MudItem xs="12" sm="8" md="6" lg="4">
-        <MudPaper Elevation="4" Class="pa-6 surface-dark rounded-xl">
-            <MudStack Spacing="3">
-                <MudText Typo="Typo.h4" Align="Align.Center">Connexion</MudText>
-
-                <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-                    <DataAnnotationsValidator />
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8 py-8">
+    <MudCard Elevation="3" Class="rounded-xl" Style="background-color: #232634;">
         <MudCardHeader>
             <MudText Typo="Typo.h4" Align="Align.Center" Class="w-100">Connexion</MudText>
         </MudCardHeader>
@@ -161,32 +79,38 @@
                         <MudText>Se connecter</MudText>
                     }
                 </MudButton>
-                </EditForm>
+            </EditForm>
+            
+            <MudDivider Class="my-6" />
+            
+            <MudText Align="Align.Center" Class="mb-4">Ou connectez-vous avec</MudText>
+            
+            <MudButton Variant="Variant.Outlined" 
+                      StartIcon="@Icons.Custom.Brands.Google"
+                      Color="Color.Error"
+                      FullWidth="true"
+                      OnClick="HandleGoogleSignIn">
+                Google
+            </MudButton>
+        </MudCardContent>
+    </MudCard>
+</MudContainer>
 
-                <MudDivider />
-                <MudText Align="Align.Center">Ou connectez-vous avec</MudText>
-                <MudButton Variant="Variant.Outlined"
-
-                        <MudTextField @bind-Value="loginModel.Password"
-                                     Label="Mot de passe"
-                                     Variant="Variant.Outlined"
-                                     InputType="@passwordInputType"
-                                     Adornment="Adornment.Start"
-                                     AdornmentIcon="@Icons.Material.Filled.Lock">
-                            <InputContent>
-                                <MudIconButton Icon="@passwordIcon" Color="Color.Primary" OnClick="TogglePasswordVisibility" />
-                            </InputContent>
-                        </MudTextField>
-                        <ValidationMessage For="@(() => loginModel.Password)" />
+<style>
+    /* Styles spécifiques à la page Login */
+    ::deep .mud-input-control.mud-input-focused:not(.mud-input-error) .mud-input-border::after {
+        border-color: #00aaff !important;
+    }
     
-     {
+    ::deep .mud-input-control.mud-input-focused:not(.mud-input-error) .mud-input-label.mud-input-label-inputcontrol {
         color: #00aaff !important;
     }
+    
     .login-button:hover {
         box-shadow: 0 0 12px #00aaff80;
         transform: translateY(-2px);
     }
-*@
+</style>
 
 @code {
     [Parameter]
