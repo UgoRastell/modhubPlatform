@@ -1,0 +1,215 @@
+@page "/mods"
+@page "/mods-hub"
+@using Frontend.Models
+@using Frontend.Services
+@using System.Threading.Tasks
+@implements IDisposable
+@using Microsoft.AspNetCore.Components.Authorization
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject IModService ModService
+@inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IUserService UserService
+
+<PageTitle>Hub des Mods - ModHub</PageTitle>
+
+<!--====================================================-->
+<!-- HERO                                                 -->
+<!--====================================================-->
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-0 surface-dark hub-container">
+    <MudPaper Elevation="0" Class="pa-8 text-center hero-surface">
+        <MudText Typo="Typo.h3" Color="Color.Surface" Class="mb-2 fw-bold">Hub des Mods</MudText>
+        <MudText Typo="Typo.subtitle1" Color="Color.Surface">Découvrez, téléchargez et évaluez les meilleurs mods de la communauté</MudText>
+    </MudPaper>
+
+    <!--================================================-->
+    <!-- METRICS BAR                                    -->
+    <!--================================================-->
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
+        <MudGrid Justify="Justify.Center" Class="mb-8">
+            <MudItem xs="6" sm="3" Class="metric-item text-center">
+                <MudText Typo="Typo.h4">@modsCount</MudText>
+                <MudText Typo="Typo.caption">Mods disponibles</MudText>
+            </MudItem>
+            <MudItem xs="6" sm="3" Class="metric-item text-center">
+                <MudText Typo="Typo.h4">@downloads</MudText>
+                <MudText Typo="Typo.caption">Téléchargements</MudText>
+            </MudItem>
+            <MudItem xs="6" sm="3" Class="metric-item text-center">
+                <MudText Typo="Typo.h4">@creators</MudText>
+                <MudText Typo="Typo.caption">Créateurs actifs</MudText>
+            </MudItem>
+            <MudItem xs="6" sm="3" Class="metric-item text-center">
+                <MudText Typo="Typo.h4">@supportedGames</MudText>
+                <MudText Typo="Typo.caption">Jeux supportés</MudText>
+            </MudItem>
+        </MudGrid>
+
+        <!--============================================-->
+        <!-- FILTERS                                    -->
+        <!--============================================-->
+        <MudPaper Elevation="1" Class="pa-4 mb-6 filters-surface">
+            <MudGrid Gutter="GutterSize.Small" AlignItems="AlignItems.Center">
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="searchTerm" Placeholder="Rechercher..." Immediate="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="w-100" />
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudSelect T="string" @bind-Value="selectedCategory" Label="Catégorie" Dense="true" Class="w-100">
+                        <MudSelectItem T="string" Value="">Toutes</MudSelectItem>
+                        @foreach (var cat in categories)
+                        {
+                            <MudSelectItem T="string" Value="@cat">@cat</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudSelect T="string" @bind-Value="sortBy" Label="Trier par" Dense="true" Class="w-100">
+                        <MudSelectItem T="string" Value="recent">Plus récents</MudSelectItem>
+                        <MudSelectItem T="string" Value="popular">Populaires</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <!--============================================-->
+        <!-- MOD LIST                                   -->
+        <!--============================================-->
+        @if (isLoading)
+        {
+            <div class="d-flex justify-center my-8">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+            </div>
+        }
+        else if (mods.Count == 0)
+        {
+            <MudText Typo="Typo.h6" Align="Align.Center" Class="my-8">Aucun mod trouvé.</MudText>
+        }
+        else
+        {
+            <MudGrid Gutter="GutterSize.Medium">
+                @foreach (var mod in mods)
+                {
+                    <MudItem xs="12" sm="6" md="4" lg="3">
+                        <MudCard Class="mod-card">
+                            <MudCardMedia Image="@GetModThumbnail(mod)" Height="180" />
+                            <MudCardContent>
+                                <MudText Typo="Typo.subtitle1" Class="mod-title">@mod.Name</MudText>
+                                <MudText Typo="Typo.caption" Class="mod-author">@mod.CreatorName ?? "Créateur inconnu"</MudText>
+                                <MudRating MaxValue="5" Value="@(mod.AverageRating)" ReadOnly="true" Color="Color.Warning" Size="Size.Small" />
+                                <MudText Typo="Typo.body2" Class="mod-description">@mod.ShortDescription</MudText>
+                            </MudCardContent>
+                            <MudCardActions Class="justify-space-between">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download" OnClick="@(() => DownloadMod(mod.Id))">Télécharger</MudButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Surface" OnClick="@(() => ViewModDetails(mod.Id))" />
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+
+        <!--============================================-->
+        <!-- PAGINATION                                -->
+        <!--============================================-->
+        <div class="pagination-container">
+            <MudPagination Page="@currentPage" PageSize="pageSize" TotalItems="@totalItems" OnPageChanged="@PageChanged" />
+        </div>
+
+    </MudContainer>
+</MudContainer>
+
+<!--====================================================-->
+<!-- STYLES                                             -->
+<!--====================================================-->
+<style scoped>
+    .hub-container { background-color: var(--mud-palette-primary-darken); }
+
+    .hero-surface { background-color: var(--mud-palette-primary); }
+
+    .metric-item mud-text:first-child { font-weight: 600; }
+
+    .mod-card { transition: transform 0.3s ease; height: 100%; }
+    .mod-card:hover { transform: translateY(-4px); box-shadow: 0 6px 18px rgba(0,0,0,.26); }
+
+    .mod-title { font-weight: 600; color: var(--text-on-dark); }
+    .mod-author { color: var(--text-on-dark); }
+    .mod-description { color: var(--text-on-dark); overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+
+    .filters-surface { backdrop-filter: blur(10px); border-radius: 20px; background: rgba(255,255,255,0.05); }
+
+    .pagination-container { display:flex; justify-content:center; margin:40px 0; }
+</style>
+
+@code {
+    // --- STATE -----------------------------------------------------------
+    private List<ModDto> mods = new();
+    private bool isLoading = true;
+
+    // Filters & paging
+    private string searchTerm = string.Empty;
+    private string selectedCategory = string.Empty;
+    private string sortBy = "recent";
+    private int currentPage = 1;
+    private int pageSize = 12;
+    private int totalItems;
+
+    // Metrics
+    private int modsCount;
+    private int downloads;
+    private int creators;
+    private int supportedGames;
+
+    // Category list – à adapter si nécessaire
+    private readonly List<string> categories = new() { "graphismes", "gameplay", "audio", "ui" };
+
+    // --- LIFECYCLE -------------------------------------------------------
+    protected override async Task OnInitializedAsync() => await LoadDataAsync();
+
+    private async Task LoadDataAsync()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var response = await ModService.GetMods(searchTerm, selectedCategory, sortBy, currentPage, pageSize);
+        mods = response.Items;
+        totalItems = response.Total;
+
+        modsCount = response.Metrics.ModsCount;
+        downloads = response.Metrics.Downloads;
+        creators = response.Metrics.Creators;
+        supportedGames = response.Metrics.SupportedGames;
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task PageChanged(int page)
+    {
+        currentPage = page;
+        await LoadDataAsync();
+    }
+
+    private async Task DownloadMod(string modId)
+    {
+        // Exemple simplifié – à implémenter selon l'API
+        var success = await ModService.DownloadMod(modId);
+        Snackbar.Add(success ? "Téléchargement lancé" : "Erreur de téléchargement", success ? Severity.Success : Severity.Error);
+    }
+
+    private void ViewModDetails(string modId)
+    {
+        NavigationManager.NavigateTo($"/mod/{modId}");
+    }
+
+    // Helper pour miniature
+    private string GetModThumbnail(ModDto mod)
+    {
+        if (mod == null) return "/images/mod-placeholder.png";
+        if (!string.IsNullOrWhiteSpace(mod.ThumbnailUrl)) return mod.ThumbnailUrl;
+        return "/images/mod-placeholder.png";
+    }
+
+    public void Dispose() { }
+}
