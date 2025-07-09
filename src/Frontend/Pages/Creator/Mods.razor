@@ -238,29 +238,34 @@
                 var creatorId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? 
                                 user.FindFirst("sub")?.Value ?? "unknown-user";
                 
-                // Utiliser le ModService pour récupérer les mods depuis MongoDB
-                var modsInfo = await ModService.GetCreatorModsAsync(creatorId);
-                
-                // Convertir les ModInfo en ModDto pour l'affichage
-                myMods = modsInfo.Select(m => new ModDto
+                // Appeler ModService pour récupérer les mods du créateur via l'endpoint /users/{id}/mods
+                var response = await ModService.GetUserModsAsync(creatorId, page: 1, pageSize: 100);
+
+                if (response != null && response.Success && response.Data?.Items != null)
                 {
-                    Id = m.Id,
-                    Name = m.Title,
-                    Description = m.Description,
-                    ThumbnailUrl = m.ThumbnailUrl,
-                    GameId = m.Game?.Split('-').FirstOrDefault() ?? "",
-                    GameName = m.Game,
-                    Rating = m.Rating,
-                    ReviewCount = m.RatingCount,
-                    DownloadCount = m.Downloads,
-                    Tags = m.Category?.Split(',').ToList() ?? new List<string>(),
-                    IsPremium = m.Price > 0,
-                    IsNew = (DateTime.Now - m.CreatedDate).TotalDays < 7,
-                    CreatedAt = m.CreatedDate,
-                    UpdatedAt = m.UpdatedDate,
-                    Version = m.Version,
-                    FileSize = 0 // Information non disponible dans ModInfo
-                }).ToList();
+                    // Adapter les ModDto du backend au ModDto local (avec IsPremium, Tags, etc.)
+                    myMods = response.Data.Items.Select(dto => new ModDto
+                    {
+                        Id = dto.Id,
+                        Name = dto.Name,
+                        Description = dto.Description,
+                        ThumbnailUrl = dto.ThumbnailUrl,
+                        GameId = dto.GameId,
+                        GameName = dto.GameName,
+                        Rating = dto.AverageRating,
+                        ReviewCount = dto.RatingCount,
+                        DownloadCount = (int)dto.DownloadCount,
+                        Tags = dto.Tags ?? new List<string>(),
+                        IsPremium = dto.IsFeatured, // Le backend utilise isPremium
+                        IsNew = dto.IsNew,
+                        CreatedAt = dto.CreatedAt,
+                        UpdatedAt = dto.UpdatedAt,
+                        Version = dto.Version,
+                        FileSize = 0 // Taille non disponible pour l'instant
+                    }).ToList();
+                } else {
+                    myMods = new List<ModDto>();
+                }
             }
         }
         catch (Exception ex)
