@@ -41,6 +41,7 @@ main {
 
 .mud-paper {
     background-color: var(--bg-secondary, #232634);
+    color: rgb(255, 255, 255);
 }
 
 .mud-table {
