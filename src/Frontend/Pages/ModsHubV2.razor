@@ -97,11 +97,11 @@
                         <MudCard Class="mod-card" Outlined="true" Elevation="1">
                             <MudCardHeader>
                                 <CardHeaderAvatar>
-                                    <MudAvatar Size="Size.Medium" Image="@mod.CreatorAvatarUrl" Text="@GetAvatarInitial(mod.CreatorName)" Color="Color.Primary" />
+                                    <MudAvatar Size="Size.Medium" Image="@mod.CreatorAvatarUrl" Text="@GetAvatarInitial(!string.IsNullOrWhiteSpace(mod.CreatorName) ? mod.CreatorName : mod.Author)" Color="Color.Primary" />
                                 </CardHeaderAvatar>
                                 <CardHeaderContent>
                                     <MudText Typo="Typo.subtitle1" Class="mod-title">@mod.Name</MudText>
-                                    <MudText Typo="Typo.caption" Class="mod-author">@mod.CreatorName ?? "Créateur inconnu"</MudText>
+                                    <MudText Typo="Typo.caption" Class="mod-author">@(!string.IsNullOrWhiteSpace(mod.CreatorName) ? mod.CreatorName : (!string.IsNullOrWhiteSpace(mod.Author) ? mod.Author : "Créateur inconnu"))</MudText>
                                 </CardHeaderContent>
                                 <CardHeaderActions>
                                     <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Surface" OnClick="@(() => ViewModDetails(mod.Id))" />
