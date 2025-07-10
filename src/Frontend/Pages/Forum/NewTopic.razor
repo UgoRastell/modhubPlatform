@@ -22,7 +22,7 @@
             <MudSelect T="string" Label="Catégorie" @bind-Value="topicModel.CategoryId" Required="true" Class="mb-4">
                 @if (categories.Count == 0)
                 {
-                    <MudSelectItem Disabled="true" Value="">Aucune catégorie disponible</MudSelectItem>
+                    <MudSelectItem Disabled="true" Value="@string.Empty">Aucune catégorie disponible</MudSelectItem>
                 }
                 @foreach (var cat in categories)
                 {
