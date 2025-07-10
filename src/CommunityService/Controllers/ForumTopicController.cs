@@ -336,7 +336,7 @@ namespace CommunityService.Controllers
                 // Si la requête est vide ou trop courte, retourner les sujets les plus récents
                 if (string.IsNullOrWhiteSpace(query) || query!.Trim().Length < 3)
                 {
-                    var latestTopics = await _forumService.GetRecentlyActiveTopicsAsync(pageSize);
+                    var latestTopics = await _forumService.GetRecentlyActiveTopicsAsync(count: pageSize);
                     var pagedLatest = new PagedResult<ForumTopic>
                     {
                         Items = latestTopics,

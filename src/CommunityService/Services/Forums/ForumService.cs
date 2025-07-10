@@ -924,6 +924,12 @@ namespace CommunityService.Services.Forums
             }
         }
 
+        // Surcharge rétrocompatible : récupère les {count} sujets récemment actifs (page 1)
+        public async Task<List<ForumTopic>> GetRecentlyActiveTopicsAsync(int count = 5)
+        {
+            return await GetRecentlyActiveTopicsAsync(count, 1);
+        }
+
         public async Task<List<ForumTopic>> GetPopularTopicsAsync(int count = 5)
         {
             try
