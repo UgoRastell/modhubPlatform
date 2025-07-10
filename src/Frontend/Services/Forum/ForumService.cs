@@ -411,17 +411,39 @@ namespace Frontend.Services.Forum
         {
             try
             {
-                var url = $"api/forum/search?query={Uri.EscapeDataString(query)}&page={page}&pageSize={pageSize}";
-                if (!string.IsNullOrEmpty(categoryId))
-                    url += $"&categoryId={categoryId}";
-                if (!string.IsNullOrEmpty(tag))
-                    url += $"&tag={Uri.EscapeDataString(tag)}";
-
-                var response = await _httpClient.GetAsync(url);
-                if (response.IsSuccessStatusCode)
+                // Cas 1 : requête vide => on veut les derniers sujets (endpoint /api/forum/topics)
+                if (string.IsNullOrWhiteSpace(query))
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<PagedResult<ForumTopicViewModel>>(content, _jsonOptions) ?? new PagedResult<ForumTopicViewModel>();
+                    var urlTopics = $"api/forum/topics?page={page}&pageSize={pageSize}";
+                    var respTopics = await _httpClient.GetAsync(urlTopics);
+                    if (respTopics.IsSuccessStatusCode)
+                    {
+                        var listContent = await respTopics.Content.ReadAsStringAsync();
+                        var topics = JsonSerializer.Deserialize<List<ForumTopicViewModel>>(listContent, _jsonOptions) ?? new List<ForumTopicViewModel>();
+                        return new PagedResult<ForumTopicViewModel>
+                        {
+                            Items = topics,
+                            TotalCount = topics.Count, // L'API ne fournit pas encore le total, on se contente du count actuel
+                            PageNumber = page,
+                            PageSize = pageSize
+                        };
+                    }
+                }
+                else
+                {
+                    // Cas 2 : recherche avec requête texte
+                    var url = $"api/forum/search?query={Uri.EscapeDataString(query)}&page={page}&pageSize={pageSize}";
+                    if (!string.IsNullOrEmpty(categoryId))
+                        url += $"&categoryId={categoryId}";
+                    if (!string.IsNullOrEmpty(tag))
+                        url += $"&tag={Uri.EscapeDataString(tag)}";
+
+                    var response = await _httpClient.GetAsync(url);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        return JsonSerializer.Deserialize<PagedResult<ForumTopicViewModel>>(content, _jsonOptions) ?? new PagedResult<ForumTopicViewModel>();
+                    }
                 }
             }
             catch { }

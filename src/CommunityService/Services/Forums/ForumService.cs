@@ -900,18 +900,15 @@ namespace CommunityService.Services.Forums
             }
         }
 
-        public async Task<List<ForumTopic>> GetRecentlyActiveTopicsAsync(int pageSize = 20, int page = 1)
+        public async Task<List<ForumTopic>> GetRecentlyActiveTopicsAsync(int count = 5)
         {
             try
             {
-                _logger.LogInformation("Récupération des sujets récemment actifs - page {Page}, taille {PageSize}", page, pageSize);
+                _logger.LogInformation("Récupération des {Count} sujets récemment actifs", count);
                 
-                var skip = (page - 1) * pageSize;
                 var recentTopics = await _topicsCollection.Find(_ => true)
                     .SortByDescending(t => t.LastActivityAt)
-                    .ThenByDescending(t => t.CreatedAt)
-                    .Skip(skip)
-                    .Limit(pageSize)
+                    .Limit(count)
                     .ToListAsync();
                 
                 _logger.LogInformation("Récupéré {Count} sujets récemment actifs", recentTopics.Count);
@@ -922,12 +919,6 @@ namespace CommunityService.Services.Forums
                 _logger.LogError(ex, "Erreur lors de la récupération des sujets récemment actifs");
                 throw;
             }
-        }
-
-        // Surcharge rétrocompatible : récupère les {count} sujets récemment actifs (page 1)
-        public async Task<List<ForumTopic>> GetRecentlyActiveTopicsAsync(int count = 5)
-        {
-            return await GetRecentlyActiveTopicsAsync(count, 1);
         }
 
         public async Task<List<ForumTopic>> GetPopularTopicsAsync(int count = 5)

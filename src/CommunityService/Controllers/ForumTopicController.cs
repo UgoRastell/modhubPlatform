@@ -325,38 +325,19 @@ namespace CommunityService.Controllers
         }
         
         [HttpGet("search")]
-        [HttpGet("~/api/forum/search")]
-        public async Task<ActionResult<PagedResult<ForumTopic>>> SearchTopics(
-            [FromQuery] string? query = "",
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20)
+        public async Task<ActionResult<List<ForumTopic>>> SearchTopics([FromQuery] string query, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             try
             {
-                // Si la requête est vide ou trop courte, retourner les sujets les plus récents
-                if (string.IsNullOrWhiteSpace(query) || query!.Trim().Length < 3)
+                // Si la requête est vide, on interprète cela comme une demande des derniers sujets.
+                // On conserve la validation > 3 caractères uniquement si la requête n'est pas vide.
+                if (!string.IsNullOrWhiteSpace(query) && query.Length < 3)
                 {
-                    var latestTopics = await _forumService.GetRecentlyActiveTopicsAsync(count: pageSize);
-                    var pagedLatest = new PagedResult<ForumTopic>
-                    {
-                        Items = latestTopics,
-                        PageNumber = page,
-                        PageSize = pageSize,
-                        TotalCount = latestTopics.Count // Nous ne connaissons pas le total exact ici
-                    };
-                    return Ok(pagedLatest);
+                    return BadRequest("Search query must be at least 3 characters long");
                 }
-
-                // Recherche classique
-                var searchResults = await _forumService.SearchTopicsAsync(query!, page, pageSize);
-                var pagedSearch = new PagedResult<ForumTopic>
-                {
-                    Items = searchResults,
-                    PageNumber = page,
-                    PageSize = pageSize,
-                    TotalCount = searchResults.Count
-                };
-                return Ok(pagedSearch);
+                
+                var results = await _forumService.SearchTopicsAsync(query, page, pageSize);
+                return Ok(results);
             }
             catch (Exception ex)
             {
@@ -374,15 +355,6 @@ namespace CommunityService.Controllers
         public List<string>? Tags { get; set; }
     }
     
-    public class PagedResult<T>
-    {
-        public List<T> Items { get; set; } = new();
-        public int TotalCount { get; set; }
-        public int PageNumber { get; set; }
-        public int PageSize { get; set; }
-        public int TotalPages => (PageSize > 0) ? (int)Math.Ceiling(TotalCount / (double)PageSize) : 0;
-    }
-
     public class UpdateTopicRequest
     {
         public string? Title { get; set; }
