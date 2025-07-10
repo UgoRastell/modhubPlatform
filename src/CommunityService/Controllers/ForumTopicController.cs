@@ -24,6 +24,7 @@ namespace CommunityService.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<List<ForumTopic>>> GetAllTopics([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             try
