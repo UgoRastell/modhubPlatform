@@ -23,19 +23,41 @@ namespace CommunityService.Controllers
         /// </summary>
         [HttpGet("search")]
         [AllowAnonymous]
-        public ActionResult<PagedResult<ForumTopicSearchViewModel>> SearchTopics(
+        public async Task<ActionResult<PagedResult<ForumTopicSearchViewModel>>> SearchTopics(
             [FromQuery] string query = "",
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
         {
-            // Placeholder : renvoyer une liste vide pour débloquer le frontend sans 401
+                        var filter = Builders<ForumTopic>.Filter.Empty;
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                filter = Builders<ForumTopic>.Filter.Text(query);
+            }
+            var totalItems = await _topics.CountDocumentsAsync(filter);
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            var topicsCursor = await _topics.Find(filter)
+                                            .SortByDescending(t => t.CreatedAt)
+                                            .Skip((page - 1) * pageSize)
+                                            .Limit(pageSize)
+                                            .ToListAsync();
+            var items = topicsCursor.Select(t => new ForumTopicSearchViewModel
+            {
+                Id = t.Id,
+                Title = t.Title,
+                AuthorName = t.CreatedByUsername,
+                CreatedAt = t.CreatedAt,
+                RepliesCount = t.Posts.Count - 1, // first post is topic
+                CategoryName = "" // category not stored yet
+            }).ToList();
+
             var result = new PagedResult<ForumTopicSearchViewModel>
             {
-                Items = new List<ForumTopicSearchViewModel>(),
+                Items = items,
                 Page = page,
                 PageSize = pageSize,
-                TotalItems = 0,
-                TotalPages = 0
+                TotalItems = (int)totalItems,
+                TotalPages = totalPages
             };
             return Ok(result);
         }
@@ -85,6 +107,8 @@ namespace CommunityService.Controllers
             public string Title { get; set; } = string.Empty;
             public string AuthorName { get; set; } = string.Empty;
             public string CategoryName { get; set; } = string.Empty;
+            public DateTime CreatedAt { get; set; }
+            public int RepliesCount { get; set; }
         }
 
         public class PagedResult<T>

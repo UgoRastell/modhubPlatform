@@ -20,6 +20,7 @@
         <MudText Typo="Typo.h5" Class="mb-4">Créer un nouveau sujet</MudText>
         <MudForm @ref="form" Model="topicModel" OnValidSubmit="HandleValidSubmit">
             <MudTextField T="string" Label="Titre" @bind-Value="topicModel.Title" Required="true" MaxLength="200" Class="mb-4" />
+            <MudTextField T="string" Label="Message" @bind-Value="topicModel.Content" Required="true" Lines="6" MaxLength="5000" TextArea="true" Class="mb-4" />
 
             <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Disabled="isSubmitting" StartIcon="@Icons.Material.Filled.Send">
                 @(isSubmitting ? "Envoi..." : "Publier")

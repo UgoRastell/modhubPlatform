@@ -5,8 +5,8 @@ namespace Frontend.Models.Forum
 {
     public class CreateForumTopicDto
     {
-        [Required(ErrorMessage = "L'ID de la catégorie est requis")]
-        public string CategoryId { get; set; } = string.Empty;
+        // CategoryId facultatif pour la création rapide d'un topic
+        public string? CategoryId { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Le titre est requis")]
         [StringLength(200, ErrorMessage = "Le titre ne peut pas dépasser 200 caractères")]
