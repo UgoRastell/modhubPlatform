@@ -15,6 +15,28 @@ namespace CommunityService.Controllers
         public ForumTopicController(IMongoDatabase database)
         {
             _topics = database.GetCollection<ForumTopic>("forum_topics");
+            EnsureIndexes();
+        }
+
+        private static bool _indexesEnsured = false;
+        private void EnsureIndexes()
+        {
+            if (_indexesEnsured) return;
+            try
+            {
+                var indexKeys = Builders<ForumTopic>.IndexKeys.Text(t => t.Title).Text("posts.content");
+                var model = new CreateIndexModel<ForumTopic>(indexKeys, new CreateIndexOptions { Name = "TopicTextIndex" });
+                _topics.Indexes.CreateOne(model);
+            }
+            catch (MongoCommandException ex) when (ex.CodeName == "IndexOptionsConflict")
+            {
+                // Index already exists with different options – ignore.
+            }
+            catch
+            {
+                // Ignore any other errors during index creation to avoid blocking startup.
+            }
+            _indexesEnsured = true;
         }
 
         /// <summary>
