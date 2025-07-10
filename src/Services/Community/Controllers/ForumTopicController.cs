@@ -1,16 +1,20 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using MongoDB.Driver;
+using CommunityService.Models.Forum;
 
-namespace Community.Controllers
+namespace CommunityService.Controllers
 {
     [ApiController]
     [Route("api/forum")]
     public class ForumTopicController : ControllerBase
     {
-        // TODO: inject real IForumService when implemented
-        public ForumTopicController()
+        private readonly IMongoCollection<ForumTopic> _topics;
+
+        public ForumTopicController(IMongoDatabase database)
         {
+            _topics = database.GetCollection<ForumTopic>("forum_topics");
         }
 
         /// <summary>
@@ -36,7 +40,45 @@ namespace Community.Controllers
             return Ok(result);
         }
 
-        #region internal DTOs (temporaire)
+                /// <summary>
+        /// Crée un nouveau topic avec le premier message.
+        /// </summary>
+        [HttpPost("topics")]
+        [Authorize]
+        public async Task<ActionResult<ForumTopic>> CreateTopic([FromBody] CreateSimpleTopicDto dto)
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var username = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "Utilisateur";
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var post = new ForumPost
+            {
+                Content = dto.Content,
+                CreatedByUserId = userId,
+                CreatedByUsername = username
+            };
+
+            var topic = new ForumTopic
+            {
+                Title = dto.Title,
+                CreatedByUserId = userId,
+                CreatedByUsername = username,
+                Posts = new List<ForumPost> { post }
+            };
+            await _topics.InsertOneAsync(topic);
+            return CreatedAtAction(nameof(GetTopicById), new { id = topic.Id }, topic);
+        }
+
+        [HttpGet("topics/{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ForumTopic>> GetTopicById(string id)
+        {
+            var topic = await _topics.Find(t => t.Id == id).FirstOrDefaultAsync();
+            if (topic == null) return NotFound();
+            return topic;
+        }
+
+#region internal DTOs (temporaire)
         public class ForumTopicSearchViewModel
         {
             public string Id { get; set; } = string.Empty;
