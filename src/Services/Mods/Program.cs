@@ -42,7 +42,7 @@ builder.Services.AddMemoryCache();
 // HttpClient for UsersService
 builder.Services.AddHttpClient("UsersService", client =>
 {
-    var baseUrl = builder.Configuration["UsersService:BaseUrl"] ?? "http://gateway";
+    var baseUrl = builder.Configuration["UsersService:BaseUrl"] ?? "http://gateway:8080";
     client.BaseAddress = new Uri(baseUrl);
 });
 
