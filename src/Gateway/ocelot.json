@@ -281,10 +281,6 @@
       ],
       "UpstreamPathTemplate": "/api/forum/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE" ],
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      },
       "FileCacheOptions": {
         "TtlSeconds": 30
       }
