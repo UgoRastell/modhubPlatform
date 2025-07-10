@@ -900,15 +900,18 @@ namespace CommunityService.Services.Forums
             }
         }
 
-        public async Task<List<ForumTopic>> GetRecentlyActiveTopicsAsync(int count = 5)
+        public async Task<List<ForumTopic>> GetRecentlyActiveTopicsAsync(int pageSize = 20, int page = 1)
         {
             try
             {
-                _logger.LogInformation("Récupération des {Count} sujets récemment actifs", count);
+                _logger.LogInformation("Récupération des sujets récemment actifs - page {Page}, taille {PageSize}", page, pageSize);
                 
+                var skip = (page - 1) * pageSize;
                 var recentTopics = await _topicsCollection.Find(_ => true)
                     .SortByDescending(t => t.LastActivityAt)
-                    .Limit(count)
+                    .ThenByDescending(t => t.CreatedAt)
+                    .Skip(skip)
+                    .Limit(pageSize)
                     .ToListAsync();
                 
                 _logger.LogInformation("Récupéré {Count} sujets récemment actifs", recentTopics.Count);

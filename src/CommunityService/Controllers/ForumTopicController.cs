@@ -325,6 +325,7 @@ namespace CommunityService.Controllers
         }
         
         [HttpGet("search")]
+        [HttpGet("~/api/forum/search")]
         public async Task<ActionResult<PagedResult<ForumTopic>>> SearchTopics(
             [FromQuery] string? query = "",
             [FromQuery] int page = 1,
@@ -335,7 +336,7 @@ namespace CommunityService.Controllers
                 // Si la requête est vide ou trop courte, retourner les sujets les plus récents
                 if (string.IsNullOrWhiteSpace(query) || query!.Trim().Length < 3)
                 {
-                    var latestTopics = await _forumService.GetAllTopicsAsync(page, pageSize);
+                    var latestTopics = await _forumService.GetRecentlyActiveTopicsAsync(pageSize);
                     var pagedLatest = new PagedResult<ForumTopic>
                     {
                         Items = latestTopics,
