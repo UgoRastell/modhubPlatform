@@ -14,7 +14,21 @@
         <MudBreadcrumbItem>Derniers sujets</MudBreadcrumbItem>
     </MudBreadcrumbs>
 
-    <MudText Typo="Typo.h4" Class="mb-4">Derniers sujets</MudText>
+    <div class="d-flex flex-column flex-md-row gap-2 justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h4">Derniers sujets</MudText>
+        <AuthorizeView>
+            <Authorized>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Href="/forum/new-topic">
+                    Nouveau sujet
+                </MudButton>
+            </Authorized>
+            <NotAuthorized>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Login" Href="/login?returnUrl=/forum/new-topic">
+                    Se connecter pour créer un sujet
+                </MudButton>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
 
     <MudPaper Class="pa-4 rounded-xl" Elevation="3" Style="background-color: #232634;">
         @if (isLoading)

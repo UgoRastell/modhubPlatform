@@ -1,0 +1,85 @@
+@page "/forum/new-topic"
+@attribute [Authorize]
+@using Frontend.Models.Forum
+@using Frontend.Services.Forum
+@using MudBlazor
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject IForumService ForumService
+
+<PageTitle>Nouveau sujet - ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+    <MudBreadcrumbs Separator="separator" Class="mb-4">
+        <MudBreadcrumbItem Href="/forums">Forums</MudBreadcrumbItem>
+        <MudBreadcrumbItem Href="/forum/latest">Derniers sujets</MudBreadcrumbItem>
+        <MudBreadcrumbItem>Nouveau sujet</MudBreadcrumbItem>
+    </MudBreadcrumbs>
+
+    <MudPaper Class="pa-6 rounded-xl" Elevation="3" Style="background-color:#232634;">
+        <MudText Typo="Typo.h5" Class="mb-4">Créer un nouveau sujet</MudText>
+        <MudForm @ref="form" Model="topicModel" OnValidSubmit="HandleValidSubmit">
+            <MudSelect T="string" Label="Catégorie" @bind-Value="topicModel.CategoryId" Required="true" Class="mb-4">
+                @if (categories.Count == 0)
+                {
+                    <MudSelectItem Disabled="true" Value="">Aucune catégorie disponible</MudSelectItem>
+                }
+                @foreach (var cat in categories)
+                {
+                    <MudSelectItem Value="@cat.Id">@cat.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudTextField T="string" Label="Titre" @bind-Value="topicModel.Title" Required="true" MaxLength="200" Class="mb-4" />
+
+            <MudTextField T="string" Label="Contenu" @bind-Value="topicModel.Content" Required="true" Lines="10" MaxLength="5000" Class="mb-4" TextArea="true" />
+
+            <MudTextField T="string" Label="Tags (séparés par des virgules)" @bind-Value="tagsInput" Placeholder="ex: skyrim, gameplay" Class="mb-4" />
+
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Disabled="isSubmitting" StartIcon="@Icons.Material.Filled.Send">
+                @(isSubmitting ? "Envoi..." : "Publier")
+            </MudButton>
+        </MudForm>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private MudForm? form;
+    private CreateForumTopicDto topicModel = new();
+    private List<ForumCategoryViewModel> categories = new();
+    private string tagsInput = string.Empty;
+    private bool isSubmitting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Charger les catégories disponibles pour la sélection
+        categories = await ForumService.GetAllCategoriesAsync();
+        if (categories.Count > 0)
+        {
+            topicModel.CategoryId = categories.First().Id;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await form!.Validate();
+        if (!form.IsValid) return;
+
+        isSubmitting = true;
+        try
+        {
+            topicModel.Tags = tagsInput.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+            var createdTopic = await ForumService.CreateTopicAsync(topicModel);
+            Snackbar.Add("Sujet créé avec succès !", Severity.Success);
+            NavigationManager.NavigateTo($"/forum/topic/{createdTopic.Id}");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors de la création du sujet : {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}
