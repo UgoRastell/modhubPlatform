@@ -1,0 +1,59 @@
+@page "/forum/topic/{TopicId}"
+@using Frontend.Models.Forum
+@using MudBlazor
+@inject Frontend.Services.Forum.IForumService ForumService
+@inject ISnackbar Snackbar
+
+<PageTitle>Topic</PageTitle>
+
+<MudPaper Class="pa-6 mt-4" Elevation="1">
+    @if (isLoading)
+    {
+        <MudProgressCircular Indeterminate Color="Color.Primary" Size="Size.Large" />
+    }
+    else if (topic == null)
+    {
+        <MudAlert Severity="Severity.Error">Topic introuvable.</MudAlert>
+    }
+    else
+    {
+        <MudText Typo="Typo.h4" Class="mb-1">@topic.Title</MudText>
+        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Posté par @topic.AuthorName le @topic.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</MudText>
+        <MudDivider Class="my-4" />
+
+        <MudText Typo="Typo.body1" Class="mb-6">@topic.Content</MudText>
+
+        <!-- Posts list placeholder -->
+        <MudAlert Severity="Severity.Info">La liste des réponses sera bientôt disponible.</MudAlert>
+    }
+</MudPaper>
+
+@code {
+    [Parameter]
+    public string TopicId { get; set; } = string.Empty;
+
+    private bool isLoading = true;
+    private ForumTopicViewModel? topic;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(TopicId))
+        {
+            isLoading = false;
+            return;
+        }
+
+        try
+        {
+            topic = await ForumService.GetTopicByIdAsync(TopicId);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors du chargement du topic : {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
