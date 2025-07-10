@@ -206,33 +206,28 @@ namespace Frontend.Services.Forum
             try
             {
                 var json = JsonSerializer.Serialize(topicDto, _jsonOptions);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                using var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync("api/forum/topics", content);
-                
+
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<ForumTopicViewModel>(responseContent, _jsonOptions) ?? throw new InvalidOperationException("Erreur lors de la création du topic");
-                }
-            }
-            catch { }
+                    var created = JsonSerializer.Deserialize<ForumTopicViewModel>(responseContent, _jsonOptions);
+                    if (created == null)
+                        throw new InvalidOperationException("La réponse du serveur est invalide.");
 
-            // Mock response for testing
-            return new ForumTopicViewModel
+                    return created;
+                }
+
+                // Le serveur a renvoyé un statut d'erreur
+                var error = await response.Content.ReadAsStringAsync();
+                throw new InvalidOperationException($"Échec de la création du topic. Code {(int)response.StatusCode} : {error}");
+            }
+            catch (Exception ex)
             {
-                Id = Guid.NewGuid().ToString(),
-                CategoryId = topicDto.CategoryId,
-                Title = topicDto.Title,
-                Content = topicDto.Content,
-                AuthorId = "current-user-id",
-                AuthorName = "Utilisateur actuel",
-                Slug = topicDto.Title.ToLower().Replace(" ", "-"),
-                CreatedAt = DateTime.UtcNow,
-                LastActivityAt = DateTime.UtcNow,
-                Tags = topicDto.Tags,
-                IsPinned = topicDto.IsPinned,
-                IsLocked = topicDto.IsLocked
-            };
+                // On relance une exception plus explicite pour que le composant appelant puisse afficher un feedback utilisateur adéquat
+                throw new InvalidOperationException($"Erreur lors de la création du topic : {ex.Message}", ex);
+            }
         }
 
         public async Task<ForumTopicViewModel> UpdateTopicAsync(UpdateForumTopicDto topicDto)
