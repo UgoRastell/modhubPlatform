@@ -34,7 +34,9 @@ builder.Services.AddHttpClient("UsersService", client => client.BaseAddress = ne
 builder.Services.AddHttpClient("ModsService", client => client.BaseAddress = new Uri(apiGatewayUrl));
 builder.Services.AddHttpClient("PaymentsService", client => client.BaseAddress = new Uri($"{apiGatewayUrl}/payments-service"));
 builder.Services.AddHttpClient("CommunityService", client => client.BaseAddress = new Uri($"{apiGatewayUrl}/community-service"));
-builder.Services.AddHttpClient("ForumService", client => client.BaseAddress = new Uri($"{apiGatewayUrl}/community-service"));
+builder.Services.AddTransient<JwtAuthorizationMessageHandler>();
+builder.Services.AddHttpClient("ForumService", client => client.BaseAddress = new Uri($"{apiGatewayUrl}/community-service"))
+                .AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
 // Services d'authentification
 builder.Services.AddOptions();
