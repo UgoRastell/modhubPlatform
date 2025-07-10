@@ -11,7 +11,11 @@ builder.Services.AddOpenApi();
 
 // Add controllers with authorization support
 builder.Services.AddControllers();
-builder.Services.AddAuthorization();
+// Disable global fallback policy so that [AllowAnonymous] truly allows anonymous access
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = null; // No implicit requirement, controller attributes decide
+});
 builder.Services.AddAuthentication("Bearer");
 
 // Register Moderation Services
