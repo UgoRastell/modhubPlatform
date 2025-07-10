@@ -38,7 +38,7 @@
                 {
                     <MudListItem T="string" Href="@($"/forum/topic/{topic.Id}")">
                         <div class="d-flex flex-grow-1 gap-3">
-                            <MudAvatar Style="background:@GetRandomColor();" Color="Color.Primary">
+                            <MudAvatar Style="@($"background:{GetRandomColor()};")" Color="Color.Primary">
                                 @topic.AuthorName.Substring(0,1).ToUpper()
                             </MudAvatar>
                             <div class="d-flex flex-column flex-grow-1">
