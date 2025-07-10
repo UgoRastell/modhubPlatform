@@ -73,11 +73,11 @@
                 </MudCardContent>
             </MudCard>
 
-            <!-- Discussions récentes -->
+            <!-- Tous les sujets (paginations) -->
             <MudCard Class="mb-4 rounded-xl" Elevation="3" Style="background-color: #232634;">
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Discussions récentes</MudText>
+                        <MudText Typo="Typo.h6">Tous les sujets</MudText>
                     </CardHeaderContent>
                     <CardHeaderActions>
                         <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/forum/latest">Voir tout</MudButton>
@@ -86,7 +86,7 @@
                 <MudDivider />
                 <MudCardContent>
                     <MudList T="string" Clickable="true">
-                        @foreach (var topic in latestTopics)
+                        @foreach (var topic in pagedTopics)
                         {
                             <MudListItem T="string" Href="@($"/forum/topic/{topic.Id}")">
                                 <div class="d-flex flex-grow-1 gap-3">
@@ -207,7 +207,10 @@
 @code {
     // Données dynamiques chargées depuis le ForumService
     private List<ForumCategoryViewModel> forumCategories = new();
-    private List<ForumTopicViewModel> latestTopics = new();
+    private List<ForumTopicViewModel> pagedTopics = new();
+    private int currentTopicPage = 1;
+    private int topicsPageSize = 20;
+    private int totalTopicPages = 1;
     private List<ForumTopicViewModel> popularTopics = new();
     private List<ActiveMember> activeMembers = new();
     private ForumStatistics forumStats = new()
@@ -243,8 +246,9 @@
             forumStats = await ForumService.GetForumStatisticsAsync();
             
             // Charger les sujets récents (Top 5)
-            var recentTopicsResult = await ForumService.SearchTopicsAsync("", page: 1, pageSize: 5);
-            latestTopics = recentTopicsResult?.Items ?? new();
+            // Charger la première page des sujets
+            await LoadTopicsPageAsync();
+            // pagedTopics est déjà rempli dans LoadTopicsPageAsync()
             
             // Pour les sujets populaires, on peut utiliser une recherche avec tri différent
             // ou créer une méthode spécifique dans le service si besoin
@@ -275,6 +279,22 @@
     }
 
     // Fonction pour formater les dates
+    private async Task LoadTopicsPageAsync()
+    {
+        var result = await ForumService.SearchTopicsAsync("", page: currentTopicPage, pageSize: topicsPageSize);
+        pagedTopics = result?.Items ?? new();
+        totalTopicPages = result?.TotalPages ?? 1;
+    }
+
+    private async Task OnTopicPageChanged(int page)
+    {
+        if (page != currentTopicPage)
+        {
+            currentTopicPage = page;
+            await LoadTopicsPageAsync();
+        }
+    }
+
     private string FormatTimeAgo(DateTime dateTime)
     {
         var timeSpan = DateTime.UtcNow - dateTime;
