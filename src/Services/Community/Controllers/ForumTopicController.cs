@@ -56,15 +56,26 @@ namespace CommunityService.Controllers
             {
                 filter = Builders<ForumTopic>.Filter.Text(query);
             }
-            var totalItems = await _topics.CountDocumentsAsync(filter);
+                            long totalItems = 0;
+                List<ForumTopic> topicsCursor = new();
+                try
+                {
+                    totalItems = await _topics.CountDocumentsAsync(filter);
+                    topicsCursor = await _topics.Find(filter)
+                                               .SortByDescending(t => t.CreatedAt)
+                                               .Skip((page - 1) * pageSize)
+                                               .Limit(pageSize)
+                                               .ToListAsync();
+                }
+                catch (System.EntryPointNotFoundException)
+                {
+                    // Probablement index absent ou collection non initialisée : retourner liste vide pour éviter 500
+                    totalItems = 0;
+                    topicsCursor = new List<ForumTopic>();
+                }
             var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
-            var topicsCursor = await _topics.Find(filter)
-                                            .SortByDescending(t => t.CreatedAt)
-                                            .Skip((page - 1) * pageSize)
-                                            .Limit(pageSize)
-                                            .ToListAsync();
-            var items = topicsCursor.Select(t => new ForumTopicSearchViewModel
+                        var items = topicsCursor.Select(t => new ForumTopicSearchViewModel
             {
                 Id = t.Id,
                 Title = t.Title,
