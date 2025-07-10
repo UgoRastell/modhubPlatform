@@ -6,11 +6,11 @@ namespace Frontend.Models.Forum
     public class ForumTopicViewModel
     {
         public required string Id { get; set; }
-        public required string CategoryId { get; set; }
+        public string? CategoryId { get; set; } = string.Empty;
         public required string Title { get; set; }
-        public required string Content { get; set; }
-        public required string AuthorId { get; set; }
-        public required string AuthorName { get; set; }
+        public string? Content { get; set; }
+        public string? AuthorId { get; set; }
+        public string? AuthorName { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? LastActivityDate { get; set; }
         public int ViewsCount { get; set; }
@@ -23,7 +23,7 @@ namespace Frontend.Models.Forum
         public string PostedDate => CreatedAt.ToString("dd/MM/yyyy");
         
         // Additional properties referenced in ForumIndex.razor
-        public required string Slug { get; set; }
+        public string? Slug { get; set; }
         public string? LastReplyAuthorId { get; set; }
         public string? LastReplyAuthorName { get; set; }
         
