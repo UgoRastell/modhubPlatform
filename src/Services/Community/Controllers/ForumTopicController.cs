@@ -8,6 +8,7 @@ namespace CommunityService.Controllers
 {
     [ApiController]
     [Route("api/forum")]
+    [AllowAnonymous]
     public class ForumTopicController : ControllerBase
     {
         private readonly IMongoCollection<ForumTopic> _topics;
@@ -44,7 +45,7 @@ namespace CommunityService.Controllers
         /// Pour l'instant renvoie une collection vide tant que l'implémentation du service n'est pas prête.
         /// </summary>
         [HttpGet("search")]
-        [AllowAnonymous]
+        // hérite de [AllowAnonymous] du contrôleur
         public async Task<ActionResult<PagedResult<ForumTopicSearchViewModel>>> SearchTopics(
             [FromQuery] string query = "",
             [FromQuery] int page = 1,
