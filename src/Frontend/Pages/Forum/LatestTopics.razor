@@ -53,15 +53,15 @@
                     <MudListItem T="string" Href="@($"/forum/topic/{topic.Id}")">
                         <div class="d-flex flex-grow-1 gap-3">
                             <MudAvatar Style="@($"background:{GetRandomColor()};")" Color="Color.Primary">
-                                @topic.AuthorName.Substring(0,1).ToUpper()
+                                @((topic.AuthorName ?? "?").Substring(0,1).ToUpper())
                             </MudAvatar>
                             <div class="d-flex flex-column flex-grow-1">
                                 <div class="d-flex justify-space-between align-center">
                                     <MudText Typo="Typo.subtitle1">@topic.Title</MudText>
-                                    <MudChip Size="Size.Small" Color="Color.Default">@topic.CategoryName</MudChip>
+                                    <MudChip Size="Size.Small" Color="Color.Default">@(string.IsNullOrWhiteSpace(topic.CategoryName) ? "Sans catégorie" : topic.CategoryName)</MudChip>
                                 </div>
                                 <div class="d-flex justify-space-between align-center">
-                                    <MudText Typo="Typo.caption">Par @topic.AuthorName · @FormatTimeAgo(topic.CreatedAt)</MudText>
+                                    <MudText Typo="Typo.caption">Par @(string.IsNullOrWhiteSpace(topic.AuthorName) ? "Anonyme" : topic.AuthorName) · @FormatTimeAgo(topic.CreatedAt)</MudText>
                                     <div class="d-flex gap-2 align-center">
                                         <MudIcon Icon="@Icons.Material.Filled.Comment" Size="Size.Small" />
                                         <MudText Typo="Typo.body2">@topic.RepliesCount</MudText>
