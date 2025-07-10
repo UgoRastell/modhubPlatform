@@ -3,6 +3,8 @@
 @using MudBlazor
 @inject Frontend.Services.Forum.IForumService ForumService
 @inject ISnackbar Snackbar
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthProvider
 
 <PageTitle>Topic</PageTitle>
 
@@ -23,8 +25,28 @@
 
         <MudText Typo="Typo.body1" Class="mb-6">@topic.Content</MudText>
 
-        <!-- Posts list placeholder -->
-        <MudAlert Severity="Severity.Info">La liste des réponses sera bientôt disponible.</MudAlert>
+        <!-- Liste des posts -->
+        <div class="d-flex flex-column gap-4">
+            @foreach (var post in posts)
+            {
+                <MudPaper Elevation="0" Class="pa-4">
+                    <MudText Typo="Typo.subtitle1" Class="mb-1">@post.AuthorName</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@post.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</MudText>
+                    <MudText Typo="Typo.body1" Class="mt-2">@post.Content</MudText>
+                </MudPaper>
+            }
+        </div>
+
+        @if (isAuthenticated)
+        {
+            <MudDivider Class="my-4" />
+            <MudForm @ref="postForm">
+                <MudTextField @bind-Value="newPostContent" Label="Votre message" Lines="4" FullWidth="true" Required="true" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-2" Disabled="@(isPosting || string.IsNullOrWhiteSpace(newPostContent))" OnClick="PostMessageAsync">
+                    @(isPosting ? (MarkupString)"<span>Envoi...</span>" : (MarkupString)"<span>Envoyer</span>")
+                </MudButton>
+            </MudForm>
+        }
     }
 </MudPaper>
 
@@ -34,6 +56,11 @@
 
     private bool isLoading = true;
     private ForumTopicViewModel? topic;
+    private List<ForumPostViewModel> posts = new();
+    private string newPostContent = string.Empty;
+    private bool isPosting = false;
+    private MudForm? postForm;
+    private bool isAuthenticated;
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,6 +73,10 @@
         try
         {
             topic = await ForumService.GetTopicByIdAsync(TopicId);
+            posts = await ForumService.GetPostsByTopicIdAsync(TopicId);
+
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            isAuthenticated = authState.User.Identity?.IsAuthenticated == true;
         }
         catch (Exception ex)
         {
@@ -54,6 +85,35 @@
         finally
         {
             isLoading = false;
+        }
+    }
+
+    private async Task PostMessageAsync()
+    {
+        if (postForm == null) return;
+        await postForm.Validate();
+        if (!postForm.IsValid) return;
+
+        isPosting = true;
+        try
+        {
+            var dto = new CreateForumPostDto
+            {
+                TopicId = TopicId,
+                Content = newPostContent
+            };
+            var created = await ForumService.CreatePostAsync(dto);
+            posts.Add(created);
+            newPostContent = string.Empty;
+            Snackbar.Add("Message publié", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur lors de l'envoi : {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isPosting = false;
         }
     }
 }
