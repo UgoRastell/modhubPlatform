@@ -509,6 +509,89 @@ namespace ModsService.Controllers
         }
 
         // Méthode utilitaire pour s'assurer qu'un répertoire existe
+        /// <summary>
+        /// Supprimer définitivement un mod.
+        /// </summary>
+        [HttpDelete("{modId}")]
+        [Authorize(Roles = "Creator,Admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteMod(string modId)
+        {
+            try
+            {
+                _logger.LogInformation("Demande de suppression du mod {ModId}", modId);
+
+                var mod = await _modRepository.GetByIdAsync(modId);
+                if (mod == null)
+                {
+                    return NotFound(new { Success = false, Message = "Mod non trouvé" });
+                }
+
+                // Vérifier que l'utilisateur authentifié est le créateur ou un administrateur
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+                bool isAdmin = User.IsInRole("Admin");
+                if (!isAdmin && userId != mod.CreatorId)
+                {
+                    return Forbid();
+                }
+
+                // Supprimer le fichier physique s'il existe
+                if (!string.IsNullOrWhiteSpace(mod.FileLocation))
+                {
+                    var physicalPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", mod.FileLocation.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                    try
+                    {
+                        if (System.IO.File.Exists(physicalPath))
+                        {
+                            System.IO.File.Delete(physicalPath);
+                            _logger.LogInformation("Fichier mod supprimé : {Path}", physicalPath);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Fichier mod introuvable lors de la suppression : {Path}", physicalPath);
+                        }
+                    }
+                    catch (Exception fileEx)
+                    {
+                        _logger.LogWarning(fileEx, "Erreur lors de la suppression du fichier physique pour le mod {ModId}", modId);
+                    }
+                }
+
+                // Supprimer le dossier uploads correspondant, y compris thumbnail
+                string uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                string modDir = Path.Combine(uploadsRoot, modId);
+                try
+                {
+                    if (Directory.Exists(modDir))
+                    {
+                        Directory.Delete(modDir, true);
+                        _logger.LogInformation("Dossier uploads supprimé : {Path}", modDir);
+                    }
+                }
+                catch (Exception dirEx)
+                {
+                    _logger.LogWarning(dirEx, "Erreur lors de la suppression du dossier uploads pour le mod {ModId}", modId);
+                }
+
+                // Supprimer en base de données
+                bool deleted = await _modRepository.DeleteAsync(modId);
+                if (!deleted)
+                {
+                    return StatusCode(500, new { Success = false, Message = "Suppression en base de données échouée" });
+                }
+
+                return Ok(new { Success = true, Message = "Mod supprimé avec succès" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de la suppression du mod {ModId}", modId);
+                return StatusCode(500, new { Success = false, Message = $"Erreur lors de la suppression: {ex.Message}" });
+            }
+        }
+
         private void EnsureDirectoryExists(string path)
         {
             if (!Directory.Exists(path))

@@ -22,5 +22,10 @@ namespace ModsService.Repositories
         /// Incrémente le compteur de téléchargements d'un mod de façon atomique et persistante.
         /// </summary>
         Task IncrementDownloadCountAsync(string id);
+        
+        /// <summary>
+        /// Supprime de manière permanente un mod et retourne vrai si la suppression a eu lieu.
+        /// </summary>
+        Task<bool> DeleteAsync(string id);
     }
 }

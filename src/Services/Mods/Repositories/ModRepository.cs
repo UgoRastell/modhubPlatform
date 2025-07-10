@@ -166,6 +166,22 @@ namespace ModsService.Repositories
             }
         }
 
+        public async Task<bool> DeleteAsync(string id)
+        {
+            try
+            {
+                var filter = Builders<Mod>.Filter.Eq(m => m.Id, id);
+                var result = await _modsCollection.DeleteOneAsync(filter);
+                _logger.LogInformation("Suppression du mod {ModId}: DeletedCount={Count}", id, result.DeletedCount);
+                return result.DeletedCount > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de la suppression du mod {ModId}", id);
+                throw;
+            }
+        }
+
         private SortDefinition<Mod> GetSortDefinition(string sortBy)
         {
             return sortBy?.ToLower() switch
