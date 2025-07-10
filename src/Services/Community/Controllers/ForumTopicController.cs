@@ -109,6 +109,7 @@ namespace CommunityService.Controllers
 
             var post = new ForumPost
             {
+                Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
                 Content = dto.Content,
                 CreatedByUserId = userId,
                 CreatedByUsername = username
@@ -116,6 +117,8 @@ namespace CommunityService.Controllers
 
             var topic = new ForumTopic
             {
+                // Laisse Id null pour que MongoDB génère _id automatiquement
+                Id = null,
                 Title = dto.Title,
                 CreatedByUserId = userId,
                 CreatedByUsername = username,
