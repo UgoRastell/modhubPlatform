@@ -1,0 +1,132 @@
+@page "/forum/latest"
+@using Frontend.Models.Forum
+@using Frontend.Services.Forum
+@using MudBlazor
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject IForumService ForumService
+
+<PageTitle>Derniers sujets - ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudBreadcrumbs Separator="separator" Class="mb-4">
+        <MudBreadcrumbItem Href="/forums">Forums</MudBreadcrumbItem>
+        <MudBreadcrumbItem>Derniers sujets</MudBreadcrumbItem>
+    </MudBreadcrumbs>
+
+    <MudText Typo="Typo.h4" Class="mb-4">Derniers sujets</MudText>
+
+    <MudPaper Class="pa-4 rounded-xl" Elevation="3" Style="background-color: #232634;">
+        @if (isLoading)
+        {
+            <div class="d-flex justify-center pa-6">
+                <MudProgressCircular Color="Color.Primary" Indeterminate Size="Size.Large" />
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Elevation="0">@errorMessage</MudAlert>
+        }
+        else if (latestTopics.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" Elevation="0">Aucun sujet trouvé.</MudAlert>
+        }
+        else
+        {
+            <MudList T="string" Clickable="true">
+                @foreach (var topic in latestTopics)
+                {
+                    <MudListItem T="string" Href="@($"/forum/topic/{topic.Id}")">
+                        <div class="d-flex flex-grow-1 gap-3">
+                            <MudAvatar Style="background:@GetRandomColor();" Color="Color.Primary">
+                                @topic.AuthorName.Substring(0,1).ToUpper()
+                            </MudAvatar>
+                            <div class="d-flex flex-column flex-grow-1">
+                                <div class="d-flex justify-space-between align-center">
+                                    <MudText Typo="Typo.subtitle1">@topic.Title</MudText>
+                                    <MudChip Size="Size.Small" Color="Color.Default">@topic.CategoryName</MudChip>
+                                </div>
+                                <div class="d-flex justify-space-between align-center">
+                                    <MudText Typo="Typo.caption">Par @topic.AuthorName · @FormatTimeAgo(topic.CreatedAt)</MudText>
+                                    <div class="d-flex gap-2 align-center">
+                                        <MudIcon Icon="@Icons.Material.Filled.Comment" Size="Size.Small" />
+                                        <MudText Typo="Typo.body2">@topic.RepliesCount</MudText>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </MudListItem>
+                    <MudDivider />
+                }
+            </MudList>
+
+            <MudTablePager Class="mt-4" PageSizeOptions="new int[] { pageSize }" @bind-PageIndex="currentPageIndex" PageSize="pageSize" PageCount="totalPages" />
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private List<ForumTopicViewModel> latestTopics = new();
+    private int currentPageIndex = 0;
+    private int pageSize = 20;
+    private int totalPages = 1;
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLatestTopicsAsync();
+    }
+
+    private async Task LoadLatestTopicsAsync()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+
+            // On recherche sans filtre, tri par "recent" est par défaut dans le backend
+            var result = await ForumService.SearchTopicsAsync("", page: currentPageIndex + 1, pageSize: pageSize);
+            latestTopics = result?.Items ?? new();
+            totalPages = result?.TotalPages ?? 1;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erreur lors du chargement des sujets : {ex.Message}";
+            Snackbar.Add(errorMessage, Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OnPageChanged(int pageIndex)
+    {
+        if (pageIndex != currentPageIndex)
+        {
+            currentPageIndex = pageIndex;
+            await LoadLatestTopicsAsync();
+        }
+    }
+
+    private string GetRandomColor()
+    {
+        var colors = new[] {
+            "#1E88E5", "#43A047", "#E53935", "#FDD835", "#FB8C00",
+            "#8E24AA", "#6D4C41", "#546E7A", "#26A69A", "#EC407A"
+        };
+        var random = new Random();
+        return colors[random.Next(colors.Length)];
+    }
+
+    private string FormatTimeAgo(DateTime dateTime)
+    {
+        var span = DateTime.UtcNow - dateTime;
+        if (span.TotalMinutes < 1) return "à l'instant";
+        if (span.TotalMinutes < 60) return $"il y a {(int)span.TotalMinutes} min";
+        if (span.TotalHours < 24) return $"il y a {(int)span.TotalHours} h";
+        if (span.TotalDays < 7) return $"il y a {(int)span.TotalDays} j";
+        return dateTime.ToString("dd/MM/yyyy");
+    }
+}
