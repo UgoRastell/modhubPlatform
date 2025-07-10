@@ -30,8 +30,16 @@ public class ForumPostController : ControllerBase
             return NotFound();
 
         var skip = (page - 1) * pageSize;
-        var posts = topic.Posts.Skip(skip).Take(pageSize).ToList();
-        return Ok(posts);
+        var posts = topic.Posts.OrderBy(p => p.CreatedAt).Skip(skip).Take(pageSize).ToList();
+        var view = posts.Select(p => new {
+            id = p.Id,
+            topicId = topicId,
+            content = p.Content,
+            authorId = p.CreatedByUserId,
+            authorName = p.CreatedByUsername,
+            createdAt = p.CreatedAt
+        });
+        return Ok(view);
     }
 
     /// <summary>
@@ -63,7 +71,15 @@ public class ForumPostController : ControllerBase
         var update = Builders<ForumTopic>.Update.Push(t => t.Posts, post);
         await _topics.UpdateOneAsync(t => t.Id == dto.TopicId, update);
 
-        return Created($"api/forum/posts/{post.Id}", post);
+        var view = new {
+            id = post.Id,
+            topicId = dto.TopicId,
+            content = post.Content,
+            authorId = post.CreatedByUserId,
+            authorName = post.CreatedByUsername,
+            createdAt = post.CreatedAt
+        };
+        return Created($"api/forum/posts/{post.Id}", view);
     }
 
     #region DTO internal (temporaire)
