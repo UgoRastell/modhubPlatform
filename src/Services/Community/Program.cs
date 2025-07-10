@@ -1,6 +1,9 @@
 using CommunityService.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using CommunityService.Services.Forums;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +19,33 @@ builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = null; // No implicit requirement, controller attributes decide
 });
-builder.Services.AddAuthentication("Bearer");
+// JWT authentication configuration
+var jwtSection = builder.Configuration.GetSection("JwtSettings");
+var jwtKey = jwtSection["Key"] ?? "DefaultSecureKeyWithAtLeast32Characters!";
+var issuer = jwtSection["Issuer"] ?? "ModsGamingPlatform";
+var audience = jwtSection["Audience"] ?? "ModsGamingPlatformUsers";
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false; // mettre à true en prod si certs OK
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.ASCII.GetBytes(jwtKey)),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidIssuer = issuer,
+        ValidAudience = audience,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
 
 // Register Moderation Services
 builder.Services.AddScoped<Community.Services.Moderation.IContentReportingService, Community.Services.Moderation.ContentReportingService>();
