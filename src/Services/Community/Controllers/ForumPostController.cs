@@ -57,8 +57,7 @@ public class ForumPostController : ControllerBase
             CreatedByUserId = userId,
             CreatedByUsername = username,
             CreatedAt = DateTime.UtcNow,
-            ParentPostId = dto.ParentPostId,
-            Attachments = dto.Attachments ?? new List<string>()
+            ParentPostId = dto.ParentPostId
         };
 
         var update = Builders<ForumTopic>.Update.Push(t => t.Posts, post);
@@ -73,7 +72,7 @@ public class ForumPostController : ControllerBase
         public string TopicId { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public string? ParentPostId { get; set; }
-        public List<string>? Attachments { get; set; }
+        
     }
     #endregion
 }
