@@ -6,6 +6,8 @@ public class ModHubTheme
 {
     public static MudTheme DefaultTheme => new MudTheme
     {
+        // Removed incompatible Palette property for current MudBlazor version
+        
         PaletteDark = new PaletteDark
         {
             // Main Colors
