@@ -197,6 +197,11 @@ path[d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15
     padding: 0.5rem 1.5rem 1rem;
 }
 
+/* Première ligne de texte des cartes */
+.mud-card-content > p:nth-child(1) {
+    color: #ffffff !important;
+}
+
 .mud-card-actions {
     padding: 0.5rem 1.5rem 1.5rem;
 }
