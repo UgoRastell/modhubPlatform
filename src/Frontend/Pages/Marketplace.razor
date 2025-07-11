@@ -239,7 +239,8 @@ public int? UserRating { get; set; }
 
         if (apiResp.Success && apiResp.Data != null)
         {
-            mods = apiResp.Data.Items.Select(m => new ModViewModel
+            var approved = apiResp.Data.Items.Where(m => m.IsApproved);
+            mods = approved.Select(m => new ModViewModel
             {
                 Id = m.Id,
                 Title = m.Name,
