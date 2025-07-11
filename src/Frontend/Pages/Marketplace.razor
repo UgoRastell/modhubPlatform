@@ -1,5 +1,6 @@
 @page "/marketplace"
 @using System.Globalization
+@using System.Linq
 @using Frontend.Models
 @using MudBlazor
 @using Microsoft.AspNetCore.Components.Web
@@ -229,10 +230,35 @@
     {
         // Dans une implémentation réelle, appeler l'API pour charger les mods
         // avec les filtres actuels
-        await Task.Delay(200);
-        
-        // Génération de données de test
-        mods = new List<ModViewModel>
+        /* Récupération dynamique des mods */
+        var apiResp = await ModService.GetModsAsync(1, 100, searchQuery, selectedCategory != "all" ? selectedCategory : string.Empty, sortBy);
+        mods = new List<ModViewModel>();
+
+        if (apiResp.Success && apiResp.Data != null)
+        {
+            mods = apiResp.Data.Items.Select(m => new ModViewModel
+            {
+                Id = m.Id,
+                Title = m.Name,
+                Description = !string.IsNullOrWhiteSpace(m.ShortDescription) ? m.ShortDescription : m.Description,
+                Game = m.GameName,
+                Category = (m.Categories != null && m.Categories.Count > 0) ? m.Categories[0] : string.Empty,
+                ThumbnailUrl = m.ThumbnailUrl,
+                Rating = m.AverageRating,
+                RatingCount = m.RatingCount,
+                Downloads = (int)m.DownloadCount,
+                Author = !string.IsNullOrWhiteSpace(m.CreatorName) ? m.CreatorName : m.Author,
+                UpdatedDate = m.UpdatedAt,
+                Price = 0,
+                IsFeatured = m.IsFeatured
+            }).ToList();
+        }
+        else
+        {
+            Snackbar.Add(apiResp.Message ?? "Erreur lors de la récupération des mods", Severity.Warning);
+        }
+
+        // Filtrage selon les paramètres
         {
             new ModViewModel
             {
