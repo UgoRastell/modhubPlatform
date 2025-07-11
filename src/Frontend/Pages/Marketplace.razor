@@ -258,8 +258,7 @@
             Snackbar.Add(apiResp.Message ?? "Erreur lors de la récupération des mods", Severity.Warning);
         }
 
-        // Filtrage selon les paramètres
-        {
+        /* Obsolete static mod list removed
             new ModViewModel
             {
                 Id = "mod1",
@@ -390,6 +389,7 @@
             }
         };
         
+*/
         // Filtrage selon les paramètres
         if (selectedGame != "all")
         {
