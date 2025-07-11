@@ -6,6 +6,7 @@
 @inject Frontend.Services.Interfaces.IModService ModService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Détails du mod | ModHub</PageTitle>
 
@@ -94,7 +95,9 @@
                 <MudPaper Elevation="2" Class="pa-4 mb-4">
                     <div class="d-flex flex-column gap-4">
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Size="Size.Large"
-                                   OnClick="@DownloadMod">
+                                   StartIcon="@Icons.Material.Filled.Download"
+                                   Disabled="@isDownloading"
+                                   OnClick="@DownloadModAsync">
                             @(mod.IsFeatured ? "Téléchargement Premium" : "Télécharger")
                         </MudButton>
 
@@ -163,6 +166,7 @@
     [Parameter] public string ModId { get; set; } = default!;
 
     private bool loading = true;
+    private bool isDownloading = false;
     private ModDto? mod;
     private List<BreadcrumbItem> breadcrumbs = new();
 
@@ -194,11 +198,41 @@
         }
     }
 
-    private void DownloadMod()
+    private async Task DownloadModAsync()
     {
-        if (mod?.IsFeatured == true)
+        if (mod == null) return;
+        if (mod.IsFeatured)
+        {
             Snackbar.Add("Ce mod est Premium – redirection vers le paiement…", Severity.Info);
-        else
-            Snackbar.Add("Téléchargement du mod commencé", Severity.Success);
+            return;
+        }
+
+        if (isDownloading) return;
+        isDownloading = true;
+        StateHasChanged();
+
+        try
+        {
+            var downloadResponse = await ModService.DownloadModAsync(mod.Id, null);
+            if (downloadResponse.Success && !string.IsNullOrWhiteSpace(downloadResponse.Data))
+            {
+                await JSRuntime.InvokeVoidAsync("open", downloadResponse.Data, "_blank");
+                Snackbar.Add($"Téléchargement de {mod.Name} démarré !", Severity.Success);
+                mod.DownloadCount++;
+            }
+            else
+            {
+                Snackbar.Add(downloadResponse.Message ?? "Erreur lors du téléchargement", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur de téléchargement: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isDownloading = false;
+            StateHasChanged();
+        }
     }
 }
