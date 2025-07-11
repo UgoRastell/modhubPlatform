@@ -81,7 +81,7 @@ namespace CommunityService.Controllers
                 Title = t.Title,
                 AuthorName = t.CreatedByUsername,
                 CreatedAt = t.CreatedAt,
-                RepliesCount = t.Posts.Count - 1, // first post is topic
+                RepliesCount = (t.Posts == null ? 0 : Math.Max(0, t.Posts.Count - 1)), // first post is topic
                 CategoryName = "" // category not stored yet
             }).ToList();
 
@@ -147,7 +147,7 @@ namespace CommunityService.Controllers
                 AuthorName = t.CreatedByUsername,
                 CategoryName = "", // TODO: category linkage
                 CreatedAt = t.CreatedAt,
-                RepliesCount = t.Posts.Count - 1
+                RepliesCount = (t.Posts == null ? 0 : Math.Max(0, t.Posts.Count - 1))
             });
             return Ok(view);
         }
