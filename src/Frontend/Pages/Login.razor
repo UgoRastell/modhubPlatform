@@ -32,7 +32,7 @@
                              AdornmentIcon="@Icons.Material.Filled.Email" />
                 <ValidationMessage For="@(() => loginModel.Email)" />
                 
-                <MudTextField @bind-Value="loginModel.Password" Class="mt-3 white-input"
+                <MudTextField @bind-Value="loginModel.Password" Class="mt-3 white-input" Variant="Variant.Outlined"
                              Label="Mot de passe"
                              HelperText="Entrez votre mot de passe"
                              InputType="@passwordInputType"
