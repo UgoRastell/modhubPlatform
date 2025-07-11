@@ -9,7 +9,7 @@
 
 <PageTitle>Détails du mod | ModHub</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 surface-dark mod-detail-wrapper">
     @if (loading)
     {
         <div class="d-flex justify-center my-8">
@@ -146,6 +146,16 @@
                 </MudPaper>
             </MudItem>
         </MudGrid>
+
+<!--====================================================-->
+<!-- STYLES                                             -->
+<!--====================================================-->
+<style scoped>
+    .mod-detail-wrapper {
+        border-radius: 16px;
+        padding: 32px;
+    }
+</style>
     }
 </MudContainer>
 
