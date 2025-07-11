@@ -128,6 +128,30 @@ namespace CommunityService.Controllers
             return CreatedAtAction(nameof(GetTopicById), new { id = topic.Id }, topic);
         }
 
+        /// <summary>
+        /// Liste les derniers topics (accès public)
+        /// </summary>
+        [HttpGet("topics")]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<SimpleTopicViewModel>>> GetLatestTopics([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        {
+            var topics = await _topics.Find(Builders<ForumTopic>.Filter.Empty)
+                                      .SortByDescending(t => t.CreatedAt)
+                                      .Skip((page - 1) * pageSize)
+                                      .Limit(pageSize)
+                                      .ToListAsync();
+            var view = topics.Select(t => new SimpleTopicViewModel
+            {
+                Id = t.Id!,
+                Title = t.Title,
+                AuthorName = t.CreatedByUsername,
+                CategoryName = "", // TODO: category linkage
+                CreatedAt = t.CreatedAt,
+                RepliesCount = t.Posts.Count - 1
+            });
+            return Ok(view);
+        }
+
         [HttpGet("topics/{id}")]
         [AllowAnonymous]
         public async Task<ActionResult<ForumTopic>> GetTopicById(string id)
@@ -156,6 +180,16 @@ namespace CommunityService.Controllers
             public int TotalItems { get; set; }
             public int TotalPages { get; set; }
         }
-        #endregion
+                public class SimpleTopicViewModel
+        {
+            public string Id { get; set; } = string.Empty;
+            public string Title { get; set; } = string.Empty;
+            public string AuthorName { get; set; } = string.Empty;
+            public string CategoryName { get; set; } = string.Empty;
+            public DateTime CreatedAt { get; set; }
+            public int RepliesCount { get; set; }
+        }
+
+#endregion
     }
 }
