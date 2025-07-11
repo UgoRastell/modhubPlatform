@@ -1,0 +1,130 @@
+@page "/moderation/mods"
+@attribute [Authorize(Roles = "Admin,Moderator")]
+@using Frontend.Models
+@using MudBlazor
+@inject Frontend.Services.Interfaces.IModService ModService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject IDialogService DialogService
+
+<PageTitle>Modération des Mods | ModHub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-0 surface-dark">
+    <MudPaper Elevation="0" Class="pa-6 text-center hero-surface mb-6">
+        <MudText Typo="Typo.h4" Color="Color.Surface" Class="fw-bold mb-1">Modération des mods</MudText>
+        <MudText Typo="Typo.subtitle2" Color="Color.Surface">Approuvez ou rejetez les mods en attente</MudText>
+    </MudPaper>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center my-8">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+        </div>
+    }
+    else if (pendingMods.Count == 0)
+    {
+        <MudText Typo="Typo.h6" Align="Align.Center" Class="my-8">Aucun mod en attente.</MudText>
+    }
+    else
+    {
+        <MudTable Items="@pendingMods" Hover="true" Dense="true" Class="mod-table" @bind-SelectedItem="selectedMod">
+            <HeaderContent>
+                <MudTh>Nom</MudTh>
+                <MudTh>Créateur</MudTh>
+                <MudTh>Date MAJ</MudTh>
+                <MudTh>Catégorie</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudLink Href="@($"/mod/@context.Id")" Target="_blank">@context.Name</MudLink>
+                </MudTd>
+                <MudTd>@(!string.IsNullOrWhiteSpace(context.CreatorName) ? context.CreatorName : context.Author)</MudTd>
+                <MudTd>@context.UpdatedAt.ToString("dd/MM/yyyy")</MudTd>
+                <MudTd>@(context.Categories?.FirstOrDefault() ?? "-")</MudTd>
+                <MudTd>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Success" Size="Size.Small" Disabled="@isActing" OnClick="@(() => ChangeStatusAsync(context, true))">Approuver</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" Class="ml-2" Disabled="@isActing" OnClick="@(() => ChangeStatusAsync(context, false))">Rejeter</MudButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    // STATE
+    private List<ModDto> pendingMods = new();
+    private bool isLoading = true;
+    private bool isActing = false;
+    private ModDto? selectedMod;
+
+    // LIFECYCLE
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPendingModsAsync();
+    }
+
+    private async Task LoadPendingModsAsync()
+    {
+        isLoading = true;
+        try
+        {
+            // Nous récupérons les 100 premiers mods non approuvés. Adapter au besoin avec pagination.
+            var resp = await ModService.GetModsAsync(1, 100, string.Empty, string.Empty, "recent");
+            if (resp.Success && resp.Data != null)
+            {
+                pendingMods = resp.Data.Items.Where(m => !m.IsApproved).ToList();
+            }
+            else
+            {
+                Snackbar.Add(resp.Message ?? "Erreur lors du chargement des mods", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ChangeStatusAsync(ModDto mod, bool approve)
+    {
+        if (isActing) return;
+        isActing = true;
+        StateHasChanged();
+
+        try
+        {
+            // Si une API dédiée existe, appelez-la ici. En attendant, nous utilisons UpdateModAsync pour mettre IsApproved.
+            mod.IsApproved = approve;
+            var updateResp = await ModService.UpdateModAsync(mod.Id, mod);
+            if (updateResp.Success)
+            {
+                pendingMods.Remove(mod);
+                Snackbar.Add(approve ? "Mod approuvé avec succès" : "Mod rejeté avec succès", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(updateResp.Message ?? "Erreur lors de la mise à jour du mod", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isActing = false;
+            StateHasChanged();
+        }
+    }
+}
+
+<style scoped>
+    .hero-surface { background-color: var(--mud-palette-primary); }
+    .mod-table tr:hover { cursor: pointer; }
+</style>
