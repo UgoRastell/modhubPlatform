@@ -101,15 +101,6 @@
                             @(mod.IsFeatured ? "Téléchargement Premium" : "Télécharger")
                         </MudButton>
 
-                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth
-                                   StartIcon="@Icons.Material.Filled.Favorite">
-                            Ajouter aux favoris
-                        </MudButton>
-
-                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" FullWidth
-                                   StartIcon="@Icons.Material.Filled.Share">
-                            Partager
-                        </MudButton>
                     </div>
 
                     <MudDivider Class="my-4" />
@@ -143,9 +134,6 @@
                         Basé sur @mod.RatingCount.ToString("N0", new CultureInfo("fr-FR")) avis
                     </MudText>
 
-                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth Class="mt-2">
-                        Voir tous les avis
-                    </MudButton>
                 </MudPaper>
             </MudItem>
         </MudGrid>
