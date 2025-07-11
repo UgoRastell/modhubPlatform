@@ -26,7 +26,9 @@ namespace IdentityService.Controllers
             _configuration = configuration;
         }
 
+        [AllowAnonymous]
         [HttpGet("google-callback")]
+        [AllowAnonymous]
         [HttpPost("google-callback")]
         public async Task<IActionResult> GoogleCallback([FromQuery] string code, [FromQuery] string state)
         {
