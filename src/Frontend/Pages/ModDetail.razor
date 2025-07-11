@@ -7,6 +7,7 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Détails du mod | ModHub</PageTitle>
 
@@ -127,7 +128,11 @@
                     <!-- Évaluations -->
                     <MudText Typo="Typo.h6" Class="mb-2">Évaluations</MudText>
                     <div class="d-flex align-center mb-2">
-                        <MudRating ReadOnly SelectedValue="@((int)Math.Round(mod.AverageRating))" />
+                        <MudRating MaxValue="5"
+                                   ReadOnly="@(mod.UserRating != null)"
+                                   SelectedValue="@((int)(mod.UserRating ?? (int)Math.Round(mod.AverageRating)))"
+                                   SelectedValueChanged="@(async (int v) => await RateModAsync(v))"
+                                   Color="Color.Warning" />
                         <MudText Class="ml-2">@mod.AverageRating.ToString("0.0", new CultureInfo("fr-FR"))/5</MudText>
                     </div>
                     <MudText Typo="Typo.body2">
@@ -155,6 +160,7 @@
 
     private bool loading = true;
     private bool isDownloading = false;
+    private bool isSubmittingRating = false;
     private ModDto? mod;
     private List<BreadcrumbItem> breadcrumbs = new();
 
@@ -220,6 +226,45 @@
         finally
         {
             isDownloading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RateModAsync(int value)
+    {
+        if (mod == null) return;
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            Snackbar.Add("Connectez-vous pour noter un mod", Severity.Warning);
+            return;
+        }
+
+        if (isSubmittingRating) return;
+        isSubmittingRating = true;
+        try
+        {
+            var resp = await ModService.RateModAsync(mod.Id, new ModRatingRequest { Rating = value });
+            if (resp.Success)
+            {
+                mod.AverageRating = ((mod.AverageRating * mod.RatingCount) + value) / (mod.RatingCount + 1);
+                mod.RatingCount++;
+                mod.UserRating = value;
+                Snackbar.Add("Merci pour votre note !", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(resp.Message ?? "Erreur lors de l'envoi de la note", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSubmittingRating = false;
             StateHasChanged();
         }
     }
