@@ -25,7 +25,7 @@ public class ModHubTheme
             
             // Text Colors
             TextPrimary = "#f5f7fa",
-            TextSecondary = "#a7b2c2",
+            TextSecondary = "#ffffff",
             DrawerText = "#f5f7fa",
             AppbarText = "#f5f7fa",
             
@@ -43,10 +43,10 @@ public class ModHubTheme
             Dark = "#171717",
             
             // Other Colors
-            ActionDefault = "#a7b2c2",
+            ActionDefault = "#ffffff",
             ActionDisabled = "#2f3441",
             ActionDisabledBackground = "#2a2f3c",
-            DrawerIcon = "#a7b2c2",
+            DrawerIcon = "#ffffff",
             
             // Hover States
             PrimaryContrastText = "#ffffff",
