@@ -34,7 +34,7 @@
     
     /* Couleurs de texte */
     --mud-palette-text-primary: var(--primary-text);
-    --mud-palette-text-secondary: var(--secondary-text);
+    --mud-palette-text-secondary: #ffffff !important;
     
     /* Couleurs d'erreur et d'alerte */
     --mud-palette-error: var(--error-color);
@@ -112,6 +112,9 @@ body {
 .mud-button-outlined.mud-button-outlined-primary:hover {
     background-color: rgba(0, 170, 255, 0.1);
 }
+
+/* Override Mud class */
+.mud-text-secondary { color:#ffffff !important; }
 
 /* Style des cartes */
 .mud-card {

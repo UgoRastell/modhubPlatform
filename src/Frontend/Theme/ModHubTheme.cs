@@ -26,7 +26,7 @@ public class ModHubTheme
             DrawerBackground = "#232634",
             
             // Text Colors
-            TextPrimary = "#f5f7fa",
+            TextPrimary = "#ffffff",
             TextSecondary = "#ffffff",
             DrawerText = "#f5f7fa",
             AppbarText = "#f5f7fa",
