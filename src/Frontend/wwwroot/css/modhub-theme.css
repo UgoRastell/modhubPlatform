@@ -115,6 +115,12 @@ body {
 
 /* Override Mud class */
 .mud-text-secondary { color:#ffffff !important; }
+/* User specific overrides */
+h4.mud-typography,
+p.mud-typography:nth-child(2),
+a.mud-list-item:nth-child(1) > div:nth-child(1) > p:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > p:nth-child(1),
+a.mud-list-item:nth-child(3) > div:nth-child(1) > p:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > span:nth-child(1)
+{ color:#ffffff !important; }
 
 /* Style des cartes */
 .mud-card {
