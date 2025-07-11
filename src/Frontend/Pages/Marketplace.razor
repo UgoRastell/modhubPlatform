@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @inject Frontend.Services.Interfaces.IModService ModService
 @inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 
 <PageTitle>Marketplace | ModHub</PageTitle>
@@ -135,8 +136,9 @@
                                     
                                     <div class="d-flex justify-space-between align-center mt-2">
                                         <MudRating MaxValue="5"
-                                               ReadOnly="true"
-                                               SelectedValue="@((int)Math.Round(mod.Rating))"
+                                               ReadOnly="@(mod.UserRating != null)"
+                                               SelectedValue="@((int)(mod.UserRating ?? (int)Math.Round(mod.Rating)))"
+                                               SelectedValueChanged="@(async (int v) => await RateMod(mod, v))"
                                                Color="Color.Warning"
                                                Size="Size.Small"
                                                Class="mb-1" />
@@ -208,6 +210,7 @@
         public DateTime UpdatedDate { get; set; }
         public decimal Price { get; set; }
         public bool IsFeatured { get; set; }
+public int? UserRating { get; set; }
     }
     
     protected override async Task OnInitializedAsync()
@@ -244,6 +247,7 @@
                 Game = m.GameName,
                 Category = (m.Categories != null && m.Categories.Count > 0) ? m.Categories[0] : string.Empty,
                 ThumbnailUrl = m.ThumbnailUrl,
+                UserRating = m.UserRating,
                 Rating = m.AverageRating,
                 RatingCount = m.RatingCount,
                 Downloads = (int)m.DownloadCount,
@@ -455,6 +459,37 @@
         if (!string.IsNullOrEmpty(modId))
         {
             NavigationManager.NavigateTo($"/mod/{modId}");
+        }
+    }
+
+    private async Task RateMod(ModViewModel mod, int value)
+    {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            Snackbar.Add("Connectez-vous pour noter un mod", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            var resp = await ModService.RateModAsync(mod.Id, new ModRatingRequest { Rating = value });
+            if (resp.Success)
+            {
+                mod.Rating = ((mod.Rating * mod.RatingCount) + value) / (mod.RatingCount + 1);
+                mod.RatingCount++;
+                mod.UserRating = value;
+                Snackbar.Add("Merci pour votre note !", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(resp.Message ?? "Erreur lors de l'envoi de la note", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erreur: {ex.Message}", Severity.Error);
         }
     }
 
