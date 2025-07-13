@@ -44,9 +44,13 @@ namespace Frontend.Models
         [JsonPropertyName("isPremium")]
         public bool IsFeatured { get; set; }
         
-        // Compatible avec isApproved du backend
-        [JsonPropertyName("isApproved")]
-        public bool IsApproved { get; set; }
+        // Nouveau champ Status (pending, published, rejected)
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = "pending";
+
+        // Propriété dérivée pour la compatibilité existante
+        [JsonIgnore]
+        public bool IsApproved => string.Equals(Status, "published", StringComparison.OrdinalIgnoreCase);
         
         // Propriété supplémentaire pour la rétrocompatibilité
         [JsonPropertyName("versions")]

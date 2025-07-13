@@ -31,6 +31,11 @@ namespace ModsService.Models
         public string Version { get; set; }
         
         /// <summary>
+        /// Prix du mod en euros (0 = gratuit)
+        /// </summary>
+        public decimal Price { get; set; } = 0;
+        
+        /// <summary>
         /// Tags associés au mod pour faciliter la recherche
         /// </summary>
         public string[] Tags { get; set; }

@@ -73,7 +73,7 @@
             var resp = await ModService.GetModsAsync(1, 100, string.Empty, string.Empty, "recent");
             if (resp.Success && resp.Data != null)
             {
-                pendingMods = resp.Data.Items.Where(m => !m.IsApproved).ToList();
+                pendingMods = resp.Data.Items.Where(m => string.Equals(m.Status, "pending", StringComparison.OrdinalIgnoreCase)).ToList();
             }
             else
             {
@@ -100,7 +100,7 @@
         try
         {
             // Si une API dédiée existe, appelez-la ici. En attendant, nous utilisons UpdateModAsync pour mettre IsApproved.
-            mod.IsApproved = approve;
+            mod.Status = approve ? "published" : "rejected";
             var updateResp = await ModService.UpdateModAsync(mod.Id, mod);
             if (updateResp.Success)
             {
