@@ -2,6 +2,8 @@
 
 Une plateforme SaaS innovante dédiée au partage, à la découverte et à la monétisation de mods de jeux vidéo, construite avec une architecture de microservices .NET.
 
+La version de démonstration est accessible en ligne sur [https://modhub.ovh](https://modhub.ovh/).
+
 ## Infrastructure Technique (Phase 1)
 
 Cette première phase d'implémentation met en place l'infrastructure de base nécessaire pour supporter l'ensemble de la plateforme.
@@ -142,6 +144,15 @@ Il est recommandé d'ajouter ce script à votre crontab pour un renouvellement a
 ```
 0 0 1 * * /opt/modhub/docker/certbot-renew.sh
 ```
+
+## Comptes de test / Modération
+
+Pour accéder aux fonctionnalités de modération en environnement de développement, utilisez le compte suivant :
+
+- **Modérateur**  
+  - Email : `modhub.policy971@passmail.net`  
+  - Mot de passe : `DJ0xDcWmV@%afaSWVP*Ay*&NNu5j%&T3vEGuUJ$Ems#ur7*sT%`
+
 
 ## Prochaines Étapes
 
